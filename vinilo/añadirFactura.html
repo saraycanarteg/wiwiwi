@@ -7,19 +7,20 @@
 	<link rel="stylesheet" href="styleBill/estilo2.css">
 </head>
 <body>
-    <!-- Header Navigation -->
-    <nav class="header-nav">
-        <div class="logo-container">
-            <div class="logo-placeholder">🏠</div>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <img src="img/logo.png" alt="Logo" id="logo-img">
+            <span style="font-weight: bold; color: #F87154;">Define Records</span>
         </div>
-        <ul class="nav-menu">
-            <li><a href="sesion.html" onclick="goToHome()">Inicio</a></li>
-            <li><a href="inventario.html">Inventario</a></li>
-            <li><a href="factura.html" class="active">Factura</a></li>
-            <li><a href="#">Ayuda</a></li>
-        </ul>
-        <button class="login-btn">Mi Cuenta</button>
-    </nav>
+        <nav class="nav">
+            <a href="sesion.html" class="nav-link">Inicio</a>
+            <a href="inventario.html" class="nav-link">Inventario</a>
+            <a href="factura.html" class="nav-link">Facturas</a>
+            <a href="#" class="nav-link">Ayuda</a>
+            <button class="account-btn" onclick="openAccountModal()">Mi Cuenta</button>
+        </nav>
+    </header>
 
     <!-- Main Container -->
     <div class="main-container">
@@ -29,7 +30,7 @@
         </div>
 
         <!-- Back Button -->
-        <button class="back-button" onclick="goToHome()">
+        <button class="back-button" onclick="window.location.href='factura.html'">
             <span>←</span>
             Volver al Listado
         </button>
@@ -201,10 +202,170 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <p>Vinilo Store - Sistema de Facturación</p>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Define Records</h3>
+                <p>Tu tienda especializada en vinilos con más de 20 años de experiencia. Encuentra desde clásicos atemporales hasta las últimas novedades del mundo musical.</p>
+              </div>
+            
+            <div class="footer-section">
+                <h3>Contacto</h3>
+                <p>📍 Calle de la Música 123, Centro Histórico</p>
+                <p>📞 +593 98 765 4321</p>
+                <p>✉️ info@definerecords.com</p>
+                <p>🕒 Lun - Sáb: 10:00 - 20:00</p>
+                <p>🕒 Dom: 12:00 - 18:00</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Categorías</h3>
+                <a href="#">Rock & Pop</a>
+                <a href="#">Jazz & Blues</a>
+                <a href="#">Electrónica</a>
+                <a href="#">Hip Hop & R&B</a>
+                <a href="#">Música Latina</a>
+                <a href="#">Clásica</a>
+                <a href="#">Ediciones Especiales</a>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Servicios</h3>
+                <a href="#">Gestión de Inventario</a>
+                <a href="#">Facturación Digital</a>
+                <a href="#">Búsqueda Avanzada</a>
+                <a href="#">Reservas Online</a>
+                <a href="#">Intercambio de Vinilos</a>
+                <a href="#">Valoraciones</a>
+                <a href="#">Soporte Técnico</a>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2025 Define Records. Todos los derechos reservados. | Sistema de gestión desarrollado con ❤️ para los amantes de la música analógica.</p>
+        </div>
     </footer>
+	
+   <!-- Account Modal -->
+    <div class="modal-overlay" id="accountModal">
+        <div class="account-container">
+            <button class="close-btn" onclick="closeAccountModal()">&times;</button>
+            
+            <img src="img/fpf.png" alt="Foto de perfil" class="profile-picture">
+            
+            <h2 class="account-title">Mi Cuenta</h2>
+            
+            <div class="account-info">
+                <div class="info-item">
+                    <span class="info-label">Usuario:</span>
+                    <span class="info-value">admin</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Nombre:</span>
+                    <span class="info-value">Saray Canarte</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Rol:</span>
+                    <span class="info-value">Administrador</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value">saray@definerecords.com</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Estado:</span>
+                    <span class="status-badge">Activo</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Último acceso:</span>
+                    <span class="info-value">Hoy, 14:30</span>
+                </div>
+            </div>
+			<button class="logout-btn" onclick="logoutUser()">
+                Cerrar Sesión
+            </button>
+        </div>
+    </div>
 
     <script>
+		let vinyls = [
+			{ id: 1, album: "Dark Side of the Moon", artist: "Pink Floyd", genre: "Rock", year: 1973, price: 45.99, stock: 2, icon: "🌙" },
+			{ id: 2, album: "Thriller", artist: "Michael Jackson", genre: "Pop", year: 1982, price: 38.99, stock: 0, icon: "👻" },
+			{ id: 3, album: "Kind of Blue", artist: "Miles Davis", genre: "Jazz", year: 1959, price: 51.99, stock: 1, icon: "🎺" }
+		];
+		
+		function populateSelectOptions(selectElement) {
+			selectElement.innerHTML = '<option value="">Seleccionar producto...</option>'; // Reiniciar
+
+			vinyls.forEach(v => {
+				if (v.stock > 0) {
+					const option = document.createElement("option");
+					option.value = v.id;
+					option.textContent = `${v.icon} ${v.album} - ${v.artist} (${v.year})`;
+					option.setAttribute("data-price", v.price);
+					selectElement.appendChild(option);
+				}
+			});
+		}
+		window.onload = function () {
+			const firstSelect = document.querySelector('select[name="item-product"]');
+			populateSelectOptions(firstSelect);
+		};
+
+        // Funciones para el modal de cuenta
+        function openAccountModal() {
+            document.getElementById('accountModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAccountModal() {
+            document.getElementById('accountModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Cerrar modal al hacer click fuera de él
+        document.getElementById('accountModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeAccountModal();
+            }
+        });
+
+        // Cerrar modal con tecla Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && document.getElementById('accountModal').classList.contains('active')) {
+                closeAccountModal();
+            }
+        });
+		
+		function logoutUser() {
+            // Confirmar cierre de sesión
+            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                // Mostrar mensaje de confirmación
+                alert('Sesión cerrada exitosamente. ¡Hasta pronto!');
+                
+                // Cerrar el modal
+                closeAccountModal();
+                
+                // Opcional: Redirigir a página de login o recargar
+                window.location.href = 'index.html';
+                // O simplemente recargar la página actual
+                
+            }
+        }
+
+        // Cerrar modal al hacer click fuera de él
+        document.getElementById('accountModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeAccountModal();
+            }
+        });
+
+        // Cerrar modal con tecla Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && document.getElementById('accountModal').classList.contains('active')) {
+                closeAccountModal();
+            }
+        });
+		
         let invoiceCounter = 1;
         let invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
 
@@ -226,49 +387,56 @@
         }
 
         // Item management
-        function addItem() {
-            const container = document.getElementById('items-container');
-            const newItem = document.createElement('div');
-            newItem.className = 'item-row';
-            newItem.innerHTML = `
-                <div class="form-group">
-                    <label>Descripción *</label>
-                    <input type="text" name="item-description" placeholder="Descripción del producto/servicio" required>
-                </div>
-                <div class="form-group">
-                    <label>Cantidad *</label>
-                    <input type="number" name="item-quantity" min="1" value="1" onchange="calculateTotal()" required>
-                </div>
-                <div class="form-group">
-                    <label>Precio Unitario *</label>
-                    <input type="number" name="item-price" step="0.01" min="0" onchange="calculateTotal()" placeholder="0.00" required>
-                </div>
-                <div class="form-group">
-                    <label>Total</label>
-                    <input type="number" name="item-total" step="0.01" readonly>
-                </div>
-                <div class="form-group">
-                    <button type="button" class="remove-item-btn" onclick="removeItem(this)" title="Eliminar item">
-                        <span>🗑</span>
-                    </button>
-                </div>
-            `;
-            container.appendChild(newItem);
-            
-            // Focus on the first input of the new item
-            newItem.querySelector('input[name="item-description"]').focus();
-        }
+		function addItem() {
+			const container = document.getElementById('items-container');
+			const newItem = document.createElement('div');
+			newItem.className = 'item-row';
+			newItem.innerHTML = `
+				<div class="form-group">
+					<label>Producto/Servicio *</label>
+					<select name="item-product" onchange="updateItemDetails(this)" required>
+						<option value="">Seleccionar producto...</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label>Cantidad *</label>
+					<input type="number" name="item-quantity" min="1" value="1" onchange="calculateTotal()" required>
+				</div>
+				<div class="form-group">
+					<label>Precio Unitario *</label>
+					<input type="number" name="item-price" step="0.01" min="0" onchange="calculateTotal()" placeholder="0.00" readonly>
+				</div>
+				<div class="form-group">
+					<label>Total</label>
+					<input type="number" name="item-total" step="0.01" readonly>
+				</div>
+				<div class="form-group">
+					<button type="button" class="remove-item-btn" onclick="removeItem(this)" title="Eliminar item">
+						<span>🗑</span>
+					</button>
+				</div>
+			`;
 
-        function removeItem(button) {
-            const itemRow = button.closest('.item-row');
-            const container = document.getElementById('items-container');
-            if (container.children.length > 1) {
-                itemRow.remove();
-                calculateTotal();
-            } else {
-                alert('Debe mantener al menos un item en la factura.');
-            }
-        }
+			container.appendChild(newItem);
+
+			// Rellenar el select del nuevo item
+			const select = newItem.querySelector('select[name="item-product"]');
+			populateSelectOptions(select);
+		}
+		
+		function updateItemDetails(selectElement) {
+			const selectedOption = selectElement.options[selectElement.selectedIndex];
+			const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+
+			const itemRow = selectElement.closest('.item-row');
+			const priceInput = itemRow.querySelector('input[name="item-price"]');
+			const quantityInput = itemRow.querySelector('input[name="item-quantity"]');
+			const totalInput = itemRow.querySelector('input[name="item-total"]');
+
+			priceInput.value = price.toFixed(2);
+			const quantity = parseInt(quantityInput.value) || 1;
+			totalInput.value = (quantity * price).toFixed(2);
+		}
 
         function calculateTotal() {
             const items = document.querySelectorAll('.item-row');
@@ -305,14 +473,13 @@
 
             alert(`Vista Previa de Factura:
             
-Número: ${invoiceData.number}
-Fecha: ${invoiceData.date}
-Empresa: ${invoiceData.company}
-Cliente: ${invoiceData.client}
-Total: ${invoiceData.total}
-
-En una implementación completa, aquí se abriría una ventana con la vista previa completa de la factura.`);
-        }
+			Número: ${invoiceData.number}
+			Fecha: ${invoiceData.date}
+			Empresa: ${invoiceData.company}
+			Cliente: ${invoiceData.client}
+			Total: ${invoiceData.total}
+			`);
+					}
 
         function printInvoice() {
             // En una implementación real, aquí se generaría un PDF o se abriría la ventana de impresión
@@ -334,8 +501,6 @@ En una implementación completa, aquí se abriría una ventana con la vista prev
             }
         }
 
-        function goToHome() {
-            // En una implementación real, aquí redirigiría a la página principal
-            if (confirm('¿Desea volver al listado de facturas? Los cambios no guardados se perderán.')) {
-                alert('Redirigiendo al listado de facturas...');
-                // window.
+	</script>
+	</body>
+</html>

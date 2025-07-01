@@ -7,18 +7,20 @@
 <link rel="stylesheet" href="styleBill/estilo1.css">
 </head>
 <body>
-    <!-- Header Navigation -->
-    <nav class="header-nav">
-      <div class="logo-container">
-        <img src="img/logo.png" width="100" height="70" alt=""/> </div>
-        <ul class="nav-menu">
-            <li><a href="sesion.html" class="active">Inicio</a></li>
-            <li><a href="inventario.html">Inventario</a></li>
-            <li><a href="#">Factura</a></li>
-            <li><a href="#">Ayuda</a></li>
-        </ul>
-        <button class="login-btn">Mi Cuenta</button>
-    </nav>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <img src="img/logo.png" alt="Logo" id="logo-img">
+            <span style="font-weight: bold; color: #F87154;">Define Records</span>
+        </div>
+        <nav class="nav">
+            <a href="sesion.html" class="nav-link">Inicio</a>
+            <a href="inventario.html" class="nav-link">Inventario</a>
+            <a href="factura.html" class="nav-link">Facturas</a>
+            <a href="#" class="nav-link">Ayuda</a>
+            <button class="account-btn" onclick="openAccountModal()">Mi Cuenta</button>
+        </nav>
+    </header>
 
     <!-- Main Container -->
     <div class="main-container">
@@ -28,17 +30,42 @@
         </div>
 
         <!-- Control Bar -->
-        <div class="control-bar">
-            <button class="filter-btn" onclick="toggleFilter()">
-                <span>🔽</span>
-                Filtrar
-            </button>
-            <button class="add-btn" onclick="window.location.href='añadirFactura.html'">
-                <span>+</span>
-                Agregar Factura
-            </button>
-            <button class="search-icon">🔍</button>
-        </div>
+		<div class="control-bar">
+			<button class="filter-btn" onclick="toggleFilter()">
+				<span>🔽</span>
+				Filtrar
+			</button>
+			<button class="add-btn" onclick="window.location.href='añadirFactura.html'">
+				<span>+</span>
+				Agregar Factura
+			</button>
+			<button class="add-btn" onclick="window.location.href='reporteVentas.html'">
+				<span>📊</span>
+				Reporte
+			</button>
+			<button class="search-icon">🔍</button>
+		</div>
+		
+		<div class="filter-section" id="filterSection" style="display: none; margin-bottom: 20px;">
+			<div class="form-grid">
+				<div class="form-group">
+					<label for="clienteFilter">Cliente</label>
+					<input type="text" id="clienteFilter" placeholder="Nombre del cliente">
+				</div>
+				<div class="form-group">
+					<label for="fechaInicio">Fecha desde</label>
+					<input type="date" id="fechaInicio">
+				</div>
+				<div class="form-group">
+					<label for="fechaFin">Fecha hasta</label>
+					<input type="date" id="fechaFin">
+				</div>
+				<div class="form-group" style="align-self: end;">
+					<button class="btn-secondary" onclick="aplicarFiltros()">Aplicar Filtros</button>
+				</div>
+			</div>
+		</div>
+
 
         <!-- Invoice List -->
         <div class="invoice-list" id="invoiceList">
@@ -53,7 +80,7 @@
                     <div class="invoice-detail">Detalle: Vinilo 1</div>
                 </div>
                 <div class="invoice-actions">
-                    <button class="view-complete-btn">Ver Completo</button>
+                    <button class="view-complete-btn" onclick="openInvoiceDetailModal(1)">Ver Completo</button>
                 </div>
             </div>
 
@@ -67,7 +94,7 @@
                     <div class="invoice-detail">Detalle: Vinilo 2</div>
                 </div>
                 <div class="invoice-actions">
-                    <button class="view-complete-btn">Ver Completo</button>
+                    <button class="view-complete-btn" onclick="openInvoiceDetailModal(1)">Ver Completo</button>
                 </div>
             </div>
 
@@ -81,7 +108,7 @@
                     <div class="invoice-detail">Detalle de Venta</div>
                 </div>
                 <div class="invoice-actions">
-                    <button class="view-complete-btn">Ver Completo</button>
+                    <button class="view-complete-btn" onclick="openInvoiceDetailModal(1)">Ver Completo</button>
                 </div>
             </div>
         </div>
@@ -97,160 +124,125 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <p>Vinilo Store</p>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Define Records</h3>
+                <p>Tu tienda especializada en vinilos con más de 20 años de experiencia. Encuentra desde clásicos atemporales hasta las últimas novedades del mundo musical.</p>
+              </div>
+            
+            <div class="footer-section">
+                <h3>Contacto</h3>
+                <p>📍 Calle de la Música 123, Centro Histórico</p>
+                <p>📞 +593 98 765 4321</p>
+                <p>✉️ info@definerecords.com</p>
+                <p>🕒 Lun - Sáb: 10:00 - 20:00</p>
+                <p>🕒 Dom: 12:00 - 18:00</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Categorías</h3>
+                <a href="#">Rock & Pop</a>
+                <a href="#">Jazz & Blues</a>
+                <a href="#">Electrónica</a>
+                <a href="#">Hip Hop & R&B</a>
+                <a href="#">Música Latina</a>
+                <a href="#">Clásica</a>
+                <a href="#">Ediciones Especiales</a>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Servicios</h3>
+                <a href="#">Gestión de Inventario</a>
+                <a href="#">Facturación Digital</a>
+                <a href="#">Búsqueda Avanzada</a>
+                <a href="#">Reservas Online</a>
+                <a href="#">Intercambio de Vinilos</a>
+                <a href="#">Valoraciones</a>
+                <a href="#">Soporte Técnico</a>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2025 Define Records. Todos los derechos reservados. | Sistema de gestión desarrollado con ❤️ para los amantes de la música analógica.</p>
+        </div>
     </footer>
 
-    <!-- Modal for New Invoice -->
-    <div class="modal" id="newInvoiceModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Nueva Factura</h2>
-                <button class="close-btn" onclick="closeNewInvoiceModal()">&times;</button>
+   <!-- Account Modal -->
+    <div class="modal-overlay" id="accountModal">
+        <div class="account-container">
+            <button class="close-btn" onclick="closeAccountModal()">&times;</button>
+            
+            <img src="img/fpf.png" alt="Foto de perfil" class="profile-picture">
+            
+            <h2 class="account-title">Mi Cuenta</h2>
+            
+            <div class="account-info">
+                <div class="info-item">
+                    <span class="info-label">Usuario:</span>
+                    <span class="info-value">admin</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Nombre:</span>
+                    <span class="info-value">Saray Canarte</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Rol:</span>
+                    <span class="info-value">Administrador</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value">saray@definerecords.com</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Estado:</span>
+                    <span class="status-badge">Activo</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Último acceso:</span>
+                    <span class="info-value">Hoy, 14:30</span>
+                </div>
             </div>
-
-            <form id="invoiceForm">
-                <!-- Company Information -->
-                <div class="form-section">
-                    <h3>Información de la Empresa</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="company-name">Nombre de la Empresa</label>
-                            <input type="text" id="company-name" name="company-name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="company-ruc">RUC/NIT</label>
-                            <input type="text" id="company-ruc" name="company-ruc" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="company-address">Dirección</label>
-                            <input type="text" id="company-address" name="company-address">
-                        </div>
-                        <div class="form-group">
-                            <label for="company-phone">Teléfono</label>
-                            <input type="tel" id="company-phone" name="company-phone">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Invoice Data -->
-                <div class="form-section">
-                    <h3>Datos de la Factura</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="invoice-number">Número de Factura</label>
-                            <input type="text" id="invoice-number" name="invoice-number" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="invoice-date">Fecha de Emisión</label>
-                            <input type="date" id="invoice-date" name="invoice-date" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="due-date">Fecha de Vencimiento</label>
-                            <input type="date" id="due-date" name="due-date">
-                        </div>
-                        <div class="form-group">
-                            <label for="currency">Moneda</label>
-                            <select id="currency" name="currency">
-                                <option value="USD">USD - Dólar</option>
-                                <option value="EUR">EUR - Euro</option>
-                                <option value="PEN">PEN - Sol</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Client Information -->
-                <div class="form-section">
-                    <h3>Información del Cliente</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="client-name">Nombre/Razón Social</label>
-                            <input type="text" id="client-name" name="client-name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="client-document">RUC/Cédula</label>
-                            <input type="text" id="client-document" name="client-document">
-                        </div>
-                        <div class="form-group">
-                            <label for="client-address">Dirección</label>
-                            <input type="text" id="client-address" name="client-address">
-                        </div>
-                        <div class="form-group">
-                            <label for="client-phone">Teléfono</label>
-                            <input type="tel" id="client-phone" name="client-phone">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Items Section -->
-                <div class="form-section">
-                    <h3>Detalles de Items</h3>
-                    <div class="items-section">
-                        <div id="items-container">
-                            <div class="item-row">
-                                <div class="form-group">
-                                    <label>Descripción</label>
-                                    <input type="text" name="item-description" placeholder="Descripción del producto/servicio" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Cantidad</label>
-                                    <input type="number" name="item-quantity" min="1" value="1" onchange="calculateTotal()" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Precio Unitario</label>
-                                    <input type="number" name="item-price" step="0.01" min="0" onchange="calculateTotal()" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Total</label>
-                                    <input type="number" name="item-total" step="0.01" readonly>
-                                </div>
-                                <div class="form-group">
-                                    <button type="button" class="remove-item-btn" onclick="removeItem(this)">✖</button>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="button" class="add-item-btn" onclick="addItem()">+ Agregar Item</button>
-                    </div>
-
-                    <!-- Totals Section -->
-                    <div class="totals-section">
-                        <div class="totals-grid">
-                            <div class="total-item">
-                                <label>Subtotal</label>
-                                <div class="total-amount" id="subtotal">$0.00</div>
-                            </div>
-                            <div class="total-item">
-                                <label>IVA (12%)</label>
-                                <div class="total-amount" id="tax">$0.00</div>
-                            </div>
-                            <div class="total-item">
-                                <label>Descuento</label>
-                                <input type="number" id="discount" step="0.01" min="0" onchange="calculateTotal()" style="text-align: right; border: 1px solid #ddd; padding: 5px; border-radius: 4px;">
-                            </div>
-                            <div class="total-item">
-                                <label>TOTAL</label>
-                                <div class="final-total" id="final-total">$0.00</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="margin-top: 20px;">
-                        <label for="notes">Observaciones</label>
-                        <textarea id="notes" name="notes" rows="3" placeholder="Términos y condiciones, observaciones adicionales..."></textarea>
-                    </div>
-                </div>
-
-                <!-- Form Actions -->
-                <div class="form-actions">
-                    <button type="submit" class="btn-primary">💾 Guardar Factura</button>
-                    <button type="button" class="btn-secondary" onclick="previewInvoice()">👁 Previsualizar</button>
-                    <button type="reset" class="btn-secondary">🔄 Limpiar</button>
-                </div>
-            </form>
+			<button class="logout-btn" onclick="logoutUser()">
+                Cerrar Sesión
+            </button>
         </div>
     </div>
+		<div class="modal-overlay" id="invoiceDetailModal">
+		  <div class="modal-content">
+			<button class="close-btn" onclick="closeInvoiceDetailModal()">×</button>
+			<h2>Detalle de Factura</h2>
+			<div id="invoiceDetailContent">
+			</div>
+		  </div>
+	</div>
+
 
     <script>
+		
+		// Funciones para el modal de cuenta
+        function openAccountModal() {
+            document.getElementById('accountModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAccountModal() {
+            document.getElementById('accountModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Cerrar modal al hacer click fuera de él
+        document.getElementById('accountModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeAccountModal();
+            }
+        });
+
+        // Cerrar modal con tecla Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && document.getElementById('accountModal').classList.contains('active')) {
+                closeAccountModal();
+            }
+        });
         let invoices = [];
         let invoiceCounter = 4;
 
@@ -264,107 +256,159 @@
         function closeNewInvoiceModal() {
             document.getElementById('newInvoiceModal').classList.remove('active');
         }
-
-        // Item management
-        function addItem() {
-            const container = document.getElementById('items-container');
-            const newItem = document.createElement('div');
-            newItem.className = 'item-row';
-            newItem.innerHTML = `
-                <div class="form-group">
-                    <label>Descripción</label>
-                    <input type="text" name="item-description" placeholder="Descripción del producto/servicio" required>
-                </div>
-                <div class="form-group">
-                    <label>Cantidad</label>
-                    <input type="number" name="item-quantity" min="1" value="1" onchange="calculateTotal()" required>
-                </div>
-                <div class="form-group">
-                    <label>Precio Unitario</label>
-                    <input type="number" name="item-price" step="0.01" min="0" onchange="calculateTotal()" required>
-                </div>
-                <div class="form-group">
-                    <label>Total</label>
-                    <input type="number" name="item-total" step="0.01" readonly>
-                </div>
-                <div class="form-group">
-                    <button type="button" class="remove-item-btn" onclick="removeItem(this)">✖</button>
-                </div>
-            `;
-            container.appendChild(newItem);
-        }
-
-        function removeItem(button) {
-            const itemRow = button.closest('.item-row');
-            const container = document.getElementById('items-container');
-            if (container.children.length > 1) {
-                itemRow.remove();
-                calculateTotal();
-            } else {
-                alert('Debe mantener al menos un item en la factura.');
+		
+		function logoutUser() {
+            // Confirmar cierre de sesión
+            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                // Mostrar mensaje de confirmación
+                alert('Sesión cerrada exitosamente. ¡Hasta pronto!');
+                
+                // Cerrar el modal
+                closeAccountModal();
+                
+                // Opcional: Redirigir a página de login o recargar
+                window.location.href = 'index.html';
+                // O simplemente recargar la página actual
+                
             }
         }
 
-        function calculateTotal() {
-            const items = document.querySelectorAll('.item-row');
-            let subtotal = 0;
+        // Cerrar modal al hacer click fuera de él
+        document.getElementById('accountModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeAccountModal();
+            }
+        });
 
-            items.forEach(item => {
-                const quantity = parseFloat(item.querySelector('[name="item-quantity"]').value) || 0;
-                const price = parseFloat(item.querySelector('[name="item-price"]').value) || 0;
-                const total = quantity * price;
-                
-                item.querySelector('[name="item-total"]').value = total.toFixed(2);
-                subtotal += total;
-            });
+        // Cerrar modal con tecla Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && document.getElementById('accountModal').classList.contains('active')) {
+                closeAccountModal();
+            }
+        });
+		
+		function openInvoiceDetailModal(invoiceId) {
+			const modal = document.getElementById("invoiceDetailModal");
+			const content = document.getElementById("invoiceDetailContent");
 
-            const discount = parseFloat(document.getElementById('discount').value) || 0;
-            const subtotalWithDiscount = subtotal - discount;
-            const tax = subtotalWithDiscount * 0.12;
-            const finalTotal = subtotalWithDiscount + tax;
+			// Simulando datos, puedes conectar con tu base o arreglo
+			const detalles = {
+				1: {
+					cliente: "Saray Cañarte",
+					direccion: "Av. Amazonas y Eloy Alfaro",
+					telefono: "0991234567",
+					items: [
+						{ descripcion: "Vinilo 1", cantidad: 1, precio: 75.00 }
+					],
+				},
+				2: {
+					cliente: "Doménica Villagómez",
+					direccion: "Calle de la Música 123",
+					telefono: "0987654321",
+					items: [
+						{ descripcion: "Vinilo 2", cantidad: 1, precio: 35.00 }
+					],
+				},
+				3: {
+					cliente: "Mónica Armas",
+					direccion: "Cdla. Los Álamos",
+					telefono: "0973344556",
+					items: [
+						{ descripcion: "Vinilo 3", cantidad: 1, precio: 50.00 }
+					],
+				}
+			};
 
-            document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
-            document.getElementById('tax').textContent = '$' + tax.toFixed(2);
-            document.getElementById('final-total').textContent = '$' + finalTotal.toFixed(2);
-        }
+			const factura = detalles[invoiceId];
+			if (!factura) return;
 
-        function previewInvoice() {
-            alert('Función de previsualización - Aquí se abriría una ventana con la vista previa de la factura');
-        }
+			const itemsHTML = factura.items.map(item => `
+				<div class="item">
+					<strong>${item.descripcion}</strong><br>
+					Cantidad: ${item.cantidad}<br>
+					Precio Unitario: $${item.precio.toFixed(2)}<br>
+					Subtotal: $${(item.cantidad * item.precio).toFixed(2)}
+				</div>
+			`).join("");
 
-        function toggleFilter() {
-            alert('Función de filtro - Aquí se mostrarían opciones de filtrado');
-        }
+			const total = factura.items.reduce((sum, item) => sum + item.cantidad * item.precio, 0);
 
-        function loadMoreInvoices() {
-            alert('Cargando más facturas...');
-        }
+			content.innerHTML = `
+				<p><strong>Cliente:</strong> ${factura.cliente}</p>
+				<p><strong>Dirección:</strong> ${factura.direccion}</p>
+				<p><strong>Teléfono:</strong> ${factura.telefono}</p>
 
-        // Form submission
-        document.getElementById('invoiceForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const invoice = {
-                id: invoiceCounter++,
-                number: formData.get('invoice-number'),
-                date: formData.get('invoice-date'),
-                client: formData.get('client-name'),
-                total: document.getElementById('final-total').textContent,
-                status: 'Pendiente'
-            };
-            
-            invoices.push(invoice);
-            
-            // Add new invoice to the list
-            const invoiceList = document.getElementById('invoiceList');
-            const newInvoiceItem = document.createElement('div');
-            newInvoiceItem.className = 'invoice-item';
-            newInvoiceItem.innerHTML = `
-                <div class="invoice-header">
-                    <div class="invoice-number">Factura No. ${invoice.number}</div>
-                    <div class="invoice-total">Total: ${invoice.total}</div>
-                </div>
-                <div class="invoice-details">
-                    <div class="invoice-detail">${invoice.client}</div>
-                    <div class="invoice-detail">Detalle de Venta</div>
+				<h4>Productos/Servicios</h4>
+				${itemsHTML}
+
+				<h4>Total</h4>
+				<p><strong>$${total.toFixed(2)}</strong></p>
+			`;
+
+			modal.classList.add("active");
+			document.body.style.overflow = 'hidden';
+		}
+
+		function closeInvoiceDetailModal() {
+			document.getElementById("invoiceDetailModal").classList.remove("active");
+			document.body.style.overflow = 'auto';
+		}
+		
+		function toggleFilter() {
+			const filterSection = document.getElementById('filterSection');
+			filterSection.style.display = (filterSection.style.display === 'none') ? 'block' : 'none';
+		}
+
+		function aplicarFiltros() {
+			const cliente = document.getElementById('clienteFilter').value.toLowerCase();
+			const desde = document.getElementById('fechaInicio').value;
+			const hasta = document.getElementById('fechaFin').value;
+
+			const facturas = document.querySelectorAll('.invoice-item');
+			facturas.forEach(factura => {
+				const detalleCliente = factura.querySelector('.invoice-detail')?.textContent.toLowerCase();
+				const fechaFactura = factura.getAttribute('data-fecha'); // Opcional si tienes fecha real
+
+				let mostrar = true;
+
+				if (cliente && !detalleCliente.includes(cliente)) {
+					mostrar = false;
+				}
+
+				// Si tuvieras fecha real: comparar contra "desde" y "hasta"
+				if (desde && fechaFactura && fechaFactura < desde) mostrar = false;
+				if (hasta && fechaFactura && fechaFactura > hasta) mostrar = false;
+
+				factura.style.display = mostrar ? 'block' : 'none';
+			});
+		}
+		let currentIndex = 3;
+		function loadMoreInvoices() {
+			const totalFacturas = 5; // cámbialo según cuántas tengas
+			if (currentIndex >= totalFacturas) {
+				alert("No hay más facturas disponibles 📑");
+				return;
+			}
+
+			// Simulación: crea una factura adicional
+			const nuevaFactura = document.createElement("div");
+			nuevaFactura.classList.add("invoice-item");
+			nuevaFactura.innerHTML = `
+				<div class="invoice-header">
+					<div class="invoice-number">Factura No. 0000${currentIndex + 1}</div>
+					<div class="invoice-total">Total: $ 40.00</div>
+				</div>
+				<div class="invoice-details">
+					<div class="invoice-detail">Cliente ${currentIndex + 1}</div>
+					<div class="invoice-detail">Detalle: Vinilo especial</div>
+				</div>
+				<div class="invoice-actions">
+					<button class="view-complete-btn" onclick="openInvoiceDetailModal(${currentIndex + 1})">Ver Completo</button>
+				</div>
+			`;
+			document.getElementById("invoiceList").appendChild(nuevaFactura);
+			currentIndex++;
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reportes de Ventas</title>
+    <link rel="stylesheet" href="styleBill/estilo1.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+		.charts-wrapper {
+			display: flex;
+			justify-content: space-between;
+			gap: 40px;
+			padding: 20px;
+			flex-wrap: wrap;
+			max-width: 1000px;
+			margin: 0 auto;
+		}
+
+		.chart-box {
+			flex: 1 1 49%;
+			background: white;
+			padding: 20px;
+			border-radius: 15px;
+			box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+		}
+
+		.chart-box canvas {
+			width: 100% !important;
+			height: auto !important;
+		}
+		
+		.footer {
+            background: #464646;
+            color: white;
+            padding: 40px 20px;
+            margin-top: 50px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            text-align: left;
+        }
+
+        .footer-section h3 {
+            color: #F87154;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .footer-section p,
+        .footer-section a {
+            color: #CDE7B1;
+            text-decoration: none;
+            line-height: 1.3;
+            margin-bottom: 8px;
+            display: block;
+			font-size: 0.8rem;
+        }
+
+        .footer-section a:hover {
+            color: #F87154;
+            text-decoration: underline;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+			font-size: 0.8rem;
+			font-weight: bold;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            color: #CDE7B1;
+        }
+        /* Account Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .account-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideIn 0.5s ease;
+            position: relative;
+        }
+    .logout-btn {
+            width: 100%;
+            background: #F87154;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .logout-btn:hover {
+            background: #e55d3f;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(248, 113, 84, 0.3);
+        }
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(248, 113, 84, 0.1);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            color: #F87154;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(248, 113, 84, 0.2);
+            transform: scale(1.1);
+        }
+
+        .profile-picture {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            object-fit: cover;
+            box-shadow: 0 8px 25px rgba(248, 113, 84, 0.3);
+        }
+
+        .account-title {
+            color: #F87154;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .account-info {
+            text-align: left;
+            background: #bfdbff;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(248, 113, 84, 0.1);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #F87154;
+        }
+
+        .info-value {
+            color: #464646;
+            font-weight: 550;
+        }
+
+        .status-badge {
+            background: #CDE7B1;
+            color: #2c5530;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo">
+            <img src="img/logo.png" alt="Logo" id="logo-img">
+            <span style="font-weight: bold; color: #F87154;">Define Records</span>
+        </div>
+        <nav class="nav">
+            <a href="sesion.html" class="nav-link">Inicio</a>
+            <a href="inventario.html" class="nav-link">Inventario</a>
+            <a href="factura.html" class="nav-link">Facturas</a>
+            <a href="reporteVentas.html" class="nav-link">Reportes</a>
+            <button class="account-btn" onclick="openAccountModal()">Mi Cuenta</button>
+        </nav>
+    </header>
+
+    <div class="main-container">
+        <div class="title-section">
+            <h1>📊 Reportes de Ventas</h1>
+        </div>
+
+		<div class="charts-wrapper">
+			<div class="chart-box">
+				<h3>Ventas Totales por Cliente</h3>
+				<canvas id="pieChart"></canvas>
+			</div>
+			<div class="chart-box">
+				<h3>Ventas en el Tiempo</h3>
+				<canvas id="lineChart"></canvas>
+			</div>
+		</div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Define Records</h3>
+                <p>Tu tienda especializada en vinilos con más de 20 años de experiencia. Encuentra desde clásicos atemporales hasta las últimas novedades del mundo musical.</p>
+              </div>
+            
+            <div class="footer-section">
+                <h3>Contacto</h3>
+                <p>📍 Calle de la Música 123, Centro Histórico</p>
+                <p>📞 +593 98 765 4321</p>
+                <p>✉️ info@definerecords.com</p>
+                <p>🕒 Lun - Sáb: 10:00 - 20:00</p>
+                <p>🕒 Dom: 12:00 - 18:00</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Categorías</h3>
+                <a href="#">Rock & Pop</a>
+                <a href="#">Jazz & Blues</a>
+                <a href="#">Electrónica</a>
+                <a href="#">Hip Hop & R&B</a>
+                <a href="#">Música Latina</a>
+                <a href="#">Clásica</a>
+                <a href="#">Ediciones Especiales</a>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Servicios</h3>
+                <a href="#">Gestión de Inventario</a>
+                <a href="#">Facturación Digital</a>
+                <a href="#">Búsqueda Avanzada</a>
+                <a href="#">Reservas Online</a>
+                <a href="#">Intercambio de Vinilos</a>
+                <a href="#">Valoraciones</a>
+                <a href="#">Soporte Técnico</a>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2025 Define Records. Todos los derechos reservados. | Sistema de gestión desarrollado con ❤️ para los amantes de la música analógica.</p>
+        </div>
+    </footer>
+
+    <script>
+        const invoices = [
+            { cliente: "Saray Cañarte", total: 75.00, fecha: "2024-06-01" },
+            { cliente: "Doménica Villagómez", total: 35.00, fecha: "2024-06-05" },
+            { cliente: "Mónica Armas", total: 50.00, fecha: "2024-06-10" },
+            { cliente: "Saray Cañarte", total: 80.00, fecha: "2024-06-15" },
+            { cliente: "Doménica Villagómez", total: 60.00, fecha: "2024-06-20" }
+        ];
+
+        // Agrupamos por cliente
+        const ventasPorCliente = {};
+        invoices.forEach(inv => {
+            ventasPorCliente[inv.cliente] = (ventasPorCliente[inv.cliente] || 0) + inv.total;
+        });
+
+        // Pie Chart
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(ventasPorCliente),
+                datasets: [{
+                    label: 'Total vendido',
+                    data: Object.values(ventasPorCliente),
+                    backgroundColor: ['#F87154', '#90c695', '#a8c8ff']
+                }]
+            }
+        });
+
+        // Agrupamos por fecha
+        const ventasPorFecha = {};
+        invoices.forEach(inv => {
+            ventasPorFecha[inv.fecha] = (ventasPorFecha[inv.fecha] || 0) + inv.total;
+        });
+
+        const fechas = Object.keys(ventasPorFecha).sort();
+        const totales = fechas.map(f => ventasPorFecha[f]);
+
+        // Line Chart
+        const lineCtx = document.getElementById('lineChart').getContext('2d');
+        new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: fechas,
+                datasets: [{
+                    label: 'Ventas ($)',
+                    data: totales,
+                    fill: false,
+                    borderColor: '#F87154',
+                    tension: 0.3
+                }]
+            }
+        });
+		
+		// Funciones para el modal de cuenta
+		function openAccountModal() {
+			document.getElementById('accountModal').classList.add('active');
+			document.body.style.overflow = 'hidden';
+		}
+
+		function closeAccountModal() {
+			document.getElementById('accountModal').classList.remove('active');
+			document.body.style.overflow = 'auto';
+		}
+
+		// Cerrar modal al hacer click fuera de él
+		document.getElementById('accountModal').addEventListener('click', function(event) {
+			if (event.target === this) {
+				closeAccountModal();
+			}
+		});
+
+		// Cerrar modal con tecla Escape
+		document.addEventListener('keydown', function(event) {
+			if (event.key === 'Escape' && document.getElementById('accountModal').classList.contains('active')) {
+				closeAccountModal();
+			}
+		});
+		function logoutUser() {
+            // Confirmar cierre de sesión
+            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                // Mostrar mensaje de confirmación
+                alert('Sesión cerrada exitosamente. ¡Hasta pronto!');
+                
+                // Cerrar el modal
+                closeAccountModal();
+                
+                // Opcional: Redirigir a página de login o recargar
+                window.location.href = 'index.html';
+                // O simplemente recargar la página actual
+                
+            }
+        }
+
+        // Cerrar modal al hacer click fuera de él
+        document.getElementById('accountModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeAccountModal();
+            }
+        });
+
+        // Cerrar modal con tecla Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && document.getElementById('accountModal').classList.contains('active')) {
+                closeAccountModal();
+            }
+        });
+    </script>
+</body>
+</html>
