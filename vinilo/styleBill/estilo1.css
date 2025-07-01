@@ -75,7 +75,7 @@ body {
 
 /* Main Container */
 .main-container {
-	max-width: 1000px;
+	max-width: 1200px;
 	margin: 30px auto;
 	padding: 0 20px;
 }
@@ -92,10 +92,9 @@ body {
 }
 
 .title-section h1 {
-	font-size: 24px;
+	font-size: 28px;
 	font-weight: 600;
 	letter-spacing: 1px;
-	text-transform: uppercase;
 }
 
 /* Control Bar */
