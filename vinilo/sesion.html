@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuentra tu vinilo - Más que solo música</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #F87154;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: #FFFFFF;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        .nav {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: #F87154;
+            text-decoration: none;
+            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(248, 113, 84, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .account-btn {
+            background: #bfdbff;
+            color: #f47154;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 800;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .account-btn:hover {
+            background: #a8caec;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(191, 219, 255, 0.4);
+        }
+
+        /* Main Content */
+        .main-content {
+            text-align: center;
+            padding: 60px 10px;
+            color: rgba(255,255,255,0.95);
+        }
+
+        .main-title {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 7px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #bfdbff;
+            margin-bottom: 20px;
+            font-style: italic;
+			font-weight:600;
+        }
+
+        .description {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            color: #CDE7B1;
+			font-weight:550;
+        }
+
+        .vinyl-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .vinyl-record {
+            width: 650px;
+            height: 650px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: rotate 10s linear infinite;
+			overflow: hidden;
+        }
+
+        .vinyl-record::before {
+            content: '';
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;        
+            border-radius: 50%;
+        }
+
+        .vinyl-record::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+
+        .vinyl-record img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+		.footer {
+            background: #464646;
+            color: white;
+            padding: 40px 20px;
+            margin-top: 50px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            text-align: left;
+        }
+
+        .footer-section h3 {
+            color: #F87154;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .footer-section p,
+        .footer-section a {
+            color: #CDE7B1;
+            text-decoration: none;
+            line-height: 1.3;
+            margin-bottom: 8px;
+            display: block;
+			font-size: 0.8rem;
+        }
+
+        .footer-section a:hover {
+            color: #F87154;
+            text-decoration: underline;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+			font-size: 0.8rem;
+			font-weight: bold;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            color: #CDE7B1;
+        }
+
+        /* Account Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .account-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideIn 0.5s ease;
+            position: relative;
+        }
+    .logout-btn {
+            width: 100%;
+            background: #F87154;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .logout-btn:hover {
+            background: #e55d3f;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(248, 113, 84, 0.3);
+        }
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(248, 113, 84, 0.1);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            color: #F87154;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(248, 113, 84, 0.2);
+            transform: scale(1.1);
+        }
+
+        .profile-picture {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            object-fit: cover;
+            box-shadow: 0 8px 25px rgba(248, 113, 84, 0.3);
+        }
+
+        .account-title {
+            color: #F87154;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .account-info {
+            text-align: left;
+            background: #bfdbff;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(248, 113, 84, 0.1);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #F87154;
+        }
+
+        .info-value {
+            color: #464646;
+            font-weight: 550;
+        }
+
+        .status-badge {
+            background: #CDE7B1;
+            color: #2c5530;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2.5rem;
+            }
+
+            .account-container {
+                max-width: 350px;
+                padding: 30px 20px;
+            }
+
+            .nav {
+                gap: 15px;
+            }
+
+            .header {
+                padding: 10px 20px;
+            }
+
+            .vinyl-record {
+                width: 400px;
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <img src="img/logo.png" alt="Logo" id="logo-img">
+            <span style="font-weight: bold; color: #F87154;">Define Records</span>
+        </div>
+        <nav class="nav">
+            <a href="sesion.html" class="nav-link">Inicio</a>
+            <a href="inventario.html" class="nav-link">Inventario</a>
+            <a href="#" class="nav-link">Facturas</a>
+            <a href="#" class="nav-link">Ayuda</a>
+            <button class="account-btn" onclick="openAccountModal()">Mi Cuenta</button>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <h1 class="main-title">Encuentra tu vinilo</h1>
+        <p class="subtitle">Más que solo música</p>
+        <p class="description">Sistema web de facturación y manejo de inventario de discos de vinilo.</p>
+        
+        <div class="vinyl-container">
+            <div class="vinyl-record">
+                <img src="img/vinyl.webp" alt="Disco de vinilo" id="vinyl-img">
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Define Records</h3>
+                <p>Tu tienda especializada en vinilos con más de 20 años de experiencia. Encuentra desde clásicos atemporales hasta las últimas novedades del mundo musical.</p>
+              </div>
+            
+            <div class="footer-section">
+                <h3>Contacto</h3>
+                <p>📍 Calle de la Música 123, Centro Histórico</p>
+                <p>📞 +593 98 765 4321</p>
+                <p>✉️ info@definerecords.com</p>
+                <p>🕒 Lun - Sáb: 10:00 - 20:00</p>
+                <p>🕒 Dom: 12:00 - 18:00</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Categorías</h3>
+                <a href="#">Rock & Pop</a>
+                <a href="#">Jazz & Blues</a>
+                <a href="#">Electrónica</a>
+                <a href="#">Hip Hop & R&B</a>
+                <a href="#">Música Latina</a>
+                <a href="#">Clásica</a>
+                <a href="#">Ediciones Especiales</a>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Servicios</h3>
+                <a href="#">Gestión de Inventario</a>
+                <a href="#">Facturación Digital</a>
+                <a href="#">Búsqueda Avanzada</a>
+                <a href="#">Reservas Online</a>
+                <a href="#">Intercambio de Vinilos</a>
+                <a href="#">Valoraciones</a>
+                <a href="#">Soporte Técnico</a>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2025 Define Records. Todos los derechos reservados. | Sistema de gestión desarrollado con ❤️ para los amantes de la música analógica.</p>
+        </div>
+    </footer>
+
+    <!-- Account Modal -->
+    <div class="modal-overlay" id="accountModal">
+        <div class="account-container">
+            <button class="close-btn" onclick="closeAccountModal()">&times;</button>
+            
+            <img src="img/fpf.png" alt="Foto de perfil" class="profile-picture">
+            
+            <h2 class="account-title">Mi Cuenta</h2>
+            
+            <div class="account-info">
+                <div class="info-item">
+                    <span class="info-label">Usuario:</span>
+                    <span class="info-value">admin</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Nombre:</span>
+                    <span class="info-value">Saray Canarte</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Rol:</span>
+                    <span class="info-value">Administrador</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value">saray@definerecords.com</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Estado:</span>
+                    <span class="status-badge">Activo</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Último acceso:</span>
+                    <span class="info-value">Hoy, 14:30</span>
+                </div>
+            </div>
+			<button class="logout-btn" onclick="logoutUser()">
+                Cerrar Sesión
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Funciones para el modal de cuenta
+        function openAccountModal() {
+            document.getElementById('accountModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAccountModal() {
+            document.getElementById('accountModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Cerrar modal al hacer click fuera de él
+        document.getElementById('accountModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeAccountModal();
+            }
+        });
+
+        // Cerrar modal con tecla Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && document.getElementById('accountModal').classList.contains('active')) {
+                closeAccountModal();
+            }
+        });
+
+        // Animación del disco de vinilo al hacer hover
+        document.querySelector('.vinyl-record').addEventListener('mouseenter', function() {
+            this.style.animationDuration = '2s';
+        });
+
+        document.querySelector('.vinyl-record').addEventListener('mouseleave', function() {
+            this.style.animationDuration = '10s';
+        });
+
+        // Efectos adicionales para los enlaces de navegación
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                // Solo prevenir el comportamiento por defecto si no es el enlace de inventario
+                if (this.getAttribute('href') === '#') {
+                    e.preventDefault();
+                    
+                    // Efecto visual de click
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 150);
+                    
+                    console.log('Navegando a:', this.textContent);
+                }
+            });
+        });
+			function logoutUser() {
+            // Confirmar cierre de sesión
+            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                // Mostrar mensaje de confirmación
+                alert('Sesión cerrada exitosamente. ¡Hasta pronto!');
+                
+                // Cerrar el modal
+                closeAccountModal();
+                
+                // Opcional: Redirigir a página de login o recargar
+                window.location.href = 'index.html';
+                // O simplemente recargar la página actual
+                
+            }
+        }
+
+        // Cerrar modal al hacer click fuera de él
+        document.getElementById('accountModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeAccountModal();
+            }
+        });
+
+        // Cerrar modal con tecla Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && document.getElementById('accountModal').classList.contains('active')) {
+                closeAccountModal();
+            }
+        });
+    </script>
+</body>
+</html>

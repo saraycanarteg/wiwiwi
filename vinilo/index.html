@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuentra tu vinilo - Más que solo música</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #F87154;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: #FFFFFF;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        .nav {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: #F87154;
+            text-decoration: none;
+            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(248, 113, 84, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .login-btn {
+            background: #bfdbff;
+            color: #f47154;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 800;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .login-btn:hover {
+            background: #a8caec;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(191, 219, 255, 0.4);
+        }
+
+        /* Main Content */
+        .main-content {
+            text-align: center;
+            padding: 60px 10px;
+            color: rgba(255,255,255,0.95);
+        }
+
+        .main-title {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 7px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #bfdbff;
+            margin-bottom: 20px;
+            font-style: italic;
+			font-weight:600;
+        }
+
+        .description {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            color: #CDE7B1;
+			font-weight:550;
+        }
+
+        .vinyl-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .vinyl-record {
+            width: 650px;
+            height: 650px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: rotate 10s linear infinite;
+			overflow: hidden;
+        }
+
+        .vinyl-record::before {
+            content: '';
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;        
+            border-radius: 50%;
+        }
+
+        .vinyl-record::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+
+        .vinyl-record img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+		.footer {
+            background: #464646;
+            color: white;
+            padding: 40px 20px;
+            margin-top: 50px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            text-align: left;
+        }
+
+        .footer-section h3 {
+            color: #F87154;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .footer-section p,
+        .footer-section a {
+            color: #CDE7B1;
+            text-decoration: none;
+            line-height: 1.3;
+            margin-bottom: 8px;
+            display: block;
+			font-size: 0.8rem;
+        }
+
+        .footer-section a:hover {
+            color: #F87154;
+            text-decoration: underline;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .social-link {
+            color: #F87154;
+            font-size: 1.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .social-link:hover {
+            color: #F87154;
+            transform: translateY(-2px);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+			font-size: 0.8rem;
+			font-weight: bold;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            color: #CDE7B1;
+        }
+
+        /* Login Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            padding: 0;
+            width: 90%;
+            max-width: 800px;
+            display: flex;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideIn 0.5s ease;
+        }
+
+        .login-form {
+            flex: 1;
+            padding: 50px 40px;
+            background: #F5F1EE;
+        }
+
+        .login-image {
+            flex: 1;
+            background: url('ruta-a-tu-imagen-login.jpg') center/cover;
+            min-height: 400px;
+            position: relative;
+        }
+
+        .login-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .welcome-title {
+            color: #F87154;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            color: #F87154;
+            margin-bottom: 8px;
+            font-weight: 670;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            outline: none;
+            background: rgba(255,255,255,0.9);
+        }
+
+        .form-input:focus {
+            border-color: #F87154;
+            box-shadow: 0 0 10px rgba(248, 113, 84, 0.2);
+        }
+
+        .forgot-password {
+            color: #859DBC;
+            text-decoration: none;
+            font-size: 14px;
+            display: block;
+            text-align: center;
+            margin: 15px 0;
+            transition: color 0.3s ease;
+            font-weight: 600;
+        }
+
+        .forgot-password:hover {
+            color: #a8caec;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: #CDE7B1;
+            color: #F87154;
+            padding: 15px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(194, 231, 177, 0.4);
+            background: linear-gradient(135deg, #B8E3A7, #9ECFA3);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(245, 241, 238, 0.95);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            color: #F87154;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #F5F1EE;
+            transform: scale(1.1);
+        }
+
+        /* Success Message */
+        .success-message {
+            display: none;
+            background: #C2E7B1;
+            color: #2c3e50;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            animation: slideDown 0.5s ease;
+            font-weight: 500;
+        }
+
+        /* Error Message */
+        .error-message {
+            display: none;
+            background: #F87154;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            animation: shake 0.5s ease;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes shake {
+            0%, 20%, 40%, 60%, 80% { transform: translateX(-10px); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(10px); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2.5rem;
+            }
+
+            .login-container {
+                flex-direction: column;
+                max-width: 400px;
+            }
+
+            .login-image {
+                min-height: 200px;
+            }
+
+            .nav {
+                gap: 15px;
+            }
+
+            .header {
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <img src="img/logo.png" alt="Logo" id="logo-img">
+            <span style="font-weight: bold; color: #F87154;">Define Records</span>
+        </div>
+        <nav class="nav">
+            <button class="login-btn" onclick="openLoginModal()">Iniciar Sesión</button>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <h1 class="main-title">Encuentra tu vinilo</h1>
+        <p class="subtitle">Más que solo música</p>
+        <p class="description">Sistema web de facturación y manejo de inventario de discos de vinilo.</p>
+        
+        <div class="vinyl-container">
+            <div class="vinyl-record">
+                <img src="img/vinyl.webp" alt="Disco de vinilo" id="vinyl-img">
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Define Records</h3>
+                <p>Tu tienda especializada en vinilos con más de 20 años de experiencia. Encuentra desde clásicos atemporales hasta las últimas novedades del mundo musical.</p>
+              </div>
+            
+            <div class="footer-section">
+                <h3>Contacto</h3>
+                <p>📍 Calle de la Música 123, Centro Histórico</p>
+                <p>📞 +593 98 765 4321</p>
+                <p>✉️ info@definerecords.com</p>
+                <p>🕒 Lun - Sáb: 10:00 - 20:00</p>
+                <p>🕒 Dom: 12:00 - 18:00</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Categorías</h3>
+                <a href="#">Rock & Pop</a>
+                <a href="#">Jazz & Blues</a>
+                <a href="#">Electrónica</a>
+                <a href="#">Hip Hop & R&B</a>
+                <a href="#">Música Latina</a>
+                <a href="#">Clásica</a>
+                <a href="#">Ediciones Especiales</a>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Servicios</h3>
+                <a href="#">Gestión de Inventario</a>
+                <a href="#">Facturación Digital</a>
+                <a href="#">Búsqueda Avanzada</a>
+                <a href="#">Reservas Online</a>
+                <a href="#">Intercambio de Vinilos</a>
+                <a href="#">Valoraciones</a>
+                <a href="#">Soporte Técnico</a>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2025 Define Records. Todos los derechos reservados. | Sistema de gestión desarrollado con ❤️ para los amantes de la música analógica.</p>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="login-container">
+            <button class="close-btn" onclick="closeLoginModal()">&times;</button>
+            <div class="login-form">
+                <h2 class="welcome-title">Bienvenido de nuevo</h2>
+                
+                <div class="success-message" id="successMessage">
+                    ¡Inicio de sesión exitoso! Bienvenido al sistema.
+                </div>
+                
+                <div class="error-message" id="errorMessage">
+                    Usuario o contraseña incorrectos. Inténtalo de nuevo.
+                </div>
+                
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label class="form-label">Usuario</label>
+                        <input type="text" class="form-input" id="username" placeholder="Introduce tu nombre" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" class="form-input" id="password" placeholder="Introduce tu contraseña" required>
+                    </div>
+                    
+                    <a href="#" class="forgot-password" onclick="showForgotPassword()">¿Olvidaste tu contraseña?</a>
+                    
+                    <button type="submit" class="submit-btn">Iniciar Sesión</button>
+                </form>
+            </div>
+            
+            <div class="login-image">
+                <img src="https://i.pinimg.com/originals/1c/12/a2/1c12a2ce8c63b49f4fe565c96a6f0500.gif" alt="Login Image" id="login-img">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Funciones para el modal
+        function openLoginModal() {
+            document.getElementById('loginModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+            resetForm();
+        }
+
+        function resetForm() {
+            document.getElementById('loginForm').reset();
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // Función para manejar el login
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // Ocultar mensajes anteriores
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+            
+            // Validación (usuario: admin, contraseña: admin)
+            if (username === 'admin' && password === 'admin') {
+                successMessage.style.display = 'block';
+                
+                // Simular redirection después de 2 segundos
+                setTimeout(() => {
+                    alert('¡Bienvenido al sistema de inventario de vinilos!');
+                    closeLoginModal();
+                    window.location.href = 'sesion.html';
+                }, 2000);
+                
+            } else {
+                errorMessage.style.display = 'block';
+                
+                // Limpiar campos después de 3 segundos
+                setTimeout(() => {
+                    document.getElementById('password').value = '';
+                    errorMessage.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Función para mostrar credenciales olvidadas
+        function showForgotPassword() {
+            alert('Credenciales del sistema:\n\nUsuario: admin\nContraseña: admin\n\nContacta al administrador si necesitas cambiar estas credenciales.');
+        }
+
+        // Cerrar modal al hacer click fuera de él
+        document.getElementById('loginModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeLoginModal();
+            }
+        });
+
+        // Cerrar modal con tecla Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && document.getElementById('loginModal').classList.contains('active')) {
+                closeLoginModal();
+            }
+        });
+
+        // Animación del disco de vinilo al hacer hover
+        document.querySelector('.vinyl-record').addEventListener('mouseenter', function() {
+            this.style.animationDuration = '2s';
+        });
+
+        document.querySelector('.vinyl-record').addEventListener('mouseleave', function() {
+            this.style.animationDuration = '10s';
+        });
+
+        // Efectos adicionales para los enlaces de navegación
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Efecto visual de click
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+                
+                // Aquí podrías agregar la navegación real
+                console.log('Navegando a:', this.textContent);
+            });
+        });
+
+    </script>
+</body>
+</html>
