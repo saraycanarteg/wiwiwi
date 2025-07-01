@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Factura - Sistema de Facturación</title>
+	<link rel="stylesheet" href="styleBill/estilo2.css">
+</head>
+<body>
+    <!-- Header Navigation -->
+    <nav class="header-nav">
+        <div class="logo-container">
+            <div class="logo-placeholder">🏠</div>
+        </div>
+        <ul class="nav-menu">
+            <li><a href="sesion.html" onclick="goToHome()">Inicio</a></li>
+            <li><a href="inventario.html">Inventario</a></li>
+            <li><a href="factura.html" class="active">Factura</a></li>
+            <li><a href="#">Ayuda</a></li>
+        </ul>
+        <button class="login-btn">Mi Cuenta</button>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Title Section -->
+        <div class="title-section">
+            <h1>Nueva Factura</h1>
+        </div>
+
+        <!-- Back Button -->
+        <button class="back-button" onclick="goToHome()">
+            <span>←</span>
+            Volver al Listado
+        </button>
+
+        <!-- Success Message -->
+        <div class="success-message" id="successMessage">
+            <span>✅</span>
+            <span>Factura creada exitosamente</span>
+        </div>
+
+        <!-- Form Container -->
+        <div class="form-container">
+            <form id="invoiceForm">
+                <!-- Invoice Data -->
+                <div class="form-section">
+                    <h3>
+                        <span>📄</span>
+                        Datos de la Factura
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="invoice-number">Número de Factura *</label>
+                            <input type="text" id="invoice-number" name="invoice-number" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="invoice-date">Fecha de Emisión *</label>
+                            <input type="date" id="invoice-date" name="invoice-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="due-date">Fecha de Vencimiento</label>
+                            <input type="date" id="due-date" name="due-date">
+                        </div>
+                        <div class="form-group">
+                            <label for="payment-method">Método de Pago</label>
+                            <select id="payment-method" name="payment-method">
+                                <option value="efectivo">Efectivo</option>
+                                <option value="tarjeta">Tarjeta</option>
+                                <option value="transferencia">Transferencia</option>
+                                <option value="cheque">Cheque</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Client Information -->
+                <div class="form-section">
+                    <h3>
+                        <span>👤</span>
+                        Información del Cliente
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="client-name">Nombre/Razón Social *</label>
+                            <input type="text" id="client-name" name="client-name" placeholder="Nombre del cliente" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="client-document">RUC/Cédula</label>
+                            <input type="text" id="client-document" name="client-document" placeholder="Documento de identificación">
+                        </div>
+                        <div class="form-group">
+                            <label for="client-email">Email</label>
+                            <input type="email" id="client-email" name="client-email" placeholder="cliente@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="client-phone">Teléfono</label>
+                            <input type="tel" id="client-phone" name="client-phone" placeholder="Teléfono del cliente">
+                        </div>
+                        <div class="form-group">
+                            <label for="client-address">Dirección</label>
+                            <input type="text" id="client-address" name="client-address" placeholder="Dirección del cliente">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items Section -->
+                <div class="form-section">
+                    <h3>
+                        <span>📦</span>
+                        Detalles de Items
+                    </h3>
+                    <div class="items-section">
+                        <div class="items-header">
+                            <h4>Lista de Productos/Servicios</h4>
+                            <button type="button" class="add-item-btn" onclick="addItem()">
+                                <span>+</span>
+                                Agregar Item
+                            </button>
+                        </div>
+                        <div id="items-container">
+                            <div class="item-row">
+                                <div class="form-group">
+                                    <label>Producto/Servicio *</label>
+                                    <select name="item-product" onchange="updateItemDetails(this)" required>
+                                        <option value="">Seleccionar producto...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Cantidad *</label>
+                                    <input type="number" name="item-quantity" min="1" value="1" onchange="calculateTotal()" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Precio Unitario *</label>
+                                    <input type="number" name="item-price" step="0.01" min="0" onchange="calculateTotal()" placeholder="0.00" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label>Total</label>
+                                    <input type="number" name="item-total" step="0.01" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <button type="button" class="remove-item-btn" onclick="removeItem(this)" title="Eliminar item">
+                                        <span>🗑</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+					
+                    <!-- Totals Section -->
+                    <div class="totals-section">
+                        <div class="totals-grid">
+                            <div class="total-item">
+                                <label>Subtotal</label>
+                                <div class="total-amount" id="subtotal">$0.00</div>
+                            </div>
+                            <div class="total-item">
+                                <label>IVA (12%)</label>
+                                <div class="total-amount" id="tax">$0.00</div>
+                            </div>
+                            <div class="total-item">
+                                <label>Descuento</label>
+                                <input type="number" class="discount-input" id="discount" step="0.01" min="0" value="0" onchange="calculateTotal()" placeholder="0.00">
+                            </div>
+                            <div class="total-item">
+                                <label>TOTAL A PAGAR</label>
+                                <div class="final-total" id="final-total">$0.00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 25px;">
+                        <label for="notes">Observaciones</label>
+                        <textarea id="notes" name="notes" rows="4" placeholder="Términos y condiciones, observaciones adicionales, forma de pago..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <span id="save-text">💾 Guardar Factura</span>
+                        <div class="loading" id="loading">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="previewInvoice()">
+                        👁 Previsualizar
+                    </button>
+                    <button type="button" class="btn btn-outline" onclick="printInvoice()">
+                        🖨 Imprimir
+                    </button>
+                    <button type="reset" class="btn btn-outline" onclick="resetForm()">
+                        🔄 Limpiar Formulario
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Vinilo Store - Sistema de Facturación</p>
+    </footer>
+
+    <script>
+        let invoiceCounter = 1;
+        let invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+
+        // Initialize form
+        function initializeForm() {
+            // Set invoice number
+            const nextNumber = String(invoices.length + 1).padStart(5, '0');
+            document.getElementById('invoice-number').value = 'FAC-' + nextNumber;
+            
+            // Set current date
+            document.getElementById('invoice-date').value = new Date().toISOString().split('T')[0];
+            
+            // Set due date (30 days from now)
+            const dueDate = new Date();
+            dueDate.setDate(dueDate.getDate() + 30);
+            document.getElementById('due-date').value = dueDate.toISOString().split('T')[0];
+            
+            calculateTotal();
+        }
+
+        // Item management
+        function addItem() {
+            const container = document.getElementById('items-container');
+            const newItem = document.createElement('div');
+            newItem.className = 'item-row';
+            newItem.innerHTML = `
+                <div class="form-group">
+                    <label>Descripción *</label>
+                    <input type="text" name="item-description" placeholder="Descripción del producto/servicio" required>
+                </div>
+                <div class="form-group">
+                    <label>Cantidad *</label>
+                    <input type="number" name="item-quantity" min="1" value="1" onchange="calculateTotal()" required>
+                </div>
+                <div class="form-group">
+                    <label>Precio Unitario *</label>
+                    <input type="number" name="item-price" step="0.01" min="0" onchange="calculateTotal()" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label>Total</label>
+                    <input type="number" name="item-total" step="0.01" readonly>
+                </div>
+                <div class="form-group">
+                    <button type="button" class="remove-item-btn" onclick="removeItem(this)" title="Eliminar item">
+                        <span>🗑</span>
+                    </button>
+                </div>
+            `;
+            container.appendChild(newItem);
+            
+            // Focus on the first input of the new item
+            newItem.querySelector('input[name="item-description"]').focus();
+        }
+
+        function removeItem(button) {
+            const itemRow = button.closest('.item-row');
+            const container = document.getElementById('items-container');
+            if (container.children.length > 1) {
+                itemRow.remove();
+                calculateTotal();
+            } else {
+                alert('Debe mantener al menos un item en la factura.');
+            }
+        }
+
+        function calculateTotal() {
+            const items = document.querySelectorAll('.item-row');
+            let subtotal = 0;
+
+            items.forEach(item => {
+                const quantity = parseFloat(item.querySelector('[name="item-quantity"]').value) || 0;
+                const price = parseFloat(item.querySelector('[name="item-price"]').value) || 0;
+                const total = quantity * price;
+                
+                item.querySelector('[name="item-total"]').value = total.toFixed(2);
+                subtotal += total;
+            });
+
+            const discount = parseFloat(document.getElementById('discount').value) || 0;
+            const subtotalWithDiscount = subtotal - discount;
+            const tax = subtotalWithDiscount * 0.12; // 12% IVA
+            const finalTotal = subtotalWithDiscount + tax;
+
+            document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
+            document.getElementById('tax').textContent = '$' + tax.toFixed(2);
+            document.getElementById('final-total').textContent = '$' + Math.max(0, finalTotal).toFixed(2);
+        }
+
+        function previewInvoice() {
+            const formData = new FormData(document.getElementById('invoiceForm'));
+            const invoiceData = {
+                number: formData.get('invoice-number'),
+                date: formData.get('invoice-date'),
+                company: formData.get('company-name'),
+                client: formData.get('client-name'),
+                total: document.getElementById('final-total').textContent
+            };
+
+            alert(`Vista Previa de Factura:
+            
+Número: ${invoiceData.number}
+Fecha: ${invoiceData.date}
+Empresa: ${invoiceData.company}
+Cliente: ${invoiceData.client}
+Total: ${invoiceData.total}
+
+En una implementación completa, aquí se abriría una ventana con la vista previa completa de la factura.`);
+        }
+
+        function printInvoice() {
+            // En una implementación real, aquí se generaría un PDF o se abriría la ventana de impresión
+            alert('Función de impresión - En desarrollo. Aquí se generaría un PDF de la factura.');
+        }
+
+        function resetForm() {
+            if (confirm('¿Está seguro de que desea limpiar todo el formulario? Se perderán todos los datos ingresados.')) {
+                document.getElementById('invoiceForm').reset();
+                initializeForm();
+                
+                // Remove extra items, keep only one
+                const container = document.getElementById('items-container');
+                while (container.children.length > 1) {
+                    container.removeChild(container.lastChild);
+                }
+                
+                calculateTotal();
+            }
+        }
+
+        function goToHome() {
+            // En una implementación real, aquí redirigiría a la página principal
+            if (confirm('¿Desea volver al listado de facturas? Los cambios no guardados se perderán.')) {
+                alert('Redirigiendo al listado de facturas...');
+                // window.
