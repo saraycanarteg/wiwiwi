@@ -66,52 +66,10 @@
 			</div>
 		</div>
 
-
-        <!-- Invoice List -->
-        <div class="invoice-list" id="invoiceList">
-            <!-- Sample invoices -->
-            <div class="invoice-item">
-                <div class="invoice-header">
-                    <div class="invoice-number">Factura No. 00001</div>
-                    <div class="invoice-total">Total: $ 75.00</div>
-                </div>
-                <div class="invoice-details">
-                    <div class="invoice-detail">Saray Cañarte</div>
-                    <div class="invoice-detail">Detalle: Vinilo 1</div>
-                </div>
-                <div class="invoice-actions">
-                    <button class="view-complete-btn" onclick="openInvoiceDetailModal(1)">Ver Completo</button>
-                </div>
-            </div>
-
-            <div class="invoice-item">
-                <div class="invoice-header">
-                    <div class="invoice-number">Factura No. 00002</div>
-                    <div class="invoice-total">Total: $ 35.00</div>
-                </div>
-                <div class="invoice-details">
-                    <div class="invoice-detail">Doménica Villagómez</div>
-                    <div class="invoice-detail">Detalle: Vinilo 2</div>
-                </div>
-                <div class="invoice-actions">
-                    <button class="view-complete-btn" onclick="openInvoiceDetailModal(1)">Ver Completo</button>
-                </div>
-            </div>
-
-            <div class="invoice-item">
-                <div class="invoice-header">
-                    <div class="invoice-number">Factura No. 00003</div>
-                    <div class="invoice-total">Total: $ 50.00</div>
-                </div>
-                <div class="invoice-details">
-                    <div class="invoice-detail">Mónica Armas</div>
-                    <div class="invoice-detail">Detalle de Venta</div>
-                </div>
-                <div class="invoice-actions">
-                    <button class="view-complete-btn" onclick="openInvoiceDetailModal(1)">Ver Completo</button>
-                </div>
-            </div>
-        </div>
+		<!-- Invoice List -->
+		<div class="invoice-list" id="invoiceList">
+			<!-- Las facturas se cargarán dinámicamente aquí -->
+		</div>
 
         <!-- Load More Section -->
         <div class="load-more">
@@ -243,19 +201,6 @@
                 closeAccountModal();
             }
         });
-        let invoices = [];
-        let invoiceCounter = 4;
-
-        // Modal functions
-        function openNewInvoiceModal() {
-            document.getElementById('newInvoiceModal').classList.add('active');
-            document.getElementById('invoice-number').value = 'FAC-' + String(invoiceCounter).padStart(5, '0');
-            document.getElementById('invoice-date').value = new Date().toISOString().split('T')[0];
-        }
-
-        function closeNewInvoiceModal() {
-            document.getElementById('newInvoiceModal').classList.remove('active');
-        }
 		
 		function logoutUser() {
             // Confirmar cierre de sesión
@@ -286,129 +231,341 @@
                 closeAccountModal();
             }
         });
-		
-		function openInvoiceDetailModal(invoiceId) {
-			const modal = document.getElementById("invoiceDetailModal");
-			const content = document.getElementById("invoiceDetailContent");
 
-			// Simulando datos, puedes conectar con tu base o arreglo
-			const detalles = {
-				1: {
-					cliente: "Saray Cañarte",
-					direccion: "Av. Amazonas y Eloy Alfaro",
-					telefono: "0991234567",
-					items: [
-						{ descripcion: "Vinilo 1", cantidad: 1, precio: 75.00 }
-					],
-				},
-				2: {
-					cliente: "Doménica Villagómez",
-					direccion: "Calle de la Música 123",
-					telefono: "0987654321",
-					items: [
-						{ descripcion: "Vinilo 2", cantidad: 1, precio: 35.00 }
-					],
-				},
-				3: {
-					cliente: "Mónica Armas",
-					direccion: "Cdla. Los Álamos",
-					telefono: "0973344556",
-					items: [
-						{ descripcion: "Vinilo 3", cantidad: 1, precio: 50.00 }
-					],
-				}
-			};
+// Constantes para localStorage
+const INVOICES_KEY = 'definerecords_invoices';
 
-			const factura = detalles[invoiceId];
-			if (!factura) return;
+// Variables globales
+let invoices = [];
+let currentIndex = 0;
+const ITEMS_PER_PAGE = 5;
 
-			const itemsHTML = factura.items.map(item => `
-				<div class="item">
-					<strong>${item.descripcion}</strong><br>
-					Cantidad: ${item.cantidad}<br>
-					Precio Unitario: $${item.precio.toFixed(2)}<br>
-					Subtotal: $${(item.cantidad * item.precio).toFixed(2)}
-				</div>
-			`).join("");
+// Cargar facturas desde localStorage
+function loadInvoices() {
+    const savedInvoices = localStorage.getItem(INVOICES_KEY);
+    if (savedInvoices) {
+        invoices = JSON.parse(savedInvoices);
+    } else {
+        // Facturas base por defecto
+        invoices = [
+            {
+                id: 1,
+                number: 'FAC-00001',
+                date: '2025-01-15',
+                dueDate: '2025-02-14',
+                paymentMethod: 'efectivo',
+                client: {
+                    name: 'Saray Cañarte',
+                    document: '1234567890',
+                    email: 'saray@email.com',
+                    phone: '0987654321',
+                    address: 'Av. Principal 123'
+                },
+                items: [
+                    {
+                        productId: '1',
+                        productName: 'Stray Kids - CIRCUS',
+                        artist: 'Stray Kids',
+                        quantity: 1,
+                        price: 75.00,
+                        total: 75.00
+                    }
+                ],
+                subtotal: 75.00,
+                tax: 9.00,
+                discount: 0,
+                total: 84.00,
+                notes: 'Factura de ejemplo',
+                createdAt: '2025-01-15T10:30:00.000Z'
+            },
+            {
+                id: 2,
+                number: 'FAC-00002',
+                date: '2025-01-16',
+                dueDate: '2025-02-15',
+                paymentMethod: 'tarjeta',
+                client: {
+                    name: 'Doménica Villagómez',
+                    document: '0987654321',
+                    email: 'domenica@email.com',
+                    phone: '0912345678',
+                    address: 'Calle Secundaria 456'
+                },
+                items: [
+                    {
+                        productId: '2',
+                        productName: 'Thriller',
+                        artist: 'Michael Jackson',
+                        quantity: 1,
+                        price: 38.99,
+                        total: 38.99
+                    }
+                ],
+                subtotal: 38.99,
+                tax: 4.68,
+                discount: 0,
+                total: 43.67,
+                notes: 'Pago con tarjeta',
+                createdAt: '2025-01-16T14:15:00.000Z'
+            }
+        ];
+        saveInvoicesToStorage();
+    }
+}
 
-			const total = factura.items.reduce((sum, item) => sum + item.cantidad * item.precio, 0);
+// Guardar facturas en localStorage
+function saveInvoicesToStorage() {
+    localStorage.setItem(INVOICES_KEY, JSON.stringify(invoices));
+}
 
-			content.innerHTML = `
-				<p><strong>Cliente:</strong> ${factura.cliente}</p>
-				<p><strong>Dirección:</strong> ${factura.direccion}</p>
-				<p><strong>Teléfono:</strong> ${factura.telefono}</p>
+// Renderizar facturas en la lista
+function renderInvoices(invoicesToRender = null) {
+    const invoiceList = document.getElementById("invoiceList");
+    const invoicesToShow = invoicesToRender || invoices.slice(0, currentIndex + ITEMS_PER_PAGE);
+    
+    if (!invoicesToRender) {
+        currentIndex = Math.min(currentIndex + ITEMS_PER_PAGE, invoices.length);
+    }
 
-				<h4>Productos/Servicios</h4>
-				${itemsHTML}
+    invoicesToShow.forEach(invoice => {
+        // Verificar si la factura ya está renderizada
+        if (document.querySelector(`[data-invoice-id="${invoice.id}"]`)) {
+            return;
+        }
 
-				<h4>Total</h4>
-				<p><strong>$${total.toFixed(2)}</strong></p>
-			`;
+        const invoiceDate = new Date(invoice.date).toLocaleDateString('es-ES');
+        const itemsPreview = invoice.items.map(item => `${item.productName} - ${item.artist}`).join(', ');
 
-			modal.classList.add("active");
-			document.body.style.overflow = 'hidden';
-		}
+        const invoiceElement = document.createElement("div");
+        invoiceElement.classList.add("invoice-item");
+        invoiceElement.setAttribute("data-invoice-id", invoice.id);
+        invoiceElement.setAttribute("data-fecha", invoice.date);
+        invoiceElement.innerHTML = `
+            <div class="invoice-header">
+                <div class="invoice-number">${invoice.number}</div>
+                <div class="invoice-total">Total: $${invoice.total.toFixed(2)}</div>
+            </div>
+            <div class="invoice-details">
+                <div class="invoice-detail">${invoice.client.name}</div>
+                <div class="invoice-detail">Detalle: ${itemsPreview}</div>
+                <div class="invoice-detail">Fecha: ${invoiceDate}</div>
+            </div>
+            <div class="invoice-actions">
+                <button class="view-complete-btn" onclick="openInvoiceDetailModal(${invoice.id})">Ver Completo</button>
+            </div>
+        `;
 
-		function closeInvoiceDetailModal() {
-			document.getElementById("invoiceDetailModal").classList.remove("active");
-			document.body.style.overflow = 'auto';
-		}
-		
-		function toggleFilter() {
-			const filterSection = document.getElementById('filterSection');
-			filterSection.style.display = (filterSection.style.display === 'none') ? 'block' : 'none';
-		}
+        invoiceList.appendChild(invoiceElement);
+    });
 
-		function aplicarFiltros() {
-			const cliente = document.getElementById('clienteFilter').value.toLowerCase();
-			const desde = document.getElementById('fechaInicio').value;
-			const hasta = document.getElementById('fechaFin').value;
+    // Controlar visibilidad del botón "Mostrar Más"
+    const loadMoreBtn = document.querySelector('.load-more-btn');
+    if (loadMoreBtn) {
+        loadMoreBtn.style.display = currentIndex >= invoices.length ? 'none' : 'block';
+    }
+}
 
-			const facturas = document.querySelectorAll('.invoice-item');
-			facturas.forEach(factura => {
-				const detalleCliente = factura.querySelector('.invoice-detail')?.textContent.toLowerCase();
-				const fechaFactura = factura.getAttribute('data-fecha'); // Opcional si tienes fecha real
+// Abrir modal de detalle de factura
+function openInvoiceDetailModal(invoiceId) {
+    const modal = document.getElementById("invoiceDetailModal");
+    const content = document.getElementById("invoiceDetailContent");
 
-				let mostrar = true;
+    // Buscar la factura por ID
+    const factura = invoices.find(inv => inv.id === invoiceId);
 
-				if (cliente && !detalleCliente.includes(cliente)) {
-					mostrar = false;
-				}
+    if (!factura) {
+        alert('Factura no encontrada');
+        return;
+    }
 
-				// Si tuvieras fecha real: comparar contra "desde" y "hasta"
-				if (desde && fechaFactura && fechaFactura < desde) mostrar = false;
-				if (hasta && fechaFactura && fechaFactura > hasta) mostrar = false;
+    // Generar HTML para los items
+    const itemsHTML = factura.items.map(item => `
+        <div class="item" style="margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+            <strong>${item.productName}</strong> - ${item.artist}<br>
+            Cantidad: ${item.quantity}<br>
+            Precio Unitario: $${item.price.toFixed(2)}<br>
+            Subtotal: $${item.total.toFixed(2)}
+        </div>
+    `).join("");
 
-				factura.style.display = mostrar ? 'block' : 'none';
-			});
-		}
-		let currentIndex = 3;
-		function loadMoreInvoices() {
-			const totalFacturas = 5; // cámbialo según cuántas tengas
-			if (currentIndex >= totalFacturas) {
-				alert("No hay más facturas disponibles 📑");
-				return;
-			}
+    // Formatear fechas
+    const invoiceDate = new Date(factura.date).toLocaleDateString('es-ES');
+    const dueDate = new Date(factura.dueDate).toLocaleDateString('es-ES');
 
-			// Simulación: crea una factura adicional
-			const nuevaFactura = document.createElement("div");
-			nuevaFactura.classList.add("invoice-item");
-			nuevaFactura.innerHTML = `
-				<div class="invoice-header">
-					<div class="invoice-number">Factura No. 0000${currentIndex + 1}</div>
-					<div class="invoice-total">Total: $ 40.00</div>
-				</div>
-				<div class="invoice-details">
-					<div class="invoice-detail">Cliente ${currentIndex + 1}</div>
-					<div class="invoice-detail">Detalle: Vinilo especial</div>
-				</div>
-				<div class="invoice-actions">
-					<button class="view-complete-btn" onclick="openInvoiceDetailModal(${currentIndex + 1})">Ver Completo</button>
-				</div>
-			`;
-			document.getElementById("invoiceList").appendChild(nuevaFactura);
-			currentIndex++;
-		}
+    // Generar contenido del modal
+    content.innerHTML = `
+        <div class="invoice-detail-header" style="margin-bottom: 20px;">
+            <h3>${factura.number}</h3>
+            <p><strong>Fecha de Emisión:</strong> ${invoiceDate}</p>
+            <p><strong>Fecha de Vencimiento:</strong> ${dueDate}</p>
+            <p><strong>Método de Pago:</strong> ${factura.paymentMethod}</p>
+        </div>
+
+        <div class="client-info" style="margin-bottom: 20px;">
+            <h4>Información del Cliente</h4>
+            <p><strong>Cliente:</strong> ${factura.client.name}</p>
+            ${factura.client.document ? `<p><strong>Documento:</strong> ${factura.client.document}</p>` : ''}
+            ${factura.client.email ? `<p><strong>Email:</strong> ${factura.client.email}</p>` : ''}
+            ${factura.client.phone ? `<p><strong>Teléfono:</strong> ${factura.client.phone}</p>` : ''}
+            ${factura.client.address ? `<p><strong>Dirección:</strong> ${factura.client.address}</p>` : ''}
+        </div>
+
+        <div class="items-info" style="margin-bottom: 20px;">
+            <h4>Productos/Servicios</h4>
+            ${itemsHTML}
+        </div>
+
+        <div class="totals-info" style="margin-bottom: 20px;">
+            <h4>Totales</h4>
+            <p><strong>Subtotal:</strong> $${factura.subtotal.toFixed(2)}</p>
+            ${factura.discount > 0 ? `<p><strong>Descuento:</strong> $${factura.discount.toFixed(2)}</p>` : ''}
+            <p><strong>IVA (12%):</strong> $${factura.tax.toFixed(2)}</p>
+            <p><strong>TOTAL:</strong> $${factura.total.toFixed(2)}</p>
+        </div>
+
+        ${factura.notes ? `
+        <div class="notes-info">
+            <h4>Observaciones</h4>
+            <p>${factura.notes}</p>
+        </div>
+        ` : ''}
+    `;
+
+    modal.classList.add("active");
+    document.body.style.overflow = 'hidden';
+}
+
+// Cerrar modal de detalle
+function closeInvoiceDetailModal() {
+    document.getElementById("invoiceDetailModal").classList.remove("active");
+    document.body.style.overflow = 'auto';
+}
+
+// Cargar más facturas
+function loadMoreInvoices() {
+    if (currentIndex >= invoices.length) {
+        alert("No hay más facturas disponibles 📑");
+        return;
+    }
+
+    renderInvoices();
+}
+
+// Filtrar facturas
+function aplicarFiltros() {
+    const cliente = document.getElementById('clienteFilter').value.toLowerCase();
+    const desde = document.getElementById('fechaInicio').value;
+    const hasta = document.getElementById('fechaFin').value;
+
+    let facturasFiltradas = invoices;
+
+    // Filtrar por cliente
+    if (cliente) {
+        facturasFiltradas = facturasFiltradas.filter(factura => 
+            factura.client.name.toLowerCase().includes(cliente) ||
+            (factura.client.document && factura.client.document.includes(cliente))
+        );
+    }
+
+    // Filtrar por fecha
+    if (desde) {
+        facturasFiltradas = facturasFiltradas.filter(factura => factura.date >= desde);
+    }
+
+    if (hasta) {
+        facturasFiltradas = facturasFiltradas.filter(factura => factura.date <= hasta);
+    }
+
+    // Limpiar lista actual
+    const invoiceList = document.getElementById("invoiceList");
+    invoiceList.innerHTML = '';
+
+    // Renderizar facturas filtradas
+    if (facturasFiltradas.length === 0) {
+        invoiceList.innerHTML = '<p>No se encontraron facturas que coincidan con los filtros aplicados.</p>';
+        document.querySelector('.load-more-btn').style.display = 'none';
+    } else {
+        currentIndex = 0;
+        renderInvoices(facturasFiltradas);
+        document.querySelector('.load-more-btn').style.display = 'none';
+    }
+}
+
+// Limpiar filtros
+function limpiarFiltros() {
+    document.getElementById('clienteFilter').value = '';
+    document.getElementById('fechaInicio').value = '';
+    document.getElementById('fechaFin').value = '';
+    
+    // Recargar todas las facturas
+    const invoiceList = document.getElementById("invoiceList");
+    invoiceList.innerHTML = '';
+    currentIndex = 0;
+    renderInvoices();
+}
+
+// Alternar filtros
+function toggleFilter() {
+    const filterSection = document.getElementById('filterSection');
+    filterSection.style.display = (filterSection.style.display === 'none') ? 'block' : 'none';
+}
+
+// Inicializar la página de facturas
+function initializeInvoicesPage() {
+    loadInvoices();
+    currentIndex = 0;
+    
+    const invoiceList = document.getElementById("invoiceList");
+    invoiceList.innerHTML = '';
+
+    if (invoices.length > 0) {
+        renderInvoices();
+    } else {
+        invoiceList.innerHTML = '<p>No hay facturas disponibles. Crea tu primera factura.</p>';
+        document.querySelector('.load-more-btn').style.display = 'none';
+    }
+}
+
+// Recargar facturas (para actualizar después de crear nuevas)
+function reloadInvoices() {
+    loadInvoices();
+    const invoiceList = document.getElementById("invoiceList");
+    invoiceList.innerHTML = '';
+    currentIndex = 0;
+    initializeInvoicesPage();
+}
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar solo si estamos en la página de facturas
+    if (document.getElementById("invoiceList")) {
+        initializeInvoicesPage();
+    }
+
+    // Cerrar modal al hacer clic fuera
+    const modal = document.getElementById("invoiceDetailModal");
+    if (modal) {
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                closeInvoiceDetailModal();
+            }
+        });
+    }
+
+    // Cerrar modal con Escape
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && modal && modal.classList.contains('active')) {
+            closeInvoiceDetailModal();
+        }
+    });
+});
+
+// Función para refrescar la lista desde otras páginas
+function refreshInvoiceList() {
+    if (document.getElementById("invoiceList")) {
+        reloadInvoices();
+    }
+}
 	</script>
 </body>
 </html>

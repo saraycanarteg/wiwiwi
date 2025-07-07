@@ -129,7 +129,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Cantidad *</label>
-                                    <input type="number" name="item-quantity" min="1" value="1" onchange="calculateTotal()" required>
+                                    <input type="number" name="item-quantity" min="1" value="1" onchange="validateStock(this)" required>
                                 </div>
                                 <div class="form-group">
                                     <label>Precio Unitario *</label>
@@ -189,7 +189,7 @@
                     <button type="button" class="btn btn-secondary" onclick="previewInvoice()">
                         👁 Previsualizar
                     </button>
-                    <button type="button" class="btn btn-outline" onclick="printInvoice()">
+                    <button type="button" class="btn btn-outline" onclick="printInvoice(1)">
                         🖨 Imprimir
                     </button>
                     <button type="reset" class="btn btn-outline" onclick="resetForm()">
@@ -287,220 +287,997 @@
     </div>
 
     <script>
-		let vinyls = [
-			{ id: 1, album: "Dark Side of the Moon", artist: "Pink Floyd", genre: "Rock", year: 1973, price: 45.99, stock: 2, icon: "🌙" },
-			{ id: 2, album: "Thriller", artist: "Michael Jackson", genre: "Pop", year: 1982, price: 38.99, stock: 0, icon: "👻" },
-			{ id: 3, album: "Kind of Blue", artist: "Miles Davis", genre: "Jazz", year: 1959, price: 51.99, stock: 1, icon: "🎺" }
-		];
-		
-		function populateSelectOptions(selectElement) {
-			selectElement.innerHTML = '<option value="">Seleccionar producto...</option>'; // Reiniciar
+// Constantes para localStorage
+const STORAGE_KEY = 'definerecords_vinyls';
+const INVOICES_KEY = 'definerecords_invoices';
 
-			vinyls.forEach(v => {
-				if (v.stock > 0) {
-					const option = document.createElement("option");
-					option.value = v.id;
-					option.textContent = `${v.icon} ${v.album} - ${v.artist} (${v.year})`;
-					option.setAttribute("data-price", v.price);
-					selectElement.appendChild(option);
-				}
-			});
-		}
-		window.onload = function () {
-			const firstSelect = document.querySelector('select[name="item-product"]');
-			populateSelectOptions(firstSelect);
-		};
+// Variables globales
+let vinyls = [];
+let invoices = [];
+let invoiceCounter = 1;
 
-        // Funciones para el modal de cuenta
-        function openAccountModal() {
-            document.getElementById('accountModal').classList.add('active');
-            document.body.style.overflow = 'hidden';
+// Cargar datos desde localStorage
+function loadVinyls() {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+        vinyls = JSON.parse(savedData);
+    } else {
+        // Datos iniciales si no hay nada guardado
+        vinyls = [
+            { id: 1, album: "Dark Side of the Moon", artist: "Pink Floyd", genre: "Rock", year: 1973, price: 45.99, stock: 2, icon: "🌙" },
+            { id: 2, album: "Thriller", artist: "Michael Jackson", genre: "Pop", year: 1982, price: 38.99, stock: 0, icon: "👻" },
+            { id: 3, album: "Kind of Blue", artist: "Miles Davis", genre: "Jazz", year: 1959, price: 51.99, stock: 1, icon: "🎺" }
+        ];
+        saveVinylsToStorage();
+    }
+}
+
+// Cargar facturas desde localStorage
+function loadInvoices() {
+    const savedInvoices = localStorage.getItem(INVOICES_KEY);
+    if (savedInvoices) {
+        invoices = JSON.parse(savedInvoices);
+    }
+}
+
+// Guardar vinilos en localStorage
+function saveVinylsToStorage() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(vinyls));
+}
+
+// Guardar facturas en localStorage
+function saveInvoicesToStorage() {
+    localStorage.setItem(INVOICES_KEY, JSON.stringify(invoices));
+}
+
+// Poblar opciones del select con productos disponibles
+function populateSelectOptions(selectElement) {
+    selectElement.innerHTML = '<option value="">Seleccionar producto...</option>';
+    
+    vinyls.forEach(v => {
+        if (v.stock > 0) {
+            const option = document.createElement("option");
+            option.value = v.id;
+            option.textContent = `${v.icon} ${v.album} - ${v.artist} (${v.year}) - Stock: ${v.stock}`;
+            option.setAttribute("data-price", v.price);
+            option.setAttribute("data-stock", v.stock);
+            selectElement.appendChild(option);
         }
+    });
+}
 
-        function closeAccountModal() {
-            document.getElementById('accountModal').classList.remove('active');
-            document.body.style.overflow = 'auto';
+// Actualizar detalles del item cuando se selecciona un producto
+function updateItemDetails(selectElement) {
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+    const maxStock = parseInt(selectedOption.getAttribute('data-stock')) || 0;
+
+    const itemRow = selectElement.closest('.item-row');
+    const priceInput = itemRow.querySelector('input[name="item-price"]');
+    const quantityInput = itemRow.querySelector('input[name="item-quantity"]');
+    const totalInput = itemRow.querySelector('input[name="item-total"]');
+
+    priceInput.value = price.toFixed(2);
+    
+    // Establecer límite máximo de cantidad según stock disponible
+    quantityInput.max = maxStock;
+    quantityInput.value = Math.min(quantityInput.value, maxStock);
+    
+    const quantity = parseInt(quantityInput.value) || 1;
+    totalInput.value = (quantity * price).toFixed(2);
+    
+    calculateTotal();
+}
+
+// Validar stock antes de cambiar cantidad
+function validateStock(quantityInput) {
+    const itemRow = quantityInput.closest('.item-row');
+    const selectElement = itemRow.querySelector('select[name="item-product"]');
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    const maxStock = parseInt(selectedOption.getAttribute('data-stock')) || 0;
+    
+    if (parseInt(quantityInput.value) > maxStock) {
+        alert(`Stock insuficiente. Máximo disponible: ${maxStock}`);
+        quantityInput.value = maxStock;
+    }
+    
+    calculateTotal();
+}
+
+// Inicializar formulario
+function initializeForm() {
+    loadVinyls();
+    loadInvoices();
+    
+    // Establecer número de factura
+    const nextNumber = String(invoices.length + 1).padStart(5, '0');
+    document.getElementById('invoice-number').value = 'FAC-' + nextNumber;
+    
+    // Establecer fecha actual
+    document.getElementById('invoice-date').value = new Date().toISOString().split('T')[0];
+    
+    // Establecer fecha de vencimiento (30 días desde ahora)
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + 30);
+    document.getElementById('due-date').value = dueDate.toISOString().split('T')[0];
+    
+    // Poblar el primer select
+    const firstSelect = document.querySelector('select[name="item-product"]');
+    populateSelectOptions(firstSelect);
+    
+    calculateTotal();
+}
+
+// Agregar nuevo item
+function addItem() {
+    const container = document.getElementById('items-container');
+    const newItem = document.createElement('div');
+    newItem.className = 'item-row';
+    newItem.innerHTML = `
+        <div class="form-group">
+            <label>Producto/Servicio *</label>
+            <select name="item-product" onchange="updateItemDetails(this)" required>
+                <option value="">Seleccionar producto...</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Cantidad *</label>
+            <input type="number" name="item-quantity" min="1" value="1" onchange="validateStock(this)" required>
+        </div>
+        <div class="form-group">
+            <label>Precio Unitario *</label>
+            <input type="number" name="item-price" step="0.01" min="0" onchange="calculateTotal()" placeholder="0.00" readonly>
+        </div>
+        <div class="form-group">
+            <label>Total</label>
+            <input type="number" name="item-total" step="0.01" readonly>
+        </div>
+        <div class="form-group">
+            <button type="button" class="remove-item-btn" onclick="removeItem(this)" title="Eliminar item">
+                <span>🗑</span>
+            </button>
+        </div>
+    `;
+
+    container.appendChild(newItem);
+
+    // Poblar el select del nuevo item
+    const select = newItem.querySelector('select[name="item-product"]');
+    populateSelectOptions(select);
+}
+
+// Remover item
+function removeItem(button) {
+    const itemRow = button.closest('.item-row');
+    const container = document.getElementById('items-container');
+    
+    // No permitir eliminar si solo hay un item
+    if (container.children.length > 1) {
+        itemRow.remove();
+        calculateTotal();
+    } else {
+        alert('Debe mantener al menos un item en la factura');
+    }
+}
+
+// Calcular totales
+function calculateTotal() {
+    const items = document.querySelectorAll('.item-row');
+    let subtotal = 0;
+
+    items.forEach(item => {
+        const quantity = parseFloat(item.querySelector('[name="item-quantity"]').value) || 0;
+        const price = parseFloat(item.querySelector('[name="item-price"]').value) || 0;
+        const total = quantity * price;
+        
+        item.querySelector('[name="item-total"]').value = total.toFixed(2);
+        subtotal += total;
+    });
+
+    const discount = parseFloat(document.getElementById('discount').value) || 0;
+    const subtotalWithDiscount = subtotal - discount;
+    const tax = subtotalWithDiscount * 0.12; // 12% IVA
+    const finalTotal = subtotalWithDiscount + tax;
+
+    document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
+    document.getElementById('tax').textContent = '$' + tax.toFixed(2);
+    document.getElementById('final-total').textContent = '$' + Math.max(0, finalTotal).toFixed(2);
+}
+
+// Actualizar stock después de crear factura
+function updateStock(items) {
+    items.forEach(item => {
+        const vinylId = parseInt(item.productId);
+        const quantity = parseInt(item.quantity);
+        
+        const vinylIndex = vinyls.findIndex(v => v.id === vinylId);
+        if (vinylIndex !== -1) {
+            vinyls[vinylIndex].stock -= quantity;
         }
+    });
+    
+    saveVinylsToStorage();
+}
 
-        // Cerrar modal al hacer click fuera de él
-        document.getElementById('accountModal').addEventListener('click', function(event) {
-            if (event.target === this) {
-                closeAccountModal();
-            }
-        });
-
-        // Cerrar modal con tecla Escape
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape' && document.getElementById('accountModal').classList.contains('active')) {
-                closeAccountModal();
-            }
-        });
-		
-		function logoutUser() {
-            // Confirmar cierre de sesión
-            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-                // Mostrar mensaje de confirmación
-                alert('Sesión cerrada exitosamente. ¡Hasta pronto!');
-                
-                // Cerrar el modal
-                closeAccountModal();
-                
-                // Opcional: Redirigir a página de login o recargar
-                window.location.href = 'index.html';
-                // O simplemente recargar la página actual
-                
-            }
-        }
-
-        // Cerrar modal al hacer click fuera de él
-        document.getElementById('accountModal').addEventListener('click', function(event) {
-            if (event.target === this) {
-                closeAccountModal();
-            }
-        });
-
-        // Cerrar modal con tecla Escape
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape' && document.getElementById('accountModal').classList.contains('active')) {
-                closeAccountModal();
-            }
-        });
-		
-        let invoiceCounter = 1;
-        let invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
-
-        // Initialize form
-        function initializeForm() {
-            // Set invoice number
-            const nextNumber = String(invoices.length + 1).padStart(5, '0');
-            document.getElementById('invoice-number').value = 'FAC-' + nextNumber;
+// Manejar envío del formulario
+document.getElementById('invoiceForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Mostrar loading
+    document.getElementById('loading').style.display = 'flex';
+    document.getElementById('save-text').style.display = 'none';
+    
+    // Validar que hay items seleccionados
+    const items = document.querySelectorAll('.item-row');
+    let hasValidItems = false;
+    let invoiceItems = [];
+    
+    items.forEach(item => {
+        const select = item.querySelector('select[name="item-product"]');
+        const quantity = parseInt(item.querySelector('input[name="item-quantity"]').value);
+        const price = parseFloat(item.querySelector('input[name="item-price"]').value);
+        
+        if (select.value && quantity > 0 && price > 0) {
+            hasValidItems = true;
             
-            // Set current date
-            document.getElementById('invoice-date').value = new Date().toISOString().split('T')[0];
+            // Obtener datos del vinilo
+            const vinyl = vinyls.find(v => v.id == select.value);
             
-            // Set due date (30 days from now)
-            const dueDate = new Date();
-            dueDate.setDate(dueDate.getDate() + 30);
-            document.getElementById('due-date').value = dueDate.toISOString().split('T')[0];
-            
-            calculateTotal();
-        }
-
-        // Item management
-		function addItem() {
-			const container = document.getElementById('items-container');
-			const newItem = document.createElement('div');
-			newItem.className = 'item-row';
-			newItem.innerHTML = `
-				<div class="form-group">
-					<label>Producto/Servicio *</label>
-					<select name="item-product" onchange="updateItemDetails(this)" required>
-						<option value="">Seleccionar producto...</option>
-					</select>
-				</div>
-				<div class="form-group">
-					<label>Cantidad *</label>
-					<input type="number" name="item-quantity" min="1" value="1" onchange="calculateTotal()" required>
-				</div>
-				<div class="form-group">
-					<label>Precio Unitario *</label>
-					<input type="number" name="item-price" step="0.01" min="0" onchange="calculateTotal()" placeholder="0.00" readonly>
-				</div>
-				<div class="form-group">
-					<label>Total</label>
-					<input type="number" name="item-total" step="0.01" readonly>
-				</div>
-				<div class="form-group">
-					<button type="button" class="remove-item-btn" onclick="removeItem(this)" title="Eliminar item">
-						<span>🗑</span>
-					</button>
-				</div>
-			`;
-
-			container.appendChild(newItem);
-
-			// Rellenar el select del nuevo item
-			const select = newItem.querySelector('select[name="item-product"]');
-			populateSelectOptions(select);
-		}
-		
-		function updateItemDetails(selectElement) {
-			const selectedOption = selectElement.options[selectElement.selectedIndex];
-			const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
-
-			const itemRow = selectElement.closest('.item-row');
-			const priceInput = itemRow.querySelector('input[name="item-price"]');
-			const quantityInput = itemRow.querySelector('input[name="item-quantity"]');
-			const totalInput = itemRow.querySelector('input[name="item-total"]');
-
-			priceInput.value = price.toFixed(2);
-			const quantity = parseInt(quantityInput.value) || 1;
-			totalInput.value = (quantity * price).toFixed(2);
-		}
-
-        function calculateTotal() {
-            const items = document.querySelectorAll('.item-row');
-            let subtotal = 0;
-
-            items.forEach(item => {
-                const quantity = parseFloat(item.querySelector('[name="item-quantity"]').value) || 0;
-                const price = parseFloat(item.querySelector('[name="item-price"]').value) || 0;
-                const total = quantity * price;
-                
-                item.querySelector('[name="item-total"]').value = total.toFixed(2);
-                subtotal += total;
+            invoiceItems.push({
+                productId: select.value,
+                productName: vinyl.album,
+                artist: vinyl.artist,
+                quantity: quantity,
+                price: price,
+                total: quantity * price
             });
-
-            const discount = parseFloat(document.getElementById('discount').value) || 0;
-            const subtotalWithDiscount = subtotal - discount;
-            const tax = subtotalWithDiscount * 0.12; // 12% IVA
-            const finalTotal = subtotalWithDiscount + tax;
-
-            document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
-            document.getElementById('tax').textContent = '$' + tax.toFixed(2);
-            document.getElementById('final-total').textContent = '$' + Math.max(0, finalTotal).toFixed(2);
         }
+    });
+    
+    if (!hasValidItems) {
+        alert('Debe agregar al menos un item válido a la factura');
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('save-text').style.display = 'inline';
+        return;
+    }
+    
+    // Crear objeto de factura
+    const formData = new FormData(this);
+    const invoice = {
+        id: invoices.length + 1,
+        number: formData.get('invoice-number'),
+        date: formData.get('invoice-date'),
+        dueDate: formData.get('due-date'),
+        paymentMethod: formData.get('payment-method'),
+        client: {
+            name: formData.get('client-name'),
+            document: formData.get('client-document'),
+            email: formData.get('client-email'),
+            phone: formData.get('client-phone'),
+            address: formData.get('client-address')
+        },
+        items: invoiceItems,
+        subtotal: parseFloat(document.getElementById('subtotal').textContent.replace('$', '')),
+        tax: parseFloat(document.getElementById('tax').textContent.replace('$', '')),
+        discount: parseFloat(document.getElementById('discount').value) || 0,
+        total: parseFloat(document.getElementById('final-total').textContent.replace('$', '')),
+        notes: formData.get('notes'),
+        createdAt: new Date().toISOString()
+    };
+    
+    // Simular guardado
+    setTimeout(() => {
+        // Actualizar stock
+        updateStock(invoiceItems);
+        
+        // Guardar factura
+        invoices.push(invoice);
+        saveInvoicesToStorage();
+        
+        // Mostrar mensaje de éxito
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('save-text').style.display = 'inline';
+        document.getElementById('successMessage').style.display = 'flex';
+        
+        // Limpiar formulario después de 2 segundos
+        setTimeout(() => {
+            document.getElementById('successMessage').style.display = 'none';
+            resetForm();
+        }, 2000);
+        
+    }, 1500);
+});
 
-        function previewInvoice() {
-            const formData = new FormData(document.getElementById('invoiceForm'));
-            const invoiceData = {
-                number: formData.get('invoice-number'),
-                date: formData.get('invoice-date'),
-                company: formData.get('company-name'),
-                client: formData.get('client-name'),
-                total: document.getElementById('final-total').textContent
-            };
+// Previsualizar factura
+function previewInvoice() {
+    const formData = new FormData(document.getElementById('invoiceForm'));
+    const invoiceData = {
+        number: formData.get('invoice-number'),
+        date: formData.get('invoice-date'),
+        client: formData.get('client-name'),
+        total: document.getElementById('final-total').textContent
+    };
 
-            alert(`Vista Previa de Factura:
-            
-			Número: ${invoiceData.number}
-			Fecha: ${invoiceData.date}
-			Empresa: ${invoiceData.company}
-			Cliente: ${invoiceData.client}
-			Total: ${invoiceData.total}
-			`);
-					}
+    alert(`Vista Previa de Factura:
+    
+Número: ${invoiceData.number}
+Fecha: ${invoiceData.date}
+Cliente: ${invoiceData.client}
+Total: ${invoiceData.total}`);
+}
 
-        function printInvoice() {
-            // En una implementación real, aquí se generaría un PDF o se abriría la ventana de impresión
-            alert('Función de impresión - En desarrollo. Aquí se generaría un PDF de la factura.');
+// Imprimir factura
+function printInvoice() {
+    alert('Función de impresión - En desarrollo. Aquí se generaría un PDF de la factura.');
+}
+
+// Resetear formulario
+function resetForm() {
+    if (confirm('¿Está seguro de que desea limpiar todo el formulario? Se perderán todos los datos ingresados.')) {
+        document.getElementById('invoiceForm').reset();
+        
+        // Remover items extra, mantener solo uno
+        const container = document.getElementById('items-container');
+        while (container.children.length > 1) {
+            container.removeChild(container.lastChild);
         }
+        
+        // Reinicializar
+        initializeForm();
+        calculateTotal();
+    }
+}
 
-        function resetForm() {
-            if (confirm('¿Está seguro de que desea limpiar todo el formulario? Se perderán todos los datos ingresados.')) {
-                document.getElementById('invoiceForm').reset();
-                initializeForm();
-                
-                // Remove extra items, keep only one
-                const container = document.getElementById('items-container');
-                while (container.children.length > 1) {
-                    container.removeChild(container.lastChild);
+// Funciones del modal de cuenta
+function openAccountModal() {
+    document.getElementById('accountModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAccountModal() {
+    document.getElementById('accountModal').classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+function logoutUser() {
+    if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+        alert('Sesión cerrada exitosamente. ¡Hasta pronto!');
+        closeAccountModal();
+        window.location.href = 'index.html';
+    }
+}
+
+// Event listeners
+document.getElementById('accountModal').addEventListener('click', function(event) {
+    if (event.target === this) {
+        closeAccountModal();
+    }
+});
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && document.getElementById('accountModal').classList.contains('active')) {
+        closeAccountModal();
+    }
+});
+
+// Inicializar cuando se carga la página
+window.addEventListener('load', function() {
+    initializeForm();
+});
+
+// Actualizar el input de cantidad en el HTML existente
+document.addEventListener('DOMContentLoaded', function() {
+    const quantityInput = document.querySelector('input[name="item-quantity"]');
+    if (quantityInput) {
+        quantityInput.setAttribute('onchange', 'validateStock(this)');
+    }
+});
+		
+// Función para imprimir la factura actual (genera PDF)
+function printInvoice() {
+    // Obtener datos del formulario actual
+    const formData = getFormData();
+    
+    if (!formData) {
+        alert('Por favor, complete la información de la factura antes de imprimir');
+        return;
+    }
+
+    // Crear ventana de impresión
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    
+    // Formatear fechas
+    const invoiceDate = new Date(formData.date || new Date()).toLocaleDateString('es-ES');
+    const dueDate = new Date(formData.dueDate || new Date()).toLocaleDateString('es-ES');
+    
+    // Generar HTML para los items
+    const itemsHTML = formData.items.map(item => `
+        <tr>
+            <td>${item.productName}</td>
+            <td>${item.artist || 'N/A'}</td>
+            <td style="text-align: center;">${item.quantity}</td>
+            <td style="text-align: right;">$${item.price.toFixed(2)}</td>
+            <td style="text-align: right;">$${item.total.toFixed(2)}</td>
+        </tr>
+    `).join('');
+
+    // Contenido HTML para impresión (PDF)
+    const printContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Factura ${formData.number || 'NUEVA'}</title>
+            <style>
+                /* Estilos solo para impresión/PDF */
+                @media print {
+                    body { 
+                        margin: 0; 
+                        padding: 15px;
+                        font-family: Arial, sans-serif;
+                        font-size: 12px;
+                        line-height: 1.4;
+                        color: #000;
+                    }
+                    
+                    .invoice-container {
+                        max-width: 800px;
+                        margin: 0 auto;
+                        background: white;
+                    }
+                    
+                    .invoice-header {
+                        text-align: center;
+                        margin-bottom: 25px;
+                        border-bottom: 2px solid #000;
+                        padding-bottom: 15px;
+                    }
+                    
+                    .company-name {
+                        font-size: 22px;
+                        font-weight: bold;
+                        color: #000;
+                        margin: 0 0 5px 0;
+                    }
+                    
+                    .invoice-title {
+                        font-size: 18px;
+                        font-weight: bold;
+                        margin: 10px 0 0 0;
+                        color: #000;
+                    }
+                    
+                    .invoice-details {
+                        display: flex;
+                        justify-content: space-between;
+                        margin-bottom: 25px;
+                        gap: 20px;
+                    }
+                    
+                    .invoice-info, .client-info {
+                        width: 48%;
+                    }
+                    
+                    .section-title {
+                        font-size: 14px;
+                        font-weight: bold;
+                        margin-bottom: 8px;
+                        color: #000;
+                        border-bottom: 1px solid #ccc;
+                        padding-bottom: 3px;
+                    }
+                    
+                    .info-line {
+                        margin-bottom: 4px;
+                        font-size: 11px;
+                    }
+                    
+                    .items-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 20px;
+                        font-size: 11px;
+                    }
+                    
+                    .items-table th,
+                    .items-table td {
+                        border: 1px solid #000;
+                        padding: 6px;
+                        text-align: left;
+                    }
+                    
+                    .items-table th {
+                        background-color: #f0f0f0;
+                        font-weight: bold;
+                        font-size: 12px;
+                    }
+                    
+                    .totals-section {
+                        margin-top: 20px;
+                        text-align: right;
+                    }
+                    
+                    .totals-table {
+                        margin-left: auto;
+                        border-collapse: collapse;
+                        width: 250px;
+                        font-size: 11px;
+                    }
+                    
+                    .totals-table td {
+                        padding: 4px 8px;
+                        border-bottom: 1px solid #ccc;
+                    }
+                    
+                    .total-final {
+                        font-weight: bold;
+                        font-size: 14px;
+                        border-top: 2px solid #000;
+                        background-color: #f0f0f0;
+                    }
+                    
+                    .notes-section {
+                        margin-top: 25px;
+                        padding-top: 15px;
+                        border-top: 1px solid #ccc;
+                        font-size: 11px;
+                    }
+                    
+                    .footer {
+                        margin-top: 30px;
+                        text-align: center;
+                        font-size: 10px;
+                        color: #666;
+                        border-top: 1px solid #ccc;
+                        padding-top: 10px;
+                    }
                 }
                 
-                calculateTotal();
+                /* Estilos para pantalla (vista previa) */
+                @media screen {
+                    body { 
+                        margin: 20px;
+                        font-family: Arial, sans-serif;
+                        background-color: #f5f5f5;
+                    }
+                    
+                    .invoice-container {
+                        max-width: 800px;
+                        margin: 0 auto;
+                        background: white;
+                        padding: 30px;
+                        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                    }
+                    
+                    .invoice-header {
+                        text-align: center;
+                        margin-bottom: 30px;
+                        border-bottom: 2px solid #333;
+                        padding-bottom: 20px;
+                    }
+                    
+                    .company-name {
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: #2c3e50;
+                        margin: 0 0 10px 0;
+                    }
+                    
+                    .invoice-title {
+                        font-size: 20px;
+                        font-weight: bold;
+                        margin: 15px 0 0 0;
+                        color: #2c3e50;
+                    }
+                    
+                    .invoice-details {
+                        display: flex;
+                        justify-content: space-between;
+                        margin-bottom: 30px;
+                        gap: 30px;
+                    }
+                    
+                    .invoice-info, .client-info {
+                        width: 48%;
+                    }
+                    
+                    .section-title {
+                        font-size: 16px;
+                        font-weight: bold;
+                        margin-bottom: 10px;
+                        color: #2c3e50;
+                        border-bottom: 1px solid #ddd;
+                        padding-bottom: 5px;
+                    }
+                    
+                    .info-line {
+                        margin-bottom: 5px;
+                        font-size: 14px;
+                    }
+                    
+                    .items-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 20px;
+                        font-size: 14px;
+                    }
+                    
+                    .items-table th,
+                    .items-table td {
+                        border: 1px solid #ddd;
+                        padding: 10px;
+                        text-align: left;
+                    }
+                    
+                    .items-table th {
+                        background-color: #f8f9fa;
+                        font-weight: bold;
+                    }
+                    
+                    .totals-section {
+                        margin-top: 20px;
+                        text-align: right;
+                    }
+                    
+                    .totals-table {
+                        margin-left: auto;
+                        border-collapse: collapse;
+                        width: 300px;
+                        font-size: 14px;
+                    }
+                    
+                    .totals-table td {
+                        padding: 8px 12px;
+                        border-bottom: 1px solid #ddd;
+                    }
+                    
+                    .total-final {
+                        font-weight: bold;
+                        font-size: 16px;
+                        border-top: 2px solid #333;
+                        background-color: #f8f9fa;
+                    }
+                    
+                    .notes-section {
+                        margin-top: 30px;
+                        padding-top: 20px;
+                        border-top: 1px solid #ddd;
+                    }
+                    
+                    .footer {
+                        margin-top: 40px;
+                        text-align: center;
+                        font-size: 12px;
+                        color: #666;
+                        border-top: 1px solid #ddd;
+                        padding-top: 15px;
+                    }
+                    
+                    .print-button {
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        background: #007bff;
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        z-index: 1000;
+                    }
+                    
+                    .print-button:hover {
+                        background: #0056b3;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="invoice-container">
+                <button class="print-button" onclick="window.print()">🖨️ Imprimir PDF</button>
+                
+                <div class="invoice-header">
+                    <div class="company-name">DEFINE RECORDS</div>
+                    <p>Sistema de Facturación</p>
+                    <h1 class="invoice-title">FACTURA</h1>
+                </div>
+
+                <div class="invoice-details">
+                    <div class="invoice-info">
+                        <div class="section-title">Información de la Factura</div>
+                        <div class="info-line"><strong>Número:</strong> ${formData.number || 'NUEVA'}</div>
+                        <div class="info-line"><strong>Fecha de Emisión:</strong> ${invoiceDate}</div>
+                        <div class="info-line"><strong>Fecha de Vencimiento:</strong> ${dueDate}</div>
+                        <div class="info-line"><strong>Método de Pago:</strong> ${(formData.paymentMethod || 'efectivo').toUpperCase()}</div>
+                    </div>
+
+                    <div class="client-info">
+                        <div class="section-title">Información del Cliente</div>
+                        <div class="info-line"><strong>Cliente:</strong> ${formData.client.name || 'N/A'}</div>
+                        ${formData.client.document ? `<div class="info-line"><strong>Documento:</strong> ${formData.client.document}</div>` : ''}
+                        ${formData.client.email ? `<div class="info-line"><strong>Email:</strong> ${formData.client.email}</div>` : ''}
+                        ${formData.client.phone ? `<div class="info-line"><strong>Teléfono:</strong> ${formData.client.phone}</div>` : ''}
+                        ${formData.client.address ? `<div class="info-line"><strong>Dirección:</strong> ${formData.client.address}</div>` : ''}
+                    </div>
+                </div>
+
+                <div class="section-title">Detalle de Productos/Servicios</div>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Artista</th>
+                            <th>Cantidad</th>
+                            <th>Precio Unitario</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHTML}
+                    </tbody>
+                </table>
+
+                <div class="totals-section">
+                    <table class="totals-table">
+                        <tr>
+                            <td><strong>Subtotal:</strong></td>
+                            <td>$${formData.subtotal.toFixed(2)}</td>
+                        </tr>
+                        ${formData.discount > 0 ? `
+                        <tr>
+                            <td><strong>Descuento:</strong></td>
+                            <td>-$${formData.discount.toFixed(2)}</td>
+                        </tr>
+                        ` : ''}
+                        <tr>
+                            <td><strong>IVA (12%):</strong></td>
+                            <td>$${formData.tax.toFixed(2)}</td>
+                        </tr>
+                        <tr class="total-final">
+                            <td><strong>TOTAL:</strong></td>
+                            <td><strong>$${formData.total.toFixed(2)}</strong></td>
+                        </tr>
+                    </table>
+                </div>
+
+                ${formData.notes ? `
+                <div class="notes-section">
+                    <div class="section-title">Observaciones</div>
+                    <p>${formData.notes}</p>
+                </div>
+                ` : ''}
+
+                <div class="footer">
+                    <p>Gracias por su compra | Define Records</p>
+                    <p>Factura generada el ${new Date().toLocaleDateString('es-ES')} a las ${new Date().toLocaleTimeString('es-ES')}</p>
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
+
+    // Escribir contenido en la ventana de impresión
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+
+    // Esperar a que se cargue completamente
+    printWindow.onload = function() {
+        // Enfocar la ventana para que aparezca automáticamente el diálogo de impresión
+        printWindow.focus();
+        // Mostrar diálogo de impresión (que permite guardar como PDF)
+        setTimeout(() => {
+            printWindow.print();
+        }, 250);
+    };
+}
+
+// Función auxiliar para obtener datos del formulario actual
+function getFormData() {
+    try {
+        // Obtener información del cliente (probando múltiples IDs posibles)
+        const clientName = document.getElementById('clientName')?.value || 
+                          document.getElementById('cliente')?.value || 
+                          document.querySelector('input[name="clientName"]')?.value || '';
+        
+        const clientDocument = document.getElementById('clientDocument')?.value || 
+                              document.getElementById('documento')?.value || 
+                              document.querySelector('input[name="clientDocument"]')?.value || '';
+        
+        const clientEmail = document.getElementById('clientEmail')?.value || 
+                           document.getElementById('email')?.value || 
+                           document.querySelector('input[name="clientEmail"]')?.value || '';
+        
+        const clientPhone = document.getElementById('clientPhone')?.value || 
+                           document.getElementById('telefono')?.value || 
+                           document.querySelector('input[name="clientPhone"]')?.value || '';
+        
+        const clientAddress = document.getElementById('clientAddress')?.value || 
+                             document.getElementById('direccion')?.value || 
+                             document.querySelector('input[name="clientAddress"]')?.value || '';
+
+        // Obtener información de la factura
+        const invoiceNumber = document.getElementById('invoiceNumber')?.value || 
+                             document.getElementById('numeroFactura')?.value || 
+                             document.querySelector('input[name="invoiceNumber"]')?.value || 
+                             `FAC-${Date.now()}`;
+        
+        const invoiceDate = document.getElementById('invoiceDate')?.value || 
+                           document.getElementById('fecha')?.value || 
+                           document.querySelector('input[name="invoiceDate"]')?.value || 
+                           new Date().toISOString().split('T')[0];
+        
+        const dueDate = document.getElementById('dueDate')?.value || 
+                       document.getElementById('fechaVencimiento')?.value || 
+                       document.querySelector('input[name="dueDate"]')?.value || '';
+        
+        const paymentMethod = document.getElementById('paymentMethod')?.value || 
+                             document.getElementById('metodoPago')?.value || 
+                             document.querySelector('select[name="paymentMethod"]')?.value || 'efectivo';
+        
+        const notes = document.getElementById('notes')?.value || 
+                     document.getElementById('observaciones')?.value || 
+                     document.querySelector('textarea[name="notes"]')?.value || '';
+
+        // Obtener items - probando múltiples formas de encontrar la tabla
+        let items = [];
+        
+        // Método 1: Buscar en tabla con ID específico
+        const itemsTable = document.getElementById('itemsTable') || 
+                          document.getElementById('productosTable') || 
+                          document.querySelector('.items-table') ||
+                          document.querySelector('table');
+        
+        if (itemsTable) {
+            const rows = itemsTable.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 4) { // Al menos 4 columnas
+                    const productName = cells[0]?.textContent?.trim() || '';
+                    const artist = cells[1]?.textContent?.trim() || '';
+                    const quantity = parseInt(cells[2]?.textContent?.trim()) || 1;
+                    const price = parseFloat(cells[3]?.textContent?.replace(', '').trim()) || 0;
+                    const total = cells[4] ? parseFloat(cells[4]?.textContent?.replace(', '').trim()) : (quantity * price);
+                    
+                    if (productName && price > 0) {
+                        items.push({
+                            productName: productName,
+                            artist: artist,
+                            quantity: quantity,
+                            price: price,
+                            total: total
+                        });
+                    }
+                }
+            });
+        }
+        
+        // Método 2: Buscar en variables globales (si existen)
+        if (items.length === 0 && typeof selectedProducts !== 'undefined') {
+
+            items = selectedProducts.map(product => ({
+                productName: product.name || product.productName || '',
+                artist: product.artist || '',
+                quantity: product.quantity || 1,
+                price: product.price || 0,
+                total: product.total || (product.quantity * product.price)
+            }));
+        }
+        
+        // Método 3: Buscar en inputs del formulario
+        if (items.length === 0) {
+            const productInputs = document.querySelectorAll('input[name*="product"], select[name*="product"]');
+            const quantityInputs = document.querySelectorAll('input[name*="quantity"], input[name*="cantidad"]');
+            const priceInputs = document.querySelectorAll('input[name*="price"], input[name*="precio"]');
+            
+            for (let i = 0; i < productInputs.length; i++) {
+                const productName = productInputs[i]?.value || '';
+                const quantity = parseInt(quantityInputs[i]?.value) || 1;
+                const price = parseFloat(priceInputs[i]?.value) || 0;
+                
+                if (productName && price > 0) {
+                    items.push({
+                        productName: productName,
+                        artist: '',
+                        quantity: quantity,
+                        price: price,
+                        total: quantity * price
+                    });
+                }
             }
         }
 
+        // Debug: Mostrar información encontrada
+        console.log('Datos capturados:', {
+            clientName,
+            items: items.length,
+            itemsTable: !!itemsTable,
+            selectedProducts: typeof selectedProducts !== 'undefined' ? selectedProducts : 'no definido'
+        });
+
+        // Validar que hay items
+        if (items.length === 0) {
+            alert('No se pudieron encontrar productos en la factura. Asegúrese de haber agregado productos antes de imprimir.');
+            
+            // Mostrar información de debug
+            console.log('Elementos encontrados en la página:');
+            console.log('- Tablas:', document.querySelectorAll('table').length);
+            console.log('- Inputs de producto:', document.querySelectorAll('input[name*="product"], select[name*="product"]').length);
+            console.log('- Variable selectedProducts:', typeof selectedProducts);
+            
+            return null;
+        }
+
+        // Calcular totales desde los inputs o desde los items
+        let subtotal = 0;
+        let discount = 0;
+        let tax = 0;
+        let total = 0;
+        
+        // Intentar obtener totales de los elementos del DOM
+        const subtotalElement = document.getElementById('subtotal') || 
+                               document.getElementById('subtotalAmount') || 
+                               document.querySelector('.subtotal');
+        
+        const discountElement = document.getElementById('discount') || 
+                               document.getElementById('descuento') || 
+                               document.querySelector('.discount');
+        
+        const taxElement = document.getElementById('tax') || 
+                          document.getElementById('iva') || 
+                          document.querySelector('.tax');
+        
+        const totalElement = document.getElementById('total') || 
+                            document.getElementById('totalAmount') || 
+                            document.querySelector('.total');
+        
+        if (subtotalElement) {
+            subtotal = parseFloat(subtotalElement.textContent?.replace(', '').trim() || subtotalElement.value || 0);
+        } else {
+            subtotal = items.reduce((sum, item) => sum + item.total, 0);
+        }
+        
+        if (discountElement) {
+            discount = parseFloat(discountElement.textContent?.replace(', '').trim() || discountElement.value || 0);
+        }
+        
+        if (taxElement) {
+            tax = parseFloat(taxElement.textContent?.replace(', '').trim() || taxElement.value || 0);
+        } else {
+            tax = (subtotal - discount) * 0.12;
+        }
+        
+        if (totalElement) {
+            total = parseFloat(totalElement.textContent?.replace(', '').trim() || totalElement.value || 0);
+        } else {
+            total = subtotal - discount + tax;
+        }
+
+        return {
+            number: invoiceNumber,
+            date: invoiceDate,
+            dueDate: dueDate,
+            paymentMethod: paymentMethod,
+            client: {
+                name: clientName,
+                document: clientDocument,
+                email: clientEmail,
+                phone: clientPhone,
+                address: clientAddress
+            },
+            items: items,
+            subtotal: subtotal,
+            discount: discount,
+            tax: tax,
+            total: total,
+            notes: notes
+        };
+    } catch (error) {
+        console.error('Error obteniendo datos del formulario:', error);
+        alert('Error al obtener los datos del formulario. Revise la consola para más detalles.');
+        return null;
+    }
+}
 	</script>
 	</body>
 </html>
