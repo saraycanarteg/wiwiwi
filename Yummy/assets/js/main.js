@@ -174,3 +174,101 @@
   document.addEventListener('scroll', navmenuScrollspy);
 
 })();
+
+
+document.addEventListener('DOMContentLoaded', function() {
+  function obtenerImagenProducto(nombre) {
+    const productos = {
+      "Bruschetta Gourmet": "assets/img/menu/menu-item-1.png",
+      "Tabla de Quesos": "assets/img/menu/menu-item-2.png",
+      "Nachos Diamonds": "assets/img/menu/menu-item-3.png",
+      "Alitas BBQ": "assets/img/menu/menu-item-4.png",
+      "Ceviche Fresco": "assets/img/menu/menu-item-5.png",
+      "Rollitos Primavera": "assets/img/menu/menu-item-6.png",
+      "Desayuno Americano": "assets/img/menu/menu-item-1.png",
+      "Panqueques Deluxe": "assets/img/menu/menu-item-2.png",
+      "Avocado Toast": "assets/img/menu/menu-item-3.png",
+      "Omelette Gourmet": "assets/img/menu/menu-item-4.png",
+      "Smoothie Bowl": "assets/img/menu/menu-item-5.png",
+      "Croissant Relleno": "assets/img/menu/menu-item-6.png",
+      "Hamburguesa Diamonds": "assets/img/menu/menu-item-1.png",
+      "Ensalada César": "assets/img/menu/menu-item-2.png",
+      "Pasta Alfredo": "assets/img/menu/menu-item-3.png",
+      "Sándwich Club": "assets/img/menu/menu-item-4.png",
+      "Tacos Mexicanos": "assets/img/menu/menu-item-5.png",
+      "Sopa del Día": "assets/img/menu/menu-item-6.png",
+      "Estafado de res": "assets/img/menu/menu-item-1.png",
+      "Salmon de maracuya": "assets/img/menu/menu-item-2.png",
+      "Pollo campestre": "assets/img/menu/menu-item-3.png",
+      "Pasta pesto": "assets/img/menu/menu-item-4.png",
+      "Costillas BBQ": "assets/img/menu/menu-item-5.png",
+      "Risotto de champiñones": "assets/img/menu/menu-item-6.png"
+    };
+    return productos[nombre] || "assets/img/menu/menu-item-1.png";
+  }
+
+  let cantidad = 1;
+  let precioUnitario = 0;
+
+  function actualizarTotal() {
+    const total = (cantidad * precioUnitario).toFixed(2);
+    document.getElementById('modalCarritoTotal').textContent = 'Total: $' + total;
+  }
+
+  window.agregarAlCarrito = function(nombre, precio) {
+    cantidad = 1;
+    precioUnitario = parseFloat(precio);
+    document.getElementById('modalCarritoNombre').textContent = nombre;
+    document.getElementById('modalCarritoPrecio').textContent = '$' + precioUnitario.toFixed(2) + ' c/u';
+    document.getElementById('modalCarritoImg').src = obtenerImagenProducto(nombre);
+    document.getElementById('modalCarritoCantidad').textContent = cantidad;
+    document.getElementById('modalCarritoInstrucciones').value = '';
+    document.getElementById('modalCarrito').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    document.getElementById('btnAgregarAlCarrito').dataset.nombre = nombre;
+    document.getElementById('btnAgregarAlCarrito').dataset.precio = precioUnitario;
+    actualizarTotal();
+  };
+
+  document.getElementById('cerrarModalCarrito').onclick = function() {
+    document.getElementById('modalCarrito').style.display = 'none';
+    document.body.style.overflow = '';
+  };
+
+  document.getElementById('btnMas').onclick = function() {
+    if (cantidad < 30) {
+      cantidad++;
+      document.getElementById('modalCarritoCantidad').textContent = cantidad;
+      actualizarTotal();
+    }
+  };
+  document.getElementById('btnMenos').onclick = function() {
+    if (cantidad > 1) {
+      cantidad--;
+      document.getElementById('modalCarritoCantidad').textContent = cantidad;
+      actualizarTotal();
+    }
+  };
+
+  document.getElementById('btnAgregarAlCarrito').onclick = function() {
+    const nombre = this.dataset.nombre;
+    const precio = parseFloat(this.dataset.precio);
+    const instrucciones = document.getElementById('modalCarritoInstrucciones').value;
+    const item = { nombre, precio, cantidad, instrucciones, imagen: obtenerImagenProducto(nombre) };
+
+    let carrito = JSON.parse(localStorage.getItem('carritoYummy') || '[]');
+    const idx = carrito.findIndex(p => p.nombre === nombre && p.instrucciones === instrucciones);
+    if (idx >= 0) {
+      carrito[idx].cantidad += cantidad;
+    } else {
+      carrito.push(item);
+    }
+    localStorage.setItem('carritoYummy', JSON.stringify(carrito));
+
+    document.getElementById('modalCarrito').style.display = 'none';
+    document.body.style.overflow = '';
+    cantidad = 1;
+    alert('¡Producto agregado al carrito!');
+  };
+});
