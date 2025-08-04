@@ -174,17 +174,16 @@
   document.addEventListener('scroll', navmenuScrollspy);
 
 })();
-
-
 document.addEventListener('DOMContentLoaded', function() {
+  // Función para obtener imagen del producto
   function obtenerImagenProducto(nombre) {
     const productos = {
-      "Bruschetta Gourmet": "assets/img/menu/menu-item-1.png",
-      "Tabla de Quesos": "assets/img/menu/menu-item-2.png",
-      "Nachos Diamonds": "assets/img/menu/menu-item-3.png",
-      "Alitas BBQ": "assets/img/menu/menu-item-4.png",
-      "Ceviche Fresco": "assets/img/menu/menu-item-5.png",
-      "Rollitos Primavera": "assets/img/menu/menu-item-6.png",
+      "Iced Coffee Pink": "assets/img/menu/bf1.png",
+      "Limonada de Naranja Frutilla": "assets/img/menu/bf2.png",
+      "Blue Lemonade": "assets/img/menu/bf3.png",
+      "Milshake Barbie": "assets/img/menu/bf4.png",
+      "Limonada de Café": "assets/img/menu/bf5.png",
+      "Limonada de Fresa": "assets/img/menu/bf6.png",
       "Desayuno Americano": "assets/img/menu/menu-item-1.png",
       "Panqueques Deluxe": "assets/img/menu/menu-item-2.png",
       "Avocado Toast": "assets/img/menu/menu-item-3.png",
@@ -210,65 +209,273 @@ document.addEventListener('DOMContentLoaded', function() {
   let cantidad = 1;
   let precioUnitario = 0;
 
-  function actualizarTotal() {
-    const total = (cantidad * precioUnitario).toFixed(2);
-    document.getElementById('modalCarritoTotal').textContent = 'Total: $' + total;
+  // Referencias a elementos
+  const modal = document.getElementById('modalCarrito');
+  const btnCerrar = document.getElementById('cerrarModalCarrito');
+  const btnMenos = document.getElementById('btnMenos');
+  const btnMas = document.getElementById('btnMas');
+  const cantidadDisplay = document.getElementById('modalCarritoCantidad');
+  const totalDisplay = document.getElementById('modalCarritoTotal');
+  const nombreProducto = document.getElementById('modalCarritoNombre');
+  const precioProducto = document.getElementById('modalCarritoPrecio');
+  const imagenProducto = document.getElementById('modalCarritoImg');
+  const instruccionesProducto = document.getElementById('modalCarritoInstrucciones');
+  const btnAgregar = document.getElementById('btnAgregarAlCarrito');
+
+  // Función para actualizar cantidad y total
+  function actualizarCantidad() {
+    cantidadDisplay.textContent = cantidad;
+    const total = (precioUnitario * cantidad).toFixed(2);
+    totalDisplay.textContent = `$${total}`;
+    
+    // Deshabilitar/habilitar botones
+    btnMenos.disabled = cantidad <= 1;
+    btnMas.disabled = cantidad >= 30;
   }
 
-  window.agregarAlCarrito = function(nombre, precio) {
+  // Función para actualizar total (alias para compatibilidad)
+  function actualizarTotal() {
+    actualizarCantidad();
+  }
+
+  // Función global para abrir modal con datos del producto
+  window.agregarAlCarrito = function(nombre, precio, imagen = null) {
     cantidad = 1;
     precioUnitario = parseFloat(precio);
-    document.getElementById('modalCarritoNombre').textContent = nombre;
-    document.getElementById('modalCarritoPrecio').textContent = '$' + precioUnitario.toFixed(2) + ' c/u';
-    document.getElementById('modalCarritoImg').src = obtenerImagenProducto(nombre);
-    document.getElementById('modalCarritoCantidad').textContent = cantidad;
-    document.getElementById('modalCarritoInstrucciones').value = '';
-    document.getElementById('modalCarrito').style.display = 'flex';
+    
+    // Actualizar contenido del modal
+    nombreProducto.textContent = nombre;
+    precioProducto.textContent = `$${precioUnitario.toFixed(2)} c/u`;
+    imagenProducto.src = imagen || obtenerImagenProducto(nombre);
+    cantidadDisplay.textContent = cantidad;
+    instruccionesProducto.value = '';
+    
+    // Guardar datos en el botón para uso posterior
+    btnAgregar.dataset.nombre = nombre;
+    btnAgregar.dataset.precio = precioUnitario;
+    
+    // Mostrar modal
+    modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
-
-    document.getElementById('btnAgregarAlCarrito').dataset.nombre = nombre;
-    document.getElementById('btnAgregarAlCarrito').dataset.precio = precioUnitario;
-    actualizarTotal();
+    
+    // Actualizar total
+    actualizarCantidad();
   };
 
-  document.getElementById('cerrarModalCarrito').onclick = function() {
-    document.getElementById('modalCarrito').style.display = 'none';
+  // Cerrar modal
+  btnCerrar.onclick = function() {
+    modal.style.display = 'none';
     document.body.style.overflow = '';
   };
 
-  document.getElementById('btnMas').onclick = function() {
-    if (cantidad < 30) {
-      cantidad++;
-      document.getElementById('modalCarritoCantidad').textContent = cantidad;
-      actualizarTotal();
-    }
-  };
-  document.getElementById('btnMenos').onclick = function() {
-    if (cantidad > 1) {
-      cantidad--;
-      document.getElementById('modalCarritoCantidad').textContent = cantidad;
-      actualizarTotal();
+  // Cerrar modal al hacer clic fuera
+  modal.onclick = function(e) {
+    if (e.target === modal) {
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
     }
   };
 
-  document.getElementById('btnAgregarAlCarrito').onclick = function() {
+  // Cerrar modal con tecla Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && modal.style.display === 'flex') {
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+  });
+
+  // Aumentar cantidad
+  btnMas.onclick = function() {
+    if (cantidad < 30) {
+      cantidad++;
+      actualizarCantidad();
+    }
+  };
+
+  // Disminuir cantidad
+  btnMenos.onclick = function() {
+    if (cantidad > 1) {
+      cantidad--;
+      actualizarCantidad();
+    }
+  };
+
+  // Agregar al carrito
+  btnAgregar.onclick = function() {
     const nombre = this.dataset.nombre;
     const precio = parseFloat(this.dataset.precio);
-    const instrucciones = document.getElementById('modalCarritoInstrucciones').value;
-    const item = { nombre, precio, cantidad, instrucciones, imagen: obtenerImagenProducto(nombre) };
+    const instrucciones = instruccionesProducto.value;
+    const item = { 
+      nombre, 
+      precio, 
+      cantidad, 
+      instrucciones, 
+      imagen: obtenerImagenProducto(nombre) 
+    };
 
     let carrito = JSON.parse(localStorage.getItem('carritoYummy') || '[]');
     const idx = carrito.findIndex(p => p.nombre === nombre && p.instrucciones === instrucciones);
+    
     if (idx >= 0) {
       carrito[idx].cantidad += cantidad;
     } else {
       carrito.push(item);
     }
+    
     localStorage.setItem('carritoYummy', JSON.stringify(carrito));
 
-    document.getElementById('modalCarrito').style.display = 'none';
+    // Cerrar modal y resetear
+    modal.style.display = 'none';
     document.body.style.overflow = '';
     cantidad = 1;
-    alert('¡Producto agregado al carrito!');
+    
+    // Mensaje de confirmación mejorado
+    const totalItem = (precio * cantidad).toFixed(2);
+    alert(`¡Producto agregado al carrito!\n${cantidad}x ${nombre}\nTotal: $${totalItem}`);
   };
 });
+      let tipoDireccion = 'manual';
+        let metodoPago = 'tarjeta';
+
+        function abrirFormularioPedido() {
+            document.getElementById('modalPedido').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function cerrarFormulario() {
+            document.getElementById('modalPedido').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function seleccionarTipoDireccion(tipo) {
+            tipoDireccion = tipo;
+            
+            // Actualizar botones
+            document.querySelectorAll('.direccion-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Mostrar/ocultar secciones
+            document.getElementById('direccion-manual').classList.toggle('active', tipo === 'manual');
+            document.getElementById('direccion-ubicacion').classList.toggle('active', tipo === 'ubicacion');
+        }
+
+        function seleccionarPago(tipo) {
+            metodoPago = tipo;
+            
+            // Actualizar métodos de pago
+            document.querySelectorAll('.payment-method').forEach(method => method.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Mostrar/ocultar detalles
+            document.getElementById('tarjeta-details').classList.toggle('active', tipo === 'tarjeta');
+            document.getElementById('efectivo-details').classList.toggle('active', tipo === 'efectivo');
+        }
+
+        function obtenerUbicacion() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        alert(`Ubicación detectada:\nLatitud: ${lat.toFixed(6)}\nLongitud: ${lng.toFixed(6)}\n\n(En un proyecto real, esto se enviaría al servidor)`);
+                    },
+                    function(error) {
+                        alert('No se pudo obtener la ubicación. Por favor, ingresa la dirección manualmente.');
+                    }
+                );
+            } else {
+                alert('Tu navegador no soporta geolocalización.');
+            }
+        }
+
+        // Formatear número de tarjeta
+        document.getElementById('numeroTarjeta').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formattedValue;
+        });
+
+        // Formatear vencimiento
+        document.getElementById('vencimiento').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            e.target.value = value;
+        });
+
+        // Validación del formulario
+        document.getElementById('formularioPedido').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            let isValid = true;
+            
+            // Validar campos obligatorios
+            const campos = [
+                { id: 'cedula', error: 'error-cedula', validacion: (val) => val.length === 10 && /^\d+$/.test(val) },
+                { id: 'nombre', error: 'error-nombre', validacion: (val) => val.trim().length > 0 },
+                { id: 'celular', error: 'error-celular', validacion: (val) => val.length === 10 && /^\d+$/.test(val) }
+            ];
+
+            if (tipoDireccion === 'manual') {
+                campos.push({ id: 'direccion', error: 'error-direccion', validacion: (val) => val.trim().length > 0 });
+            }
+
+            if (metodoPago === 'tarjeta') {
+                campos.push(
+                    { id: 'numeroTarjeta', validacion: (val) => val.replace(/\s/g, '').length >= 16 },
+                    { id: 'titularTarjeta', validacion: (val) => val.trim().length > 0 },
+                    { id: 'vencimiento', validacion: (val) => val.length === 5 },
+                    { id: 'cvv', validacion: (val) => val.length >= 3 }
+                );
+            }
+
+            campos.forEach(campo => {
+                const elemento = document.getElementById(campo.id);
+                const errorElemento = campo.error ? document.getElementById(campo.error) : null;
+                
+                if (!campo.validacion(elemento.value)) {
+                    elemento.classList.add('error');
+                    if (errorElemento) errorElemento.style.display = 'block';
+                    isValid = false;
+                } else {
+                    elemento.classList.remove('error');
+                    if (errorElemento) errorElemento.style.display = 'none';
+                }
+            });
+
+            if (isValid) {
+                // Simular envío del pedido
+                mostrarConfirmacion();
+            }
+        });
+
+        function mostrarConfirmacion() {
+            const modalContainer = document.querySelector('.modal-container');
+            modalContainer.innerHTML = `
+                <div class="success-animation">
+                    <div class="success-icon">✅</div>
+                    <h2 style="color: #27ae60; margin-bottom: 16px;">¡Pedido Confirmado!</h2>
+                    <p style="margin-bottom: 20px;">Tu pedido ha sido recibido y está en proceso.</p>
+                    <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                        <strong>Número de pedido: #${Math.floor(Math.random() * 10000)}</strong><br>
+                        <small>Tiempo estimado de entrega: 25-35 minutos</small>
+                    </div>
+                    <button class="submit-btn" onclick="cerrarFormulario()">Cerrar</button>
+                </div>
+            `;
+        }
+
+        // Cerrar con Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                cerrarFormulario();
+            }
+        });
+
+        // Cerrar al hacer clic fuera
+        document.getElementById('modalPedido').addEventListener('click', function(e) {
+            if (e.target === this) {
+                cerrarFormulario();
+            }
+        });
