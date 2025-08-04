@@ -45,14 +45,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <?php if (isset($error)): ?>
         <div class="alert alert-danger"><?php echo $error; ?></div>
     <?php endif; ?>
-    <form method="POST" action="">
+    <form id="loginForm" method="POST" action="">
         <div class="form-group">
             <label for="email">Correo Electrónico:</label>
             <input type="email" class="form-control" id="email" name="email" required>
+            <div class="invalid-feedback"></div>
         </div>
         <div class="form-group">
             <label for="password">Contraseña:</label>
             <input type="password" class="form-control" id="password" name="password" required>
+            <div class="invalid-feedback"></div>
         </div>
         <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
     </form>

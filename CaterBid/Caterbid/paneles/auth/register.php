@@ -47,22 +47,26 @@ include '../../includes/navbar.php';
 
 <div class="container">
     <h2>Register</h2>
-    <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+    <form id="registerForm" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
         <div class="form-group">
             <label>Username</label>
-            <input type="text" name="username" class="form-control" value="<?php echo $username; ?>">
+            <input type="text" name="username" id="registerUsername" class="form-control" value="<?php echo $username; ?>" required>
+            <div class="invalid-feedback"></div>
         </div>
         <div class="form-group">
             <label>Email</label>
-            <input type="email" name="email" class="form-control" value="<?php echo $email; ?>">
+            <input type="email" name="email" id="registerEmail" class="form-control" value="<?php echo $email; ?>" required>
+            <div class="invalid-feedback"></div>
         </div>
         <div class="form-group">
             <label>Password</label>
-            <input type="password" name="password" class="form-control">
+            <input type="password" name="password" id="registerPassword" class="form-control" required>
+            <div class="invalid-feedback"></div>
         </div>
         <div class="form-group">
             <label>Confirm Password</label>
-            <input type="password" name="confirm_password" class="form-control">
+            <input type="password" name="confirm_password" id="registerConfirmPassword" class="form-control" required>
+            <div class="invalid-feedback"></div>
         </div>
         <div class="form-group">
             <span class="text-danger"><?php echo $registration_error; ?></span>
