@@ -196,12 +196,12 @@ document.addEventListener('DOMContentLoaded', function() {
       "Desayuno Irlandés": "assets/img/menu/pl_fr_4-removebg-preview.png",
       "Desayuno healthy": "assets/img/menu/pl_fr_5-removebg-preview.png",
       "Bolon de verde": "assets/img/menu/pl_fr_6-removebg-preview.png",
-      "cosa": "assets/img/menu/menu-item-1.png",
-      "Salmon de maracuya": "assets/img/menu/menu-item-2.png",
-      "Pollo campestre": "assets/img/menu/menu-item-3.png",
-      "Pasta pesto": "assets/img/menu/menu-item-4.png",
-      "Costillas BBQ": "assets/img/menu/menu-item-5.png",
-      "Risotto de champiñones": "assets/img/menu/menu-item-6.png"
+      "Biscocho de caramelo": "assets/img/menu/ps_1-removebg-preview.png",
+      "Cheesecake de mora": "assets/img/menu/ps_2-removebg-preview.png",
+      "brownie": "assets/img/menu/ps_3-removebg-preview.png",
+      "Cheesecake de oreo": "assets/img/menu/ps_4-removebg-preview.png",
+      "Chesscake de maracuyá": "assets/img/menu/ps_5-removebg-preview.png",
+      "Chesscake de brownie": "assets/img/menu/ps_6-removebg-preview.png"
     };
     return productos[nombre] || "assets/img/menu/menu-item-1.png";
   }
