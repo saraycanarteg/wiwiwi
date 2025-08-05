@@ -391,6 +391,7 @@
 
         .notification-panel {
             background: #fff3cd;
+            height: 150px;
             border: 1px solid #ffeaa7;
             border-radius: 8px;
             padding: 15px;
@@ -606,6 +607,12 @@
             </p>
         </div>
 
+        <div class="action-buttons">
+            <button class="btn btn-danger" onclick="cancelarPedido()" id="btn-cancelar">
+                <i class="bi bi-x-circle"></i> Cancelar Pedido
+            </button>
+        </div>
+
         <!-- Timeline del Pedido -->
         <div class="timeline-container">
             <h3 class="mb-4">Progreso del Pedido</h3>
@@ -727,9 +734,6 @@
             <button class="btn btn-outline-primary" onclick="verResumenPedido()">
                 <i class="bi bi-receipt"></i> Ver Resumen del Pedido
             </button>
-            <button class="btn btn-danger" onclick="cancelarPedido()" id="btn-cancelar">
-                <i class="bi bi-x-circle"></i> Cancelar Pedido
-            </button>
         </div>
 
         <!-- Resumen del Pedido (inicialmente oculto) -->
@@ -750,10 +754,6 @@
             <div class="order-item">
                 <span>Costo de envío</span>
                 <span>$1.50</span>
-            </div>
-            <div class="order-item">
-                <span>Propina sugerida (10%)</span>
-                <span>$1.75</span>
             </div>
             <div class="order-item">
                 <span>Total</span>
@@ -984,39 +984,7 @@
             mostrarNotificacion('Descargando recibo... (Función simulada)', 'info');
         }
 
-        // 11. MODIFICAR en envio.html - Función para cargar datos guardados del formulario
-        function cargarDatosFormulario() {
-            const datosPedido = JSON.parse(localStorage.getItem('datosPedidoActual') || '{}');
-
-            if (Object.keys(datosPedido).length > 0) {
-                // Cargar datos personales
-                if (datosPedido.cedula) document.getElementById('cedula').value = datosPedido.cedula;
-                if (datosPedido.nombre) document.getElementById('nombre').value = datosPedido.nombre;
-                if (datosPedido.celular) document.getElementById('celular').value = datosPedido.celular;
-                if (datosPedido.direccion) document.getElementById('direccion').value = datosPedido.direccion;
-
-                // Seleccionar método de pago
-                if (datosPedido.metodoPago) {
-                    const metodosPago = document.querySelectorAll('.payment-method');
-                    metodosPago.forEach(metodo => {
-                        metodo.classList.remove('active');
-                        if (metodo.querySelector('.payment-name').textContent.includes(datosPedido.metodoPago)) {
-                            metodo.classList.add('active');
-                            if (datosPedido.metodoPago === 'Efectivo') {
-                                seleccionarPago('efectivo');
-                                if (datosPedido.montoEfectivo) {
-                                    document.getElementById('montoEfectivo').value = datosPedido.montoEfectivo;
-                                }
-                            } else {
-                                seleccionarPago('tarjeta');
-                            }
-                        }
-                    });
-                }
-
-                console.log('📋 Datos del formulario restaurados');
-            }
-        }
+        
 
         // 13. MODIFICAR en seguimiento.html - Función para verificar si hay carrito activo
         function verificarEstadoCarrito() {
@@ -1047,8 +1015,8 @@
             // Resto del código existente...
             const ahora = new Date();
             const carrito = JSON.parse(localStorage.getItem('carritoYummy') || '[]');
-            const total = localStorage.getItem('carritoTotal') || '19.98';
-
+            let total = localStorage.getItem('carritoTotal') || '19.98';
+            total = parseFloat(total) + 1.5; // Agregar costo de envío
             document.getElementById('total-pedido').textContent = `$${total}`;
         }
 
@@ -1129,7 +1097,10 @@
             itemsContainer.insertBefore(envioDiv, totalItem);
 
             // Actualizar total
-            const total = localStorage.getItem('carritoTotal') || '19.98';
+            let total = localStorage.getItem('carritoTotal') || '19.98';
+
+            total= parseFloat(total)+1.5; // Agregar costo de envío
+
             totalItem.innerHTML = `
         <span>Total</span>
         <span>$${total}</span>

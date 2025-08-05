@@ -549,7 +549,39 @@
         </div>
     </main>
     <script>
+        // 11. MODIFICAR en envio.html - Función para cargar datos guardados del formulario
+        function cargarDatosFormulario() {
+            const datosPedido = JSON.parse(localStorage.getItem('datosPedidoActual') || '{}');
 
+            if (Object.keys(datosPedido).length > 0) {
+                // Cargar datos personales
+                if (datosPedido.cedula) document.getElementById('cedula').value = datosPedido.cedula;
+                if (datosPedido.nombre) document.getElementById('nombre').value = datosPedido.nombre;
+                if (datosPedido.celular) document.getElementById('celular').value = datosPedido.celular;
+                if (datosPedido.direccion) document.getElementById('direccion').value = datosPedido.direccion;
+
+                // Seleccionar método de pago
+                if (datosPedido.metodoPago) {
+                    const metodosPago = document.querySelectorAll('.payment-method');
+                    metodosPago.forEach(metodo => {
+                        metodo.classList.remove('active');
+                        if (metodo.querySelector('.payment-name').textContent.includes(datosPedido.metodoPago)) {
+                            metodo.classList.add('active');
+                            if (datosPedido.metodoPago === 'Efectivo') {
+                                seleccionarPago('efectivo');
+                                if (datosPedido.montoEfectivo) {
+                                    document.getElementById('montoEfectivo').value = datosPedido.montoEfectivo;
+                                }
+                            } else {
+                                seleccionarPago('tarjeta');
+                            }
+                        }
+                    });
+                }
+
+                console.log('📋 Datos del formulario restaurados');
+            }
+        }
 
         // 12. AGREGAR en envio.html - Llamar a cargarDatosFormulario() al cargar la página
         // Agregar esta línea al final del DOMContentLoaded o crear uno nuevo:
