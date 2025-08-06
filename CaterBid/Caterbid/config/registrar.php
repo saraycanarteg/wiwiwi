@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Hashear contraseña
     $hash = password_hash($contraseña, PASSWORD_DEFAULT);
 
-    // Obtener id del rol cliente
+    // Obtener id del rol cliente #FALTA PONER VALIDACIÓN CONTRA INYECCIÓN SQL
     $sqlRol = "SELECT id_rol FROM rol WHERE nombre_rol = 'cliente' LIMIT 1";
     $resRol = $conn->query($sqlRol);
     if (!$resRol || $resRol->num_rows == 0) {
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $rol = $resRol->fetch_assoc()['id_rol'];
 
-    // Insertar nuevo usuario
+    // Insertar nuevo usuario #FALTA PONER VALIDACIÓN CONTRA INYECCIÓN SQL
     $stmt = $conn->prepare("INSERT INTO usuario (nombre, correo, contraseña, direccion, id_rol) VALUES (?, ?, ?, ?, ?)");
     $stmt->bind_param("ssssi", $nombre, $correo, $hash, $direccion, $rol);
 

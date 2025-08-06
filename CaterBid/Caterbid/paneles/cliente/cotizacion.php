@@ -12,6 +12,7 @@ $db = $database->getConnection();
 
 // Function to fetch quotes
 function fetchQuotes($db) {
+    // #FALTA PONER VALIDACIÓN CONTRA INYECCIÓN SQL
     $query = "SELECT * FROM quotes WHERE client_id = :client_id";
     $stmt = $db->prepare($query);
     $stmt->bindParam(':client_id', $_SESSION['client_id']);

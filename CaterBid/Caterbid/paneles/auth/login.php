@@ -15,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Database connection
         $conn = connectDatabase();
 
-        // Prepare and execute query
+        // Prepare and execute query #FALTA PONER VALIDACIÓN CONTRA INYECCIÓN SQL
         $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();

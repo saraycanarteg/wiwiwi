@@ -24,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } elseif ($password !== $confirm_password) {
         $registration_error = "Passwords do not match.";
     } else {
-        // Insert user into database
+        // Insert user into database #FALTA PONER VALIDACIÓN CONTRA INYECCIÓN SQL
         $sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
         if ($stmt = $conn->prepare($sql)) {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);

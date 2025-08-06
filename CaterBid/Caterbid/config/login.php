@@ -5,7 +5,7 @@ require 'database.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $correo = $_POST['correo'];
     $clave = $_POST['clave'];
-
+    // #FALTA PONER VALIDACIÓN CONTRA INYECCIÓN SQL
     $stmt = $conn->prepare("SELECT id_usuario, nombre, contraseña, id_rol FROM usuario WHERE correo = ?");
     $stmt->bind_param("s", $correo);
     $stmt->execute();

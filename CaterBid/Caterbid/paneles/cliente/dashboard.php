@@ -10,7 +10,7 @@ include_once '../../includes/navbar.php';
 $db = new Database();
 $conn = $db->getConnection();
 
-// Fetch client data (example query)
+// Fetch client data (example query) #FALTA PONER VALIDACIÓN CONTRA INYECCIÓN SQL
 $query = "SELECT * FROM clients WHERE id = :id";
 $stmt = $conn->prepare($query);
 $stmt->bindParam(':id', $_SESSION['client_id']);

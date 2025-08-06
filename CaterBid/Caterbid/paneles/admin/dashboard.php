@@ -19,7 +19,7 @@ function fetchDashboardData() {
     $db = new Database();
     $conn = $db->getConnection();
 
-    // Example query to fetch user statistics
+    // Example query to fetch user statistics #FALTA PONER VALIDACIÓN CONTRA INYECCIÓN SQL
     $query = "SELECT COUNT(*) as total_users FROM users";
     $stmt = $conn->prepare($query);
     $stmt->execute();
