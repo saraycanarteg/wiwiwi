@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>CaterBid - Dashboard</title>
+
+    <!-- Custom fonts for this template-->
+    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="recursos/css/admin.css" rel="stylesheet">
+
+</head>
+
+<body id="page-top">
+
+   <!-- Page Wrapper -->
+   <div class="d-flex">
+
+       <!-- Sidebar -->
+       <nav class="sidebar">
+        <!-- Sidebar - Brand -->
+        <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+            <div class="sidebar-brand-icon">
+                <img src="recursos/images/logo.jpeg" alt="Logo" style="width: 40px; height: 40px;">
+            </div>
+            <div class="sidebar-brand-text mx-3">CaterBid</div>
+        </a>
+           <!-- Divider -->
+           <hr class="sidebar-divider my-0">
+
+           <!-- Nav Item - Dashboard -->
+           <ul class="navbar-nav">
+               <li class="nav-item active">
+                   <a class="nav-link" href="dashboardClient.html">
+                       <i class="fas fa-fw fa-tachometer-alt"></i>
+                       <span>Dashboard</span>
+                   </a>
+               </li>
+
+               <!-- Divider -->
+               <hr class="sidebar-divider">
+
+               <!-- Heading -->
+               <div class="sidebar-heading">Principal</div>
+
+               <!-- Nav Item - Cotizaciones -->
+               <li class="nav-item">
+                   <a class="nav-link" href="nueva-cotizacion.html">
+                       <i class="fas fa-fw fa-plus"></i>
+                       <span>Nueva Cotización</span>
+                   </a>
+               </li>
+               <li class="nav-item">
+                   <a class="nav-link" href="cotizaciones.html">
+                       <i class="fas fa-fw fa-calculator"></i>
+                       <span>Historial - Cotizaciones</span>
+                   </a>
+               </li>
+
+               <!-- Nav Item - Empresas -->
+               <li class="nav-item">
+                   <a class="nav-link" href="empresas.html">
+                       <i class="fas fa-fw fa-building"></i>
+                       <span>Empresas de Catering</span>
+                   </a>
+               </li>
+
+               <!-- Divider -->
+               <hr class="sidebar-divider">
+
+               <!-- Heading -->
+               <div class="sidebar-heading">Secundario</div>
+
+               <!-- Nav Item - Mi Perfil -->
+               <li class="nav-item">
+                   <a class="nav-link" href="perfil.html">
+                       <i class="fas fa-fw fa-user"></i>
+                       <span>Mi Perfil</span>
+                   </a>
+               </li>
+
+               <!-- Nav Item - Ayuda -->
+               <li class="nav-item">
+                   <a class="nav-link" href="ayuda.html">
+                       <i class="fas fa-fw fa-question-circle"></i>
+                       <span>Ayuda</span>
+                   </a>
+               </li>
+           </ul>
+       </nav>
+
+       <!-- Content Wrapper -->
+       <div class="content-wrapper">
+
+           <!-- Topbar -->
+           <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 sticky-top shadow-sm">
+               <!-- Topbar Search -->
+               <form class="d-none d-sm-inline-block form-inline me-auto ms-md-3 my-2 my-md-0 mw-100 navbar-search">
+                   <div class="input-group">
+                       <input type="text" class="form-control bg-light border-0 small" placeholder="Buscar servicios, empresas..." aria-label="Search">
+                       <div class="input-group-append">
+                           <button class="btn btn-primary" type="button">
+                               <i class="fas fa-search fa-sm"></i>
+                           </button>
+                       </div>
+                   </div>
+               </form>
+
+               <!-- Topbar Navbar -->
+               <ul class="navbar-nav ms-auto">
+                   <!-- Nav Item - Notifications -->
+                   <li class="nav-item dropdown no-arrow mx-1">
+                       <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-bs-toggle="dropdown">
+                           <i class="fas fa-bell fa-fw"></i>
+                           <span class="badge bg-danger badge-counter">2</span>
+                       </a>
+                   </li>
+
+                   <!-- Nav Item - User Information -->
+                   <li class="nav-item dropdown no-arrow">
+                       <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                           <span class="me-2 d-none d-lg-inline text-gray-600 small">Mi Cuenta</span>
+                           <i class="fas fa-user-circle fa-2x text-gray-300"></i>
+                       </a>
+                       <div class="dropdown-menu dropdown-menu-end shadow">
+                           <a class="dropdown-item" href="#">
+                               <i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i>
+                               Perfil
+                           </a>
+                           <a class="dropdown-item" href="#">
+                               <i class="fas fa-cogs fa-sm fa-fw me-2 text-gray-400"></i>
+                               Configuración
+                           </a>
+                           <div class="dropdown-divider"></div>
+                           <a class="dropdown-item" href="#">
+                               <i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>
+                               Cerrar Sesión
+                           </a>
+                       </div>
+                   </li>
+               </ul>
+           </nav>
+
+           <!-- Main Content -->
+           <div class="container-fluid">
+
+               <!-- Page Heading -->
+               <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                   <h1 class="h3 mb-0 text-gray-800">Dashboard - Bienvenid@</h1>
+                   <a href="nueva-cotizacion.html" class="btn btn-primary shadow-sm">
+                       <i class="fas fa-plus fa-sm text-white-50"></i> Nueva Cotización
+                   </a>
+               </div>
+
+               <!-- Main Stats Row -->
+               <div class="row mb-4">
+                   <div class="col-md-6 mb-4">
+                       <div class="card shadow h-100">
+                           <div class="card-body text-center py-5">
+                               <h6 class="text-muted mb-2">Cantidad de cotizaciones hechas</h6>
+                               <h1 class="display-4 fw-bold text-dark mb-0">2,405</h1>
+                           </div>
+                       </div>
+                   </div>
+                   <div class="col-md-6 mb-4">
+                       <div class="card shadow h-100">
+                           <div class="card-body text-center py-5">
+                               <h6 class="text-muted mb-2">Mi proveedor más cotizado</h6>
+                               <h3 class="fw-bold text-dark mb-0" style="letter-spacing: 3px;">----------</h3>
+                               <small class="text-muted">Catering Deluxe</small>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Chart Row -->
+               <div class="row mb-4">
+                   <div class="col-12">
+                       <div class="card shadow">
+                           <div class="card-header py-3">
+                               <h6 class="m-0 fw-bold text-dark">Cotizaciones por Mes</h6>
+                           </div>
+                           <div class="card-body">
+                               <canvas id="cotizacionesChart" width="400" height="100"></canvas>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Secondary Stats -->
+               <div class="row mb-4">
+                   <div class="col-lg-3 col-md-6 mb-4">
+                       <div class="card border-left-primary shadow h-100 py-2">
+                           <div class="card-body">
+                               <div class="row no-gutters align-items-center">
+                                   <div class="col me-2">
+                                       <div class="text-xs fw-bold text-primary text-uppercase mb-1">
+                                           Cotizaciones Este Mes</div>
+                                       <div class="h5 mb-0 fw-bold text-gray-800">47</div>
+                                   </div>
+                                   <div class="col-auto">
+                                       <i class="fas fa-file-invoice-dollar fa-2x text-gray-300"></i>
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <div class="col-lg-3 col-md-6 mb-4">
+                       <div class="card border-left-success shadow h-100 py-2">
+                           <div class="card-body">
+                               <div class="row no-gutters align-items-center">
+                                   <div class="col me-2">
+                                       <div class="text-xs fw-bold text-success text-uppercase mb-1">
+                                           Promedio Mensual</div>
+                                       <div class="h5 mb-0 fw-bold text-gray-800">52</div>
+                                   </div>
+                                   <div class="col-auto">
+                                       <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <div class="col-lg-3 col-md-6 mb-4">
+                       <div class="card border-left-info shadow h-100 py-2">
+                           <div class="card-body">
+                               <div class="row no-gutters align-items-center">
+                                   <div class="col me-2">
+                                       <div class="text-xs fw-bold text-info text-uppercase mb-1">
+                                           Empresas Consultadas</div>
+                                       <div class="h5 mb-0 fw-bold text-gray-800">23</div>
+                                   </div>
+                                   <div class="col-auto">
+                                       <i class="fas fa-building fa-2x text-gray-300"></i>
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+
+                   <div class="col-lg-3 col-md-6 mb-4">
+                       <div class="card border-left-warning shadow h-100 py-2">
+                           <div class="card-body">
+                               <div class="row no-gutters align-items-center">
+                                   <div class="col me-2">
+                                       <div class="text-xs fw-bold text-warning text-uppercase mb-1">
+                                           Ahorro Estimado</div>
+                                       <div class="h5 mb-0 fw-bold text-gray-800">$12,340</div>
+                                   </div>
+                                   <div class="col-auto">
+                                       <i class="fas fa-piggy-bank fa-2x text-gray-300"></i>
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+
+                   <!-- Quick Actions -->
+                <div class="row">
+                   <!-- Quick Actions -->
+                   <div class="col-12 mb-4">
+                       <div class="card shadow">
+                           <div class="card-header py-3">
+                               <h6 class="m-0 fw-bold text-dark">Acciones Rápidas</h6>
+                           </div>
+                           <div class="card-body">
+                               <div class="d-grid gap-2">
+                                   <a href="nueva-cotizacion.html" class="btn btn-dark btn-sm">
+                                       <i class="fas fa-plus me-2"></i>Nueva Cotización
+                                   </a>
+                                   <a href="empresas.html" class="btn btn-outline-dark btn-sm">
+                                       <i class="fas fa-search me-2"></i>Buscar Empresas
+                                   </a>
+                                   <a href="cotizaciones.html" class="btn btn-outline-secondary btn-sm">
+                                       <i class="fas fa-file-invoice me-2"></i>Ver Mis Cotizaciones
+                                   </a>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+           <!-- End of Main Content -->
+
+           <!-- Footer -->
+           <footer class="bg-white py-4 mt-5">
+               <div class="container">
+                   <div class="text-center">
+                       <span class="text-muted">Copyright &copy; CaterBid 2025</span>
+                   </div>
+               </div>
+           </footer>
+
+       </div>
+       <!-- End of Content Wrapper -->
+
+   </div>
+   <!-- End of Page Wrapper -->
+
+   <!-- Bootstrap JavaScript -->
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+   
+   <!-- Chart.js -->
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+   
+   <script>
+       // Chart for cotizaciones por mes
+       const ctx = document.getElementById('cotizacionesChart').getContext('2d');
+       const cotizacionesChart = new Chart(ctx, {
+           type: 'bar',
+           data: {
+               labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+               datasets: [{
+                   data: [45, 52, 48, 61, 55, 67, 59, 80, 81, 56, 55, 40],
+                   backgroundColor: '#000000',
+                   borderRadius: 4,
+                   borderSkipped: false,
+               }]
+           },
+           options: {
+               responsive: true,
+               maintainAspectRatio: false,
+               plugins: {
+                   legend: {
+                       display: false
+                   }
+               },
+               scales: {
+                   y: {
+                       beginAtZero: true,
+                       max: 100,
+                       ticks: {
+                           stepSize: 20,
+                           callback: function(value) {
+                               return '$' + (value * 1000).toLocaleString();
+                           }
+                       },
+                       grid: {
+                           color: '#f0f0f0'
+                       }
+                   },
+                   x: {
+                       grid: {
+                           display: false
+                       }
+                   }
+               },
+               elements: {
+                   bar: {
+                       borderWidth: 0
+                   }
+               }
+           }
+       });
+       cotizacionesChart.resize(800, 400);
+
+       // Pie chart for tipos de eventos
+       const ctx2 = document.getElementById('eventosChart').getContext('2d');
+       const eventosChart = new Chart(ctx2, {
+           type: 'doughnut',
+           data: {
+               labels: ['Bodas', 'Corporativos', 'Cumpleaños', 'Graduaciones', 'Otros'],
+               datasets: [{
+                   data: [35, 25, 20, 12, 8],
+                   backgroundColor: [
+                       '#e74a3b',
+                       '#f39c12', 
+                       '#3498db',
+                       '#2ecc71',
+                       '#95a5a6'
+                   ],
+                   borderWidth: 0
+               }]
+           },
+           options: {
+               responsive: true,
+               maintainAspectRatio: false,
+               plugins: {
+                   legend: {
+                       position: 'bottom',
+                       labels: {
+                           padding: 20,
+                           usePointStyle: true
+                       }
+                   }
+               }
+           }
+       });
+   </script>
+
+</body>
+
+</html>
