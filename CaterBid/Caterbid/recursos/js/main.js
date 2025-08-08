@@ -57,9 +57,9 @@ function clearError(element) {
 
 // Validación en tiempo real para login
 document.addEventListener('DOMContentLoaded', function() {
-    const loginForm = document.getElementById('loginForm');
+    const loginForm = document.getElementById('formularioLogin');
     const email = document.getElementById('email');
-    const password = document.getElementById('password');
+    const password = document.getElementById('contrasena');
 
     if (loginForm && email && password) {
         // Validación de email en tiempo real
@@ -304,7 +304,7 @@ function clearValidation(element) {
 
 // VALIDACIONES PARA LOGIN MODAL
 function validateLoginEmail() {
-    const emailInput = document.getElementById('loginEmail');
+    const emailInput = document.getElementById('email');
     if (!emailInput) return;
 
     emailInput.addEventListener('blur', function() {

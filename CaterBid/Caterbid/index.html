@@ -1,169 +1,38 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Caterbid - Plataforma de Catering</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="recursos/css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Caterbid - Plataforma de Catering</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="recursos/css/style.css">
 </head>
 <body>
-    <!-- Navegación Principal -->
-    <nav class="navegacion-principal navbar navbar-expand-lg fixed-top">
-        <div class="container">
-            <a class="marca-logo navbar-brand" href="#">
-                <img src="recursos/images/logo.jpeg" alt="Logo Caterbid" class="icono-logo" style="width:50px;height:50px;object-fit:cover;background:var(--color-amarillo-acento);">
-                Caterbid
-            </a>
-            <div class="d-flex">
-                <a href="#" class="boton-autenticacion boton-iniciar-sesion" data-bs-toggle="modal" data-bs-target="#loginModal">
-                    <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
-                </a>
-                <a href="#" class="boton-autenticacion boton-registrarse" data-bs-toggle="modal" data-bs-target="#registerModal">
-                    <i class="fas fa-user-plus me-2"></i>Registrarse
-                </a>
-            </div>
-        </div>
-    </nav>
-
- <!-- Sección Principal Hero -->
-    <section class="seccion-hero">
-        <div class="elementos-flotantes">
-            <i class="icono-flotante fas fa-utensils fa-2x"></i>
-            <i class="icono-flotante fas fa-birthday-cake fa-2x"></i>
-            <i class="icono-flotante fas fa-wine-glass fa-2x"></i>
-            <i class="icono-flotante fas fa-pizza-slice fa-2x"></i>
-        </div>
-        
-        <div class="container">
-            <div class="row align-items-center min-vh-100">
-                <div class="col-lg-6">
-                    <div class="contenido-hero">
-                        <h1 class="titulo-principal">Caterbid</h1>
-                        <p class="subtitulo-principal">La plataforma para conectar clientes y proveedores de catering</p>
-                        <p class="descripcion-principal">
-                            Encuentra el servicio de catering perfecto para tu evento o haz crecer tu negocio 
-                            conectándote con clientes que buscan exactamente lo que ofreces.
-                        </p>
-                    </div>
-                </div>
-                
-                <div class="col-lg-6">
-                    <div class="contenedor-gif">
-                        <img src="https://i.pinimg.com/originals/48/93/c2/4893c23f4bb4b7ff45bf9d4c02c4cb56.gif" 
-                             alt="Chef animado" 
-                             class="gif-chef">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-     <!-- Modal de Iniciar Sesión -->
-    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content modal-personalizado">
-                <div class="modal-body p-0">
-                    <div class="container-fluid">
-                        <div class="row">
-                            <!-- Columna izquierda con imagen y bienvenida -->
-                            <div class="col-md-4 p-5 columna-izquierda-modal">
-                                <div class="text-center mb-5">
-                                    <img src="recursos/images/logo.jpeg" alt="Logo Caterbid" class="logo-modal">
-                                    <h4 class="mt-4 text-white titulo-modal">¡Bienvenido!</h4>
-                                </div>
-                            </div>
-                            <!-- Columna derecha con el formulario -->
-                            <div class="col-md-8 p-5 columna-derecha-modal">
-                                <div class="d-flex justify-content-end mb-4">
-                                    <button type="button" class="btn-close boton-cerrar-modal" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <form id="loginForm" class="formulario-modal">
-                                    <div class="mb-3">
-                                        <label for="loginEmail" class="form-label etiqueta-campo">Usuario</label>
-                                        <input type="email" class="form-control campo-entrada" 
-                                               id="loginEmail" placeholder="Correo electrónico" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="loginPassword" class="form-label etiqueta-campo">Contraseña</label>
-                                        <input type="password" class="form-control campo-entrada" 
-                                               id="loginPassword" placeholder="Ingresa tu contraseña" required>
-                                    </div>
-                                    <button type="submit" class="btn w-100 boton-enviar-modal">
-                                        Iniciar Sesión
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div class="contenedor-login">
+    <div class="lado-izquierdo">
+      <div class="contenedor-logo">
+        <img src="recursos/images/logo.jpeg" alt="Logo de Caterbid">
+      </div>
+      <div class="texto-bienvenida">
+        <h2>¡Bienvenido!</h2> 
+      </div>
     </div>
-
-    <!-- Modal de Registro -->
-    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content modal-personalizado">
-                <div class="modal-body p-0">
-                    <div class="container-fluid">
-                        <div class="row">
-                            <!-- Columna izquierda con imagen y mensaje -->
-                            <div class="col-md-4 p-4 columna-izquierda-modal d-flex align-items-center justify-content-center">
-                                <div class="text-center w-100">
-                                    <img src="recursos/images/logo.jpeg" alt="Logo Caterbid" class="logo-modal">
-                                    <h4 class="mt-3 text-white titulo-modal">¡Únete a Caterbid!</h4>
-                                </div>
-                            </div>
-                            <!-- Columna derecha con el formulario -->
-                            <div class="col-md-8 p-4 columna-derecha-modal">
-                                <div class="d-flex justify-content-end mb-3">
-                                    <button type="button" class="btn-close boton-cerrar-modal" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <form id="registerForm" action="config/registrar.php" method="POST" class="formulario-modal">                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="registerName" class="form-label etiqueta-campo">Nombre completo</label>
-                                            <input type="text" class="form-control campo-entrada" 
-                                                   id="registerName" name="nombre" placeholder="Tu nombre" required>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="registerEmail" class="form-label etiqueta-campo">Correo electrónico</label>
-                                            <input type="email" class="form-control campo-entrada" 
-                                                   id="registerEmail" name="correo" placeholder="correo@ejemplo.com" required>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="registerPassword" class="form-label etiqueta-campo">Contraseña</label>
-                                            <input type="password" class="form-control campo-entrada" 
-                                                   id="registerPassword" name="contraseña" placeholder="Contraseña" required>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="registerConfirmPassword" class="form-label etiqueta-campo">Confirmar contraseña</label>
-                                            <input type="password" class="form-control campo-entrada" 
-                                                   id="registerConfirmPassword" name="confirmar_contraseña"  placeholder="Confirmar contraseña" required>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="registerAddress" class="form-label etiqueta-campo">Dirección</label>
-                                        <textarea class="form-control campo-textarea" id="registerAddress" name="direccion"
-                                                  rows="2" placeholder="Tu dirección" required></textarea>
-                                    </div>
-                                    <div class="d-flex justify-content-center w-100">
-                                    <button type="submit" class="btn w-50 boton-enviar-modal">
-                                        Registrarse
-                                    </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="lado-derecho">
+      <div class="encabezado-login">
+        <h1>Accede a tu cuenta</h1>
+      </div>
+      <form id="formularioLogin" class="formulario-login" action="config/login.php" method="POST">
+        <div class="grupo-campo">
+          <input type="text" name="correo" id="email" placeholder="Correo Electrónico" class="form-control" required>
         </div>
+        <div class="grupo-campo">
+          <input type="password" name="clave" id="contrasena" placeholder="Contraseña" class="form-control" required>
+        </div>
+        <button type="submit" class="boton-ingresar">Ingresar</button>
+      </form>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <script src="recursos/js/main.js"></script>
+  </div>
+  <script src="recursos/js/main.js"></script>
 </body>
 </html>

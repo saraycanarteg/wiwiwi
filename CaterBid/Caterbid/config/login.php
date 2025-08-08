@@ -5,7 +5,7 @@ require 'database.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $correo = $_POST['correo'];
     $clave = $_POST['clave'];
-    // #FALTA PONER VALIDACIÓN CONTRA INYECCIÓN SQL
+    
     $stmt = $conn->prepare("SELECT id_usuario, nombre, contraseña, id_rol FROM usuario WHERE correo = ?");
     $stmt->bind_param("s", $correo);
     $stmt->execute();
@@ -18,19 +18,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['rol_id'] = $usuario['id_rol'];
             $_SESSION['nombre'] = $usuario['nombre'];
 
-            // Redirigir según rol
             switch ($usuario['id_rol']) {
-                case 1: header("Location: dashboard_admin.php"); break;
-                case 2: header("Location: dashboard_cliente.php"); break;
-                case 3: header("Location: dashboard_proveedor.php"); break;
-                default: echo "Rol desconocido"; exit;
+                case 1: header("Location: ../dashboardAdmin.html"); break;
+                case 2: header("Location: ../dashboardCotizador.html"); break;
+                case 3: header("Location: ../dashboardBodeguero.html"); break;
+                default: 
+                    $_SESSION['error'] = "Rol desconocido";
+                    header("Location: ../index.html");
+                    break;
             }
             exit;
         } else {
-            echo "Contraseña incorrecta";
+            $_SESSION['error'] = "Contraseña incorrecta";
+            header("Location: ../index.html");
         }
     } else {
-        echo "Usuario no encontrado";
+        $_SESSION['error'] = "Usuario no encontrado";
+        header("Location: ../index.html");
     }
 
     $stmt->close();
