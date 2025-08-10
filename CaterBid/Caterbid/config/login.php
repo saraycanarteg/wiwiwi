@@ -31,6 +31,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $usuario = $res->fetch_assoc();
         
         if (password_verify($clave, $usuario['contraseña'])) {
+            //Capturar ID de usuario logeado para triggers
+             $_SESSION['usuario_id'] = $usuario['id_usuario'];
+            $usuario_id = intval($usuario['id_usuario']);
+            mysqli_query($conn, "SET @usuario_id = {$usuario_id}");
+
             // Obtener todos los permisos del rol
             $stmt_permisos = $conn->prepare("
                 SELECT p.nombre_permiso 
@@ -61,20 +66,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'rol_nombre' => $usuario['nombre_rol'],
                 'permisos' => $permisos
             ];
-            
-            // Registrar login en auditoría (opcional - comentar si no tienes tabla auditoria)
-            /*
-            $stmt_auditoria = $conn->prepare("
-                INSERT INTO auditoria (id_usuario, accion, tabla_afectada, fecha_accion) 
-                VALUES (?, 'LOGIN', 'usuario', NOW())
-            ");
-            if ($stmt_auditoria) {
-                $stmt_auditoria->bind_param("i", $usuario['id_usuario']);
-                $stmt_auditoria->execute();
-                $stmt_auditoria->close();
-            }
-            */
-            
             // Redirigir a dashboard único (no por rol)
             header("Location: ../includes/dashboard.php");
             exit;

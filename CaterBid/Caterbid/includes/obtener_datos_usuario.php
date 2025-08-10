@@ -12,9 +12,9 @@ if (!isset($_SESSION['usuario'])) {
 $mapaPermisos = [
     'gestion_rolperm' => ['icon' => 'fas fa-user-shield', 'file' => '../paneles/admin/gestion_rolperm.html', 'title' => 'Gestionar Roles y Permisos', 'orden' => 3],
     'gestion_usuario' => ['icon' => 'fas fa-users-cog', 'file' => '../paneles/admin/gestion_usuario.html', 'title' => 'Gestión Usuarios','orden' => 4],
-    'revisar_logs' => ['icon' => 'fas fa-clipboard-list', 'file' => '../paneles/admin/auditorias.html', 'title' => 'Logs y Auditoría', 'orden' => 1],
+    'revisar_logs' => ['icon' => 'fas fa-clipboard-list', 'file' => '../paneles/admin/auditorias.php', 'title' => 'Logs y Auditoría', 'orden' => 1],
     'metricas_admin' => ['icon' => 'fas fa-chart-line', 'file' => '../paneles/admin/metricas_admin.html', 'title' => 'Métricas Administrador', 'orden' => 5],
-    'registrar_proveedor' => ['icon' => 'fas fa-truck', 'file' => '../paneles/admin/registrar_proveedor.html', 'title' => 'Registrar Proveedor', 'orden' => 2],
+    'gestionar_proveedor' => ['icon' => 'fas fa-truck', 'file' => '../paneles/admin/gestionar_proveedor.php', 'title' => 'Registrar Proveedor', 'orden' => 2],
     'gestionar_productos' => ['icon' => 'fas fa-boxes', 'file' => '../paneles/bodeguero/gestionar_productos.html', 'title' => 'Gestionar Productos'],
     'gestion_paquete' => ['icon' => 'fas fa-box-open', 'file' => '../paneles/bodeguero/gestion_paquete.html', 'title' => 'Gestionar Paquete'],
     'metricas_bodeguero' => ['icon' => 'fas fa-chart-pie', 'file' => '../paneles/bodeguero/metricas_bodeguero.html', 'title' => 'Métricas Bodeguero'],
