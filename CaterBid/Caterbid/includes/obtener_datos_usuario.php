@@ -10,7 +10,7 @@ if (!isset($_SESSION['usuario'])) {
 
 // Mapa permisos con  icono + archivo
 $mapaPermisos = [
-    'gestion_rolperm' => ['icon' => 'fas fa-user-shield', 'file' => '../paneles/admin/gestion_rolperm.html', 'title' => 'Gestionar Roles y Permisos', 'orden' => 3],
+    'gestion_rolperm' => ['icon' => 'fas fa-user-shield', 'file' => '../paneles/admin/gestion_rolperm.php', 'title' => 'Gestionar Roles y Permisos', 'orden' => 3],
     'gestion_usuario' => ['icon' => 'fas fa-users-cog', 'file' => '../paneles/admin/gestion_usuario.html', 'title' => 'Gestión Usuarios','orden' => 4],
     'revisar_logs' => ['icon' => 'fas fa-clipboard-list', 'file' => '../paneles/admin/auditorias.php', 'title' => 'Logs y Auditoría', 'orden' => 1],
     'metricas_admin' => ['icon' => 'fas fa-chart-line', 'file' => '../paneles/admin/metricas_admin.html', 'title' => 'Métricas Administrador', 'orden' => 5],

@@ -89,7 +89,31 @@ $(document).ready(function() {
             });
         });
     }
-    
+    // Enviar formulario de roles - SOLO si existe
+    if ($('#rolForm').length > 0) {
+        $('#rolForm').on('submit', function(e) {
+            e.preventDefault();
+            const btn = $(this).find('button[type="submit"]');
+            const texto = btn.html();
+            btn.html('<i class="fas fa-spinner fa-spin"></i> Procesando...').prop('disabled', true);
+
+            $.ajax({
+                url: '../controles/ajax_roles.php',
+                type: 'POST',
+                data: $(this).serialize(),
+                dataType: 'json',
+                success: function(r) {
+                    mensaje(r.mensaje, r.success ? 'success' : 'danger');
+                    if (r.success) {
+                        if ($('input[name="accion"]').val() === 'crear') limpiar();
+                        cargarTablaRoles();
+                    }
+                },
+                error: function() { mensaje('Error de conexión', 'danger'); },
+                complete: function() { btn.html(texto).prop('disabled', false); }
+            });
+        });
+    }
     // Editar
     $(document).on('click', '.btn-editar', function() {
         const id = $(this).data('id');
@@ -131,6 +155,31 @@ $(document).ready(function() {
                     $('button[type="submit"]').html('<i class="fas fa-save me-1"></i>Actualizar');
                 }
             }, 'json');
+        } else if ($('#rolForm').length > 0) {
+            // Estamos en roles
+            $.get('../controles/ajax_roles.php?accion=obtener&id=' + id, function(r) {
+                if (r.success) {
+                    $('#nombre_rol').val(r.data.nombre_rol);
+                    $('#descripcion').val(r.data.descripcion);
+                    $('input[name="accion"]').val('editar');
+                    $('#rolForm').append('<input type="hidden" name="id_rol" value="' + r.data.id_rol + '">');
+
+                    // Limpiar permisos y marcar los correspondientes
+                    $('input[name="permisos[]"]').prop('checked', false);
+                    if (r.data.permisos && r.data.permisos.length > 0) {
+                        r.data.permisos.forEach(function(p) {
+                            $('#perm_' + p).prop('checked', true);
+                        });
+                    }
+
+                    $('.form-container h3').text('Editar Rol');
+                    $('button[type="submit"]').html('<i class="fas fa-save me-1"></i>Actualizar');
+                } else {
+                    mensaje(r.mensaje, 'danger');
+                }
+            }, 'json').fail(function() {
+                mensaje('Error al cargar datos del rol', 'danger');
+            });
         }
     });
     
@@ -165,6 +214,18 @@ $(document).ready(function() {
                 mensaje(r.mensaje, r.success ? 'success' : 'danger');
                 if (r.success) cargarTabla();
             }, 'json');
+        } else if ($('#rolForm').length > 0) {
+            // Estamos en roles
+            $.post('../controles/ajax_roles.php', {
+                accion: 'cambiar_estado',
+                id: id,
+                estado: estado
+            }, function(r) {
+                mensaje(r.mensaje, r.success ? 'success' : 'danger');
+                if (r.success) cargarTablaRoles();
+            }, 'json').fail(function() {
+                mensaje('Error al cambiar estado del rol', 'danger');
+            });
         }
     });
     
@@ -180,6 +241,10 @@ $(document).ready(function() {
     // Validaciones específicas de proveedores - SOLO si el formulario existe
     if ($('#proveedorForm').length > 0) {
         initProveedorValidations();
+    }
+
+    if ($('#tabla-roles').length) {
+        cargarTablaRoles();
     }
 });
 
@@ -198,6 +263,14 @@ function cargarTablaProductos() {
     });
 }
 
+function cargarTablaRoles() {
+    $.get('../controles/ajax_roles.php?accion=cargar_tabla', function(html) {
+        $('#tabla-roles').html(html);
+    }).fail(function() {
+        mensaje('Error al cargar tabla de roles', 'danger');
+    });
+}
+
 // Función para mostrar mensajes
 function mensaje(text, tipo) {
     $('.alert').remove();
@@ -211,6 +284,8 @@ function limpiar() {
         limpiarProducto();
     } else if ($('#proveedorForm').length > 0) {
         limpiarProveedor();
+    } else if ($('#rolForm').length > 0) {
+        limpiarRol();
     }
 }
 
@@ -229,7 +304,14 @@ function limpiarProveedor() {
     $('.form-container h3').text('Nuevo Proveedor');
     $('button[type="submit"]').html('<i class="fas fa-save me-1"></i>Guardar');
 }
-
+function limpiarRol() {
+    $('#rolForm')[0].reset();
+    $('input[name="accion"]').val('crear');
+    $('input[name="id_rol"]').remove();
+    $('.form-container h3').text('Nuevo Rol');
+    $('button[type="submit"]').html('<i class="fas fa-save me-1"></i>Guardar');
+    $('input[name="permisos[]"]').prop('checked', false);
+}
 // Inicializar validaciones específicas de proveedores
 function initProveedorValidations() {
     // Validación en tiempo real del RUC - SOLO si el elemento existe
