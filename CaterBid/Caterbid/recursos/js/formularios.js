@@ -241,6 +241,58 @@ $(document).ready(function() {
             });
         });
     }
+    // Enviar formulario de usuarios - SOLO si existe
+    if ($('#usuarioForm').length > 0) {
+        $('#usuarioForm').on('submit', function(e) {
+            e.preventDefault();
+            const btn = $(this).find('button[type="submit"]');
+            const texto = btn.html();
+            btn.html('<i class="fas fa-spinner fa-spin"></i> Procesando...').prop('disabled', true);
+            
+            // Validaciones previas
+            const accion = $('input[name="accion"]').val();
+            const contraseña = $('#contraseña').val();
+            const confirmar = $('#confirmar_contraseña').val();
+            
+            // Para crear, la contraseña es obligatoria
+            if (accion === 'crear' && !contraseña) {
+                mensaje('La contraseña es obligatoria', 'danger');
+                btn.html(texto).prop('disabled', false);
+                return false;
+            }
+            
+            // Si se proporciona contraseña, validarla
+            if (contraseña && contraseña !== confirmar) {
+                mensaje('Las contraseñas no coinciden', 'danger');
+                btn.html(texto).prop('disabled', false);
+                return false;
+            }
+            
+            if (contraseña && contraseña.length < 6) {
+                mensaje('La contraseña debe tener al menos 6 caracteres', 'danger');
+                btn.html(texto).prop('disabled', false);
+                return false;
+            }
+            
+            $.ajax({
+                url: '../controles/ajax_usuarios.php',
+                type: 'POST',
+                data: new FormData(this),
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+                success: function(r) {
+                    mensaje(r.mensaje, r.success ? 'success' : 'danger');
+                    if (r.success) {
+                        if ($('input[name="accion"]').val() === 'crear') limpiar();
+                        cargarTablaUsuarios();
+                    }
+                },
+                error: function() { mensaje('Error de conexión', 'danger'); },
+                complete: function() { btn.html(texto).prop('disabled', false); }
+            });
+        });
+    }
 
     // Editar
     $(document).on('click', '.btn-editar', function() {
@@ -368,74 +420,97 @@ $(document).ready(function() {
                 console.log('Error al cargar paquete:', status, error, xhr.responseText);
                 mensaje('Error al cargar datos del paquete', 'danger');
             });
+        }else if ($('#usuarioForm').length > 0) {
+            console.log('Editando usuario ID:', id);
+            $.get('../controles/ajax_usuarios.php?accion=obtener&id=' + id, function(r) {
+                console.log('Datos del usuario:', r);
+                if (r.success) {
+                    $('#nombre').val(r.data.nombre);
+                    $('#correo').val(r.data.correo);
+                    $('#direccion').val(r.data.direccion || '');
+                    $('#id_rol').val(r.data.id_rol);
+                    
+                    // Limpiar campos de contraseña
+                    $('#contraseña').val('');
+                    $('#confirmar_contraseña').val('');
+                    
+                    // Mostrar mensaje informativo sobre la contraseña
+                    $('.password-info').remove();
+                    $('#contraseña').after('<small class="form-text text-muted password-info">Deja en blanco para mantener la contraseña actual</small>');
+                    
+                    $('input[name="accion"]').val('editar');
+                    $('#usuarioForm').append('<input type="hidden" name="id_usuario" value="' + r.data.id_usuario + '">');
+                    $('.form-container h3').text('Editar Usuario');
+                    $('button[type="submit"]').html('<i class="fas fa-save me-1"></i>Actualizar');
+                } else {
+                    mensaje(r.mensaje, 'danger');
+                }
+            }, 'json').fail(function() {
+                mensaje('Error al cargar datos del usuario', 'danger');
+            });
         }
     });
     
     // Cambiar estado
-    $(document).on('click', '.btn-toggle', function() {
-        if (!confirm('¿Confirmar acción?')) return;
-        
-        const id = $(this).data('id');
-        const estado = $(this).data('estado');
-        
+    $(document).on('click', '.btn-toggle', function () {
+        const $btn = $(this);
+        const id = $btn.data('id');
+        const estado = $btn.data('estado'); 
+        const texto = estado === 'activar' ? 'activar' : 'desactivar';
+
+        if (!confirm(`¿Confirmar que deseas ${texto} este registro?`)) return;
+
+        let url = '';
+        let reloadFn = null;
+
         if ($('#productoForm').length > 0) {
-            // Estamos en productos
-            console.log('Cambiando estado producto ID:', id);
-            $.post('../controles/ajax_productos.php', {
-                accion: 'cambiar_estado',
-                id: id,
-                estado: estado
-            }, function(r) {
-                console.log('Respuesta cambio estado:', r);
-                mensaje(r.mensaje, r.success ? 'success' : 'danger');
-                if (r.success) cargarTablaProductos();
-            }, 'json').fail(function() {
-                mensaje('Error al cambiar estado del producto', 'danger');
-            });
+            url = '../controles/ajax_productos.php';
+            reloadFn = cargarTablaProductos;
         } else if ($('#proveedorForm').length > 0) {
-            // Estamos en proveedores
-            $.post('../controles/ajax_proveedores.php', {
-                accion: 'cambiar_estado',
-                id: id,
-                estado: estado
-            }, function(r) {
-                mensaje(r.mensaje, r.success ? 'success' : 'danger');
-                if (r.success) cargarTabla();
-            }, 'json');
+            url = '../controles/ajax_proveedores.php';
+            reloadFn = cargarTabla;
         } else if ($('#rolForm').length > 0) {
-            // Estamos en roles
-            $.post('../controles/ajax_roles.php', {
-                accion: 'cambiar_estado',
-                id: id,
-                estado: estado
-            }, function(r) {
-                mensaje(r.mensaje, r.success ? 'success' : 'danger');
-                if (r.success) cargarTablaRoles();
-            }, 'json').fail(function() {
-                mensaje('Error al cambiar estado del rol', 'danger');
-            });
+            url = '../controles/ajax_roles.php';
+            reloadFn = cargarTablaRoles;
         } else if ($('#paqueteForm').length > 0) {
-            // Estamos en paquetes
-            console.log('Cambiando estado paquete ID:', id);
-            $.post('../controles/ajax_paquetes.php', {
-                accion: 'cambiar_estado',
-                id: id,
-                estado: estado
-            }, function(r) {
-                console.log('Respuesta cambio estado:', r);
-                mensaje(r.mensaje, r.success ? 'success' : 'danger');
-                if (r.success) cargarTablaPaquetes();
-            }, 'json').fail(function() {
-                mensaje('Error al cambiar estado del paquete', 'danger');
-            });
+            url = '../controles/ajax_paquetes.php';
+            reloadFn = cargarTablaPaquetes;
+        } else if ($('#usuarioForm').length > 0) {
+            url = '../controles/ajax_usuarios.php';
+            reloadFn = cargarTablaUsuarios;
         }
+
+        if (!url) {
+            console.warn('No se detectó formulario válido para cambio de estado.');
+            return;
+        }
+
+        $.post(url, {
+            accion: 'cambiar_estado',
+            id: id,
+            estado: estado
+        }, function (r) {
+            mensaje(r.mensaje, r.success ? 'success' : 'danger');
+            if (r.success && typeof reloadFn === 'function') {
+                reloadFn();
+                // Cambiar el data-estado localmente para evitar doble clic con mismo valor
+                $btn.data('estado', estado === 'activar' ? 'desactivar' : 'activar');
+            }
+        }, 'json').fail(function () {
+            mensaje(`Error al cambiar estado`, 'danger');
+        });
     });
+
     
     // Cargar tablas SOLO si existen
     if ($('#tabla-productos').length) {
         cargarTablaProductos();
     }
-    
+
+    if ($('#tabla-usuarios').length) {
+        cargarTablaUsuarios();
+    }
+
     if ($('#tabla-proveedores').length) {
         cargarTabla();
     }
@@ -460,7 +535,14 @@ function cargarTabla() {
         $('#tabla-proveedores').html(html);
     });
 }
-
+function cargarTablaUsuarios() {
+    console.log('Cargando tabla de usuarios...');
+    $.get('../controles/ajax_usuarios.php?accion=cargar_tabla', function(html) {
+        $('#tabla-usuarios').html(html);
+    }).fail(function() {
+        mensaje('Error al cargar tabla de usuarios', 'danger');
+    });
+}
 function cargarTablaProductos() {
     $.get('../controles/ajax_productos.php?accion=cargar_tabla', function(html) {
         $('#tabla-productos').html(html);
@@ -516,9 +598,18 @@ function limpiar() {
         limpiarProveedor();
     } else if ($('#rolForm').length > 0) {
         limpiarRol();
+    } else if ($('#usuarioForm').length > 0) {
+        limpiarUsuario();
     }
 }
-
+function limpiarUsuario() {
+    $('#usuarioForm')[0].reset();
+    $('input[name="accion"]').val('crear');
+    $('input[name="id_usuario"]').remove();
+    $('.form-container h3').text('Nuevo Usuario');
+    $('button[type="submit"]').html('<i class="fas fa-save me-1"></i>Guardar');
+    $('.password-info').remove();
+}
 function limpiarProducto() {
     $('#productoForm')[0].reset();
     $('input[name="accion"]').val('crear');

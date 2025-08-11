@@ -5,18 +5,9 @@ if (!isset($_SESSION['usuario'])) {
     exit();
 }
 
-$permisos_usuario = isset($_SESSION['usuario']['permisos']) ? $_SESSION['usuario']['permisos'] : [];
-$tiene_permiso = in_array('gestion_rolperm', $permisos_usuario) || 
-                 in_array('crud_roles', $permisos_usuario) ||
-                 (isset($_SESSION['usuario']['rol_nombre']) && $_SESSION['usuario']['rol_nombre'] == 'administrador');
-
-if (!$tiene_permiso) {
-    header("Location: ../../includes/dashboard.php");
-    exit();
-}
-
+require_once '../../includes/verificar_permisos.php';
+requierePermiso('gestion_rolperm');
 require_once '../../config/database.php';
-
 // Obtener roles con cantidad de permisos asignados
 $roles_result = $conn->query("
     SELECT r.*, COUNT(rp.id_permiso) as cantidad_permisos 
@@ -140,7 +131,7 @@ $permisos_result = $conn->query("SELECT * FROM permiso ORDER BY nombre_permiso A
                                 <?php while ($r = $roles_result->fetch_assoc()): ?>
                                     <?php 
                                         $badge = $r['estado'] === 'activo' ? 'success' : 'danger';
-                                        $toggle_action = $r['estado'] === 'activo' ? 'inactivo' : 'activar';
+                                        $toggle_action = $r['estado'] === 'activo' ? 'desactivar' : 'activar';
                                         $toggle_icon = $r['estado'] === 'activo' ? 'ban' : 'check';
                                         $toggle_class = $r['estado'] === 'activo' ? 'btn-danger' : 'btn-success';
                                     ?>
@@ -158,12 +149,17 @@ $permisos_result = $conn->query("SELECT * FROM permiso ORDER BY nombre_permiso A
                                         <td><span class="badge bg-<?php echo $badge; ?>"><?php echo ucfirst($r['estado']); ?></span></td>
                                           <td>
                                             <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-edit btn-editar" data-id="<?php echo $p['id_rol']; ?>" title="Editar">
+                                                <button class="btn btn-edit btn-editar" data-id="<?php echo $r['id_rol']; ?>" title="Editar">
                                                     <i class="fas fa-edit fa-fw"></i>
                                                 </button>
-                                                <button class="btn <?php echo $toggle_class; ?> btn-toggle" data-id="<?php echo $p['id_rol']; ?>" data-estado="<?php echo $toggle_action; ?>" title="<?php echo ucfirst($toggle_action); ?>">
-                                                    <i class="fas fa-<?php echo $toggle_icon; ?> fa-fw"></i>
-                                                </button>
+                                                <?php if ($r['id_rol'] > 3): ?>
+                                                    <button class="btn <?php echo $toggle_class; ?> btn-toggle" 
+                                                        data-id="<?php echo $r['id_rol']; ?>" 
+                                                        data-estado="<?php echo $toggle_action; ?>" 
+                                                        title="<?php echo ucfirst($toggle_action); ?>">
+                                                        <i class="fas fa-<?php echo $toggle_icon; ?> fa-fw"></i>
+                                                    </button>
+                                                <?php endif; ?>
                                             </div>
                                         </td>
                                     </tr>

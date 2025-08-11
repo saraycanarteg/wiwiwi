@@ -94,24 +94,31 @@ try {
             }
             break;
 
-        case 'cambiar_estado':
-            $id = intval($_POST['id'] ?? 0);
-            $estado = $_POST['estado'] ?? '';
+    case 'cambiar_estado':
+        $id = intval($_POST['id'] ?? 0);
+        $estado = $_POST['estado'] ?? '';
 
-            if ($id <= 0) {
-                echo json_encode(['success' => false, 'mensaje' => 'ID inválido']);
-                exit();
-            }
+        if ($id <= 0) {
+            echo json_encode(['success' => false, 'mensaje' => 'ID inválido']);
+            exit();
+        }
 
-            $nuevo_estado = $estado === 'activar' ? 'activo' : 'inactivo';
+        // Bloquear cambios en roles base
+        if ($id <= 3) {
+            echo json_encode(['success' => false, 'mensaje' => 'No se puede cambiar el estado de este rol predeterminado']);
+            exit();
+        }
 
-            $stmt = $conn->prepare("UPDATE rol SET estado = ? WHERE id_rol = ?");
-            $stmt->bind_param("si", $nuevo_estado, $id);
-            $success = $stmt->execute();
-            $mensaje = $success ? "Rol {$nuevo_estado} exitosamente" : 'Error al cambiar estado';
+        $nuevo_estado = $estado === 'activar' ? 'activo' : 'inactivo';
 
-            echo json_encode(['success' => $success, 'mensaje' => $mensaje]);
-            break;
+        $stmt = $conn->prepare("UPDATE rol SET estado = ? WHERE id_rol = ?");
+        $stmt->bind_param("si", $nuevo_estado, $id);
+        $success = $stmt->execute();
+        $mensaje = $success ? "Rol {$nuevo_estado} exitosamente" : 'Error al cambiar estado';
+
+        echo json_encode(['success' => $success, 'mensaje' => $mensaje]);
+        break;
+
 
         case 'cargar_tabla':
             $sql = "SELECT r.id_rol, r.nombre_rol, r.descripcion, r.estado,
@@ -126,29 +133,32 @@ try {
 
             if ($result && $result->num_rows > 0) {
                 while ($r = $result->fetch_assoc()) {
-                    // Badge y datos dinámicos según estado
                     $badge = $r['estado'] === 'activo' ? 'success' : 'danger';
                     $toggle_action = $r['estado'] === 'activo' ? 'desactivar' : 'activar';
                     $toggle_icon = $r['estado'] === 'activo' ? 'ban' : 'check';
                     $toggle_class = $r['estado'] === 'activo' ? 'btn-danger' : 'btn-success';
 
                     echo "<tr>
-                        <td>{$r['id_rol']}</td>
-                        <td>" . htmlspecialchars($r['nombre_rol']) . "</td>
-                        <td>" . htmlspecialchars($r['descripcion']) . "</td>
-                        <td><span class='badge bg-{$badge}'>" . ucfirst($r['estado']) . "</span></td>
-                        <td>" . htmlspecialchars(str_replace('||', ', ', $r['permisos'] ?? '')) . "</td>
-                        <td>
-                        <div class='btn-group btn-group-sm'>
-                            <button class='btn btn-edit btn-editar' data-id='{$r['id_rol']}' title='Editar'>
-                                <i class='fas fa-edit fa-fw'></i>
-                            </button>
-                            <button class='btn {$toggle_class} btn-toggle' data-id='{$r['id_rol']}' data-estado='{$toggle_action}' title='" . ucfirst($toggle_action) . "'>
+                            <td>{$r['id_rol']}</td>
+                            <td>" . htmlspecialchars($r['nombre_rol']) . "</td>
+                            <td>" . htmlspecialchars($r['descripcion']) . "</td>
+                            <td><span class='badge bg-{$badge}'>" . ucfirst($r['estado']) . "</span></td>
+                            <td>" . htmlspecialchars(str_replace('||', ', ', $r['permisos'] ?? '')) . "</td>
+                            <td>
+                                <div class='btn-group btn-group-sm'>
+                                    <button class='btn btn-edit btn-editar' data-id='{$r['id_rol']}' title='Editar'>
+                                        <i class='fas fa-edit fa-fw'></i>
+                                    </button>";
+
+                    if ($r['id_rol'] > 3) {
+                        echo "<button class='btn {$toggle_class} btn-toggle' data-id='{$r['id_rol']}' data-estado='{$toggle_action}' title='" . ucfirst($toggle_action) . "'>
                                 <i class='fas fa-{$toggle_icon} fa-fw'></i>
-                            </button>
-                        </div>
-                        </td>
-                    </tr>";
+                            </button>";
+                    }
+
+                    echo "      </div>
+                            </td>
+                        </tr>";
                 }
             } else {
                 echo "<tr><td colspan='6' class='text-center py-4'>

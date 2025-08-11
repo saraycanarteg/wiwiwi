@@ -5,15 +5,8 @@ if (!isset($_SESSION['usuario'])) {
     exit();
 }
 
-$permisos_usuario = $_SESSION['usuario']['permisos'] ?? [];
-$tiene_permiso = in_array('revisar_logs', $permisos_usuario) || 
-                (isset($_SESSION['usuario']['rol_nombre']) && $_SESSION['usuario']['rol_nombre'] === 'administrador');
-
-if (!$tiene_permiso) {
-    header("Location: ../../includes/dashboard.php");
-    exit();
-}
-
+require_once '../../includes/verificar_permisos.php';
+requierePermiso('revisar_logs');
 require_once '../../config/database.php';
 $logs_result = $conn->query("SELECT * FROM auditoria ORDER BY fecha_cambio DESC");
 ?>
@@ -89,22 +82,17 @@ $logs_result = $conn->query("SELECT * FROM auditoria ORDER BY fecha_cambio DESC"
 <!-- Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="../recursos/js/formularios.js"></script>
 <script src="../recursos/js/validaciones.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Handle truncate toggle
-    document.querySelectorAll('.truncate').forEach(cell => {
-        cell.addEventListener('click', function() {
-            this.classList.toggle('expanded');
-            
-            // Update tooltip
-            if (this.classList.contains('expanded')) {
-                this.title = 'Click para contraer';
-            } else {
-                this.title = 'Click para expandir';
-            }
-        });
+document.querySelectorAll('.truncate').forEach(cell => {
+    cell.addEventListener('click', function() {
+        this.classList.toggle('expanded');
+
+        if (this.classList.contains('expanded')) {
+            this.title = 'Click para contraer';
+        } else {
+            this.title = 'Click para expandir';
+        }
     });
 });
 </script>

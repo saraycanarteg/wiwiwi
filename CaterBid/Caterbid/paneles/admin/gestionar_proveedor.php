@@ -5,15 +5,8 @@ if (!isset($_SESSION['usuario'])) {
     exit();
 }
 
-$permisos_usuario = isset($_SESSION['usuario']['permisos']) ? $_SESSION['usuario']['permisos'] : [];
-$tiene_permiso = in_array('registrar_proveedor', $permisos_usuario) || 
-                 in_array('crud_productos', $permisos_usuario) ||
-                 (isset($_SESSION['usuario']['rol_nombre']) && $_SESSION['usuario']['rol_nombre'] == 'administrador');
-
-if (!$tiene_permiso) {
-    header("Location: ../../includes/dashboard.php");
-    exit();
-}
+require_once '../../includes/verificar_permisos.php';
+requierePermiso('gestionar_proveedor');
 require_once '../../config/database.php';
 $proveedores_result = $conn->query("SELECT * FROM proveedor ORDER BY fecha_creacion DESC");
 ?>
@@ -119,7 +112,7 @@ $proveedores_result = $conn->query("SELECT * FROM proveedor ORDER BY fecha_creac
                                 <?php while ($p = $proveedores_result->fetch_assoc()): ?>
                                     <?php 
                                         $badge = $p['estado'] === 'activo' ? 'success' : 'danger';
-                                        $toggle_action = $p['estado'] === 'activo' ? 'inactivo' : 'activar';
+                                        $toggle_action = $p['estado'] === 'activo' ? 'desactivar' : 'activar';
                                         $toggle_icon = $p['estado'] === 'activo' ? 'ban' : 'check';
                                         $toggle_class = $p['estado'] === 'activo' ? 'btn-danger' : 'btn-success';
                                     ?>

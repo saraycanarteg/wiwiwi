@@ -5,16 +5,8 @@ if (!isset($_SESSION['usuario'])) {
     exit();
 }
 
-$permisos_usuario = isset($_SESSION['usuario']['permisos']) ? $_SESSION['usuario']['permisos'] : [];
-$tiene_permiso = in_array('gestionar_productos', $permisos_usuario) || 
-                 in_array('registrar_paquete', $permisos_usuario) || 
-                 in_array('crud_productos', $permisos_usuario) ||
-                 (isset($_SESSION['usuario']['rol_nombre']) && $_SESSION['usuario']['rol_nombre'] == 'bodeguero');
-
-if (!$tiene_permiso) {
-    header("Location: ../../includes/dashboard.php");
-    exit();
-}
+require_once '../../includes/verificar_permisos.php';
+requierePermiso('gestionar_productos');
 require_once '../../config/database.php';
 $productos_result = $conn->query("
     SELECT p.*, pr.nombre as proveedor_nombre 
@@ -162,7 +154,7 @@ $proveedores_select = $conn->query("SELECT id_proveedor, nombre FROM proveedor W
                                 <?php while ($p = $productos_result->fetch_assoc()): ?>
                                     <?php 
                                         $badge = $p['estado'] === 'activo' ? 'success' : 'danger';
-                                        $toggle_action = $p['estado'] === 'activo' ? 'inactivo' : 'activar';
+                                        $toggle_action = $p['estado'] === 'activo' ? 'activar' : 'activar';
                                         $toggle_icon = $p['estado'] === 'activo' ? 'ban' : 'check';
                                         $toggle_class = $p['estado'] === 'activo' ? 'btn-danger' : 'btn-success';
                                     ?>

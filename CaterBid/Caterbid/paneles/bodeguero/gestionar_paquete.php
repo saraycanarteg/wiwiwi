@@ -5,16 +5,8 @@ if (!isset($_SESSION['usuario'])) {
     exit();
 }
 
-$permisos_usuario = isset($_SESSION['usuario']['permisos']) ? $_SESSION['usuario']['permisos'] : [];
-$tiene_permiso = in_array('gestion_paquete', $permisos_usuario) || 
-                 in_array('crud_paquetes', $permisos_usuario) ||
-                 (isset($_SESSION['usuario']['rol_nombre']) && $_SESSION['usuario']['rol_nombre'] == 'bodeguero');
-
-if (!$tiene_permiso) {
-    header("Location: ../../includes/dashboard.php");
-    exit();
-}
-
+require_once '../../includes/verificar_permisos.php';
+requierePermiso('gestion_paquete');
 require_once '../../config/database.php';
 
 // Obtener paquetes con información de proveedor
@@ -232,7 +224,7 @@ $tipos_eventos = [
                                 <?php while ($p = $paquetes_result->fetch_assoc()): ?>
                                     <?php 
                                         $badge = $p['estado'] === 'activo' ? 'success' : 'danger';
-                                        $toggle_action = $p['estado'] === 'activo' ? 'inactivo' : 'activar';
+                                        $toggle_action = $p['estado'] === 'activo' ? 'activar' : 'activar';
                                         $toggle_icon = $p['estado'] === 'activo' ? 'ban' : 'check';
                                         $toggle_class = $p['estado'] === 'activo' ? 'btn-danger' : 'btn-success';
                                     ?>
