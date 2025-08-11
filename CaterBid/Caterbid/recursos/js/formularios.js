@@ -89,6 +89,7 @@ $(document).ready(function() {
             });
         });
     }
+
     // Enviar formulario de roles - SOLO si existe
     if ($('#rolForm').length > 0) {
         $('#rolForm').on('submit', function(e) {
@@ -114,15 +115,142 @@ $(document).ready(function() {
             });
         });
     }
+
+    // Enviar formulario de paquetes - SOLO si existe
+    if ($('#paqueteForm').length > 0) {
+        $('#paqueteForm').on('submit', function(e) {
+            e.preventDefault();
+            console.log('Formulario de paquete enviado');
+            
+            const btn = $(this).find('button[type="submit"]');
+            const texto = btn.html();
+            btn.html('<i class="fas fa-spinner fa-spin"></i> Procesando...').prop('disabled', true);
+            
+            // Validaciones previas
+            if ($('#categoria_evento').val() === '') {
+                mensaje('Debe seleccionar una categoría de evento', 'danger');
+                btn.html(texto).prop('disabled', false);
+                return false;
+            }
+            
+            if ($('#tipo_evento').val() === '') {
+                mensaje('Debe seleccionar un tipo de evento', 'danger');
+                btn.html(texto).prop('disabled', false);
+                return false;
+            }
+            
+            if ($('#id_proveedor').val() === '') {
+                mensaje('Debe seleccionar un proveedor', 'danger');
+                btn.html(texto).prop('disabled', false);
+                return false;
+            }
+            
+            // Validar que al menos un producto esté seleccionado
+            const productosSeleccionados = $('input[name="productos[]"]:checked');
+            if (productosSeleccionados.length === 0) {
+                mensaje('Debe seleccionar al menos un producto para el paquete', 'danger');
+                btn.html(texto).prop('disabled', false);
+                return false;
+            }
+            
+            // Validar cantidades
+            let cantidadesValidas = true;
+            let errorCantidad = '';
+            
+            productosSeleccionados.each(function() {
+                const idProducto = $(this).val();
+                const cantidadInput = $(`input[name="cantidades[${idProducto}]"]`);
+                const cantidad = parseInt(cantidadInput.val());
+                const maxStock = parseInt(cantidadInput.attr('max'));
+                
+                if (isNaN(cantidad) || cantidad <= 0) {
+                    cantidadesValidas = false;
+                    errorCantidad = 'Todas las cantidades deben ser mayores a 0';
+                    return false;
+                }
+                
+                if (maxStock && cantidad > maxStock) {
+                    cantidadesValidas = false;
+                    errorCantidad = `La cantidad no puede exceder el stock disponible (${maxStock})`;
+                    return false;
+                }
+            });
+            
+            if (!cantidadesValidas) {
+                mensaje(errorCantidad, 'danger');
+                btn.html(texto).prop('disabled', false);
+                return false;
+            }
+            
+            // Preparar datos usando serialize para compatibilidad
+            let formData = $(this).serialize();
+            
+            // Agregar productos seleccionados manualmente
+            productosSeleccionados.each(function() {
+                const idProducto = $(this).val();
+                formData += '&productos[]=' + encodeURIComponent(idProducto);
+            });
+            
+            // Agregar cantidades para cada producto seleccionado
+            productosSeleccionados.each(function() {
+                const idProducto = $(this).val();
+                const cantidad = $(`input[name="cantidades[${idProducto}]"]`).val();
+                formData += '&cantidades[' + encodeURIComponent(idProducto) + ']=' + encodeURIComponent(cantidad);
+            });
+            
+            console.log('Datos a enviar:', formData);
+            
+            $.ajax({
+                url: '../controles/ajax_paquetes.php',
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                success: function(r) {
+                    console.log('Respuesta del servidor:', r);
+                    if (r.success) {
+                        mensaje(r.mensaje, 'success');
+                        if ($('input[name="accion"]').val() === 'crear') {
+                            limpiarPaquete();
+                        }
+                        // Recargar tabla después de un pequeño delay para asegurar que se guardó
+                        setTimeout(function() {
+                            cargarTablaPaquetes();
+                        }, 500);
+                    } else {
+                        mensaje(r.mensaje, 'danger');
+                    }
+                },
+                error: function(xhr, status, error) { 
+                    console.log('Error AJAX:', {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
+                    
+                    // Intentar parsear la respuesta para mostrar un mensaje más específico
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        mensaje(response.mensaje || 'Error del servidor', 'danger');
+                    } catch (e) {
+                        mensaje('Error de conexión: ' + error, 'danger');
+                    }
+                },
+                complete: function() { 
+                    btn.html(texto).prop('disabled', false); 
+                }
+            });
+        });
+    }
+
     // Editar
     $(document).on('click', '.btn-editar', function() {
         const id = $(this).data('id');
         
         if ($('#productoForm').length > 0) {
             // Estamos en productos
-            console.log('Editando producto ID:', id); // Debug
+            console.log('Editando producto ID:', id);
             $.get('../controles/ajax_productos.php?accion=obtener&id=' + id, function(r) {
-                console.log('Datos del producto:', r); // Debug
+                console.log('Datos del producto:', r);
                 if (r.success) {
                     $('#nombre').val(r.data.nombre);
                     $('#descripcion').val(r.data.descripcion);
@@ -180,6 +308,66 @@ $(document).ready(function() {
             }, 'json').fail(function() {
                 mensaje('Error al cargar datos del rol', 'danger');
             });
+        } else if ($('#paqueteForm').length > 0) {
+            // Estamos en paquetes
+            console.log('Editando paquete ID:', id);
+            $.get('../controles/ajax_paquetes.php?accion=obtener&id=' + id, function(r) {
+                console.log('Datos del paquete:', r);
+                if (r.success) {
+                    // Primero limpiar el formulario
+                    limpiarPaquete();
+                    
+                    // Cargar datos básicos del paquete
+                    $('#categoria_evento').val(r.data.categoria_evento);
+                    
+                    // Trigger change para cargar tipos de evento
+                    $('#categoria_evento').trigger('change');
+                    
+                    // Esperar a que se carguen los tipos de evento
+                    setTimeout(() => {
+                        $('#tipo_evento').val(r.data.tipo_evento);
+                        $('#id_proveedor').val(r.data.id_proveedor);
+                        
+                        // Trigger change para cargar productos del proveedor
+                        $('#id_proveedor').trigger('change');
+                        
+                        // Esperar a que se carguen los productos y marcar los seleccionados
+                        setTimeout(() => {
+                            if (r.data.productos && r.data.productos.length > 0) {
+                                r.data.productos.forEach(function(producto) {
+                                    // Marcar checkbox del producto
+                                    const checkbox = $(`#producto_${producto.id_producto}`);
+                                    if (checkbox.length > 0) {
+                                        checkbox.prop('checked', true);
+                                        
+                                        // Habilitar y establecer cantidad
+                                        const cantidadInput = $(`#cantidad_${producto.id_producto}`);
+                                        cantidadInput.prop('disabled', false)
+                                                    .val(producto.cantidad_producto);
+                                        
+                                        // Marcar visualmente como seleccionado
+                                        checkbox.closest('.producto-checkbox').addClass('selected');
+                                    }
+                                });
+                                
+                                // Validar selección después de cargar
+                                validarSeleccionProductos();
+                            }
+                        }, 2000); // Aumentar tiempo de espera
+                    }, 1000);
+                    
+                    // Configurar formulario para edición
+                    $('input[name="accion"]').val('editar');
+                    $('#paqueteForm').append('<input type="hidden" name="id_paquete" value="' + r.data.id_paquete + '">');
+                    $('.form-container h3').text('Editar Paquete');
+                    $('button[type="submit"]').html('<i class="fas fa-save me-1"></i>Actualizar');
+                } else {
+                    mensaje(r.mensaje, 'danger');
+                }
+            }, 'json').fail(function(xhr, status, error) {
+                console.log('Error al cargar paquete:', status, error, xhr.responseText);
+                mensaje('Error al cargar datos del paquete', 'danger');
+            });
         }
     });
     
@@ -192,13 +380,13 @@ $(document).ready(function() {
         
         if ($('#productoForm').length > 0) {
             // Estamos en productos
-            console.log('Cambiando estado producto ID:', id); // Debug
+            console.log('Cambiando estado producto ID:', id);
             $.post('../controles/ajax_productos.php', {
                 accion: 'cambiar_estado',
                 id: id,
                 estado: estado
             }, function(r) {
-                console.log('Respuesta cambio estado:', r); // Debug
+                console.log('Respuesta cambio estado:', r);
                 mensaje(r.mensaje, r.success ? 'success' : 'danger');
                 if (r.success) cargarTablaProductos();
             }, 'json').fail(function() {
@@ -226,6 +414,20 @@ $(document).ready(function() {
             }, 'json').fail(function() {
                 mensaje('Error al cambiar estado del rol', 'danger');
             });
+        } else if ($('#paqueteForm').length > 0) {
+            // Estamos en paquetes
+            console.log('Cambiando estado paquete ID:', id);
+            $.post('../controles/ajax_paquetes.php', {
+                accion: 'cambiar_estado',
+                id: id,
+                estado: estado
+            }, function(r) {
+                console.log('Respuesta cambio estado:', r);
+                mensaje(r.mensaje, r.success ? 'success' : 'danger');
+                if (r.success) cargarTablaPaquetes();
+            }, 'json').fail(function() {
+                mensaje('Error al cambiar estado del paquete', 'danger');
+            });
         }
     });
     
@@ -245,6 +447,10 @@ $(document).ready(function() {
 
     if ($('#tabla-roles').length) {
         cargarTablaRoles();
+    }
+
+    if ($('#tabla-paquetes').length) {
+        cargarTablaPaquetes();
     }
 });
 
@@ -271,6 +477,28 @@ function cargarTablaRoles() {
     });
 }
 
+function cargarTablaPaquetes() {
+    console.log('Cargando tabla de paquetes...');
+    
+    const tabla = $('#tabla-paquetes');
+    if (tabla.length > 0) {
+        tabla.html('<tr><td colspan="7" class="text-center"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>');
+    }
+    
+    $.get('../controles/ajax_paquetes.php', {
+        accion: 'cargar_tabla'
+    })
+    .done(function(html) {
+        console.log('Tabla cargada exitosamente');
+        tabla.html(html);
+    })
+    .fail(function(xhr, status, error) {
+        console.log('Error al cargar tabla:', status, error, xhr.responseText);
+        tabla.html('<tr><td colspan="7" class="text-center text-danger"><i class="fas fa-exclamation-triangle"></i> Error al cargar datos</td></tr>');
+        mensaje('Error al cargar tabla de paquetes', 'danger');
+    });
+}
+
 // Función para mostrar mensajes
 function mensaje(text, tipo) {
     $('.alert').remove();
@@ -280,7 +508,9 @@ function mensaje(text, tipo) {
 
 // Función genérica para limpiar formularios
 function limpiar() {
-    if ($('#productoForm').length > 0) {
+    if ($('#paqueteForm').length > 0) {
+        limpiarPaquete();
+    } else if ($('#productoForm').length > 0) {
         limpiarProducto();
     } else if ($('#proveedorForm').length > 0) {
         limpiarProveedor();
@@ -304,6 +534,7 @@ function limpiarProveedor() {
     $('.form-container h3').text('Nuevo Proveedor');
     $('button[type="submit"]').html('<i class="fas fa-save me-1"></i>Guardar');
 }
+
 function limpiarRol() {
     $('#rolForm')[0].reset();
     $('input[name="accion"]').val('crear');
@@ -312,6 +543,92 @@ function limpiarRol() {
     $('button[type="submit"]').html('<i class="fas fa-save me-1"></i>Guardar');
     $('input[name="permisos[]"]').prop('checked', false);
 }
+
+function limpiarPaquete() {
+    $('#paqueteForm')[0].reset();
+    $('input[name="accion"]').val('crear');
+    $('input[name="id_paquete"]').remove();
+    $('.form-container h3').text('Nuevo Paquete');
+    $('button[type="submit"]').html('<i class="fas fa-save me-1"></i>Guardar Paquete');
+    
+    $('#tipo_evento').prop('disabled', true).html('<option value="">Primero selecciona una categoría...</option>');
+    $('#productos-section').hide();
+    
+    $('#productos-container').html('');
+    
+    $('input[name="productos[]"]').prop('checked', false);
+    $('.producto-checkbox').removeClass('selected');
+    
+    $('input[name^="cantidades"]').prop('disabled', true).val(1);
+    
+    const submitBtn = document.querySelector('#paqueteForm button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-save me-1"></i>Guardar Paquete';
+    }
+}
+
+// Función para validar selección de productos (desde el HTML)
+function validarSeleccionProductos() {
+    const productosSeleccionados = document.querySelectorAll('input[name="productos[]"]:checked');
+    const submitBtn = document.querySelector('#paqueteForm button[type="submit"]');
+    
+    if (submitBtn) {
+        if (productosSeleccionados.length === 0) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Selecciona al menos un producto';
+        } else {
+            submitBtn.disabled = false;
+            const accion = $('input[name="accion"]').val();
+            const textoBoton = accion === 'editar' ? 'Actualizar' : 'Guardar Paquete';
+            submitBtn.innerHTML = `<i class="fas fa-save me-1"></i>${textoBoton}`;
+        }
+    }
+}
+
+// Función para toggle de productos (desde el HTML)
+function toggleProducto(checkbox, idProducto) {
+    console.log('Toggle producto:', idProducto, checkbox.checked);
+    
+    const cantidadInput = document.getElementById(`cantidad_${idProducto}`);
+    const productoDiv = checkbox.closest('.producto-checkbox');
+    
+    if (checkbox && cantidadInput && productoDiv) {
+        if (checkbox.checked) {
+            cantidadInput.disabled = false;
+            productoDiv.classList.add('selected');
+            
+            // Asegurar que tenga un valor válido
+            if (!cantidadInput.value || cantidadInput.value <= 0) {
+                cantidadInput.value = 1;
+            }
+            
+            // Agregar event listener para validar en tiempo real
+            cantidadInput.addEventListener('input', function() {
+                const valor = parseInt(this.value);
+                const max = parseInt(this.getAttribute('max'));
+                
+                if (isNaN(valor) || valor <= 0) {
+                    this.setCustomValidity('La cantidad debe ser mayor a 0');
+                } else if (max && valor > max) {
+                    this.setCustomValidity(`La cantidad no puede exceder ${max}`);
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+        } else {
+            cantidadInput.disabled = true;
+            cantidadInput.value = 1;
+            cantidadInput.setCustomValidity('');
+            productoDiv.classList.remove('selected');
+        }
+        
+        // Validar que al menos un producto esté seleccionado
+        validarSeleccionProductos();
+    }
+}
+
 // Inicializar validaciones específicas de proveedores
 function initProveedorValidations() {
     // Validación en tiempo real del RUC - SOLO si el elemento existe
