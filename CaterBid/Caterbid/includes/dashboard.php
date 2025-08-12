@@ -26,6 +26,7 @@ $usuario = $_SESSION['usuario'];
 
     <!-- Custom styles for this template-->
     <link href="../recursos/css/admin.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 
 </head>
 
