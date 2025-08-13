@@ -451,8 +451,11 @@ $(document).ready(function() {
         }
     });
     
-    // Cambiar estado
-    $(document).on('click', '.btn-toggle', function () {
+    // Cambiar estado - MEJORADO para evitar duplicados
+    $(document).off('click.toggle-estado').on('click.toggle-estado', '.btn-toggle', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
         const $btn = $(this);
         const id = $btn.data('id');
         const estado = $btn.data('estado'); 
@@ -485,6 +488,9 @@ $(document).ready(function() {
             return;
         }
 
+        // Deshabilitar botón temporalmente para evitar doble clic
+        $btn.prop('disabled', true);
+
         $.post(url, {
             accion: 'cambiar_estado',
             id: id,
@@ -498,6 +504,8 @@ $(document).ready(function() {
             }
         }, 'json').fail(function () {
             mensaje(`Error al cambiar estado`, 'danger');
+        }).always(function() {
+            $btn.prop('disabled', false);
         });
     });
 
@@ -510,6 +518,7 @@ $(document).ready(function() {
 // Variable global para controlar la inicialización - protegida contra redeclaración
 if (typeof window.sistemaInicializado === 'undefined') {
     window.sistemaInicializado = false;
+    window.contadorInicializaciones = 0;
 }
 
 // Configuración de tablas con paginación - protegida contra redeclaración
@@ -607,13 +616,19 @@ function garantizarControlesPaginacion(tipoTabla) {
     }
 }
 
-// Configurar event listeners con namespace para evitar duplicados
+// Configurar event listeners con namespace para evitar duplicados - MEJORADO
 function configurarEventListeners() {
-    // Remover eventos anteriores para evitar duplicados
-    $(document).off('change.paginacion').off('click.paginacion');
+    // Incrementar contador para namespace único
+    window.contadorInicializaciones++;
+    const namespace = `paginacion_${window.contadorInicializaciones}`;
+    
+    // Remover TODOS los eventos de paginación anteriores
+    $(document).off('.paginacion');
+    
+    console.log(`Configurando event listeners con namespace: ${namespace}`);
     
     // Cambio en selector de filas por página
-    $(document).on('change.paginacion', '#filasPorPagina', function() {
+    $(document).on(`change.${namespace}`, '#filasPorPagina', function() {
         console.log('Cambio en filas por página:', $(this).val());
         const tipo = detectarTipoTabla();
         if (tipo) {
@@ -622,7 +637,7 @@ function configurarEventListeners() {
     });
 
     // Click en enlaces de paginación
-    $(document).on('click.paginacion', '.pagina-link', function(e) {
+    $(document).on(`click.${namespace}`, '.pagina-link', function(e) {
         e.preventDefault();
         const pagina = $(this).data('pagina');
         console.log('Click en página:', pagina);
@@ -632,7 +647,7 @@ function configurarEventListeners() {
         }
     });
     
-    console.log('Event listeners configurados correctamente');
+    console.log('Event listeners configurados correctamente con namespace:', namespace);
 }
 
 // Función genérica para cargar tabla con paginación mejorada
@@ -749,15 +764,22 @@ function cargarTablaAuditorias(pagina = 1) {
     }
 }
 
-// Función para reinicializar el sistema cuando se cambia de formulario
+// Función para reinicializar el sistema cuando se cambia de formulario - MEJORADA
 function reinicializarPaginacion() {
     console.log('Reinicializando sistema de paginación...');
+    
+    // Marcar como no inicializado
     window.sistemaInicializado = false;
     
-    // Limpiar event listeners anteriores
-    $(document).off('change.paginacion').off('click.paginacion');
+    // Limpiar TODOS los event listeners de paginación
+    $(document).off('.paginacion');
     
-    // Volver a inicializar
+    // Remover event listeners específicos que se acumulan
+    for (let i = 1; i <= window.contadorInicializaciones; i++) {
+        $(document).off(`.paginacion_${i}`);
+    }
+    
+    // Volver a inicializar después de un pequeño delay
     setTimeout(function() {
         inicializarSistemaPaginacion();
     }, 100);
@@ -966,27 +988,40 @@ window.onFormularioChange = function() {
     reinicializarPaginacion();
 };
 
-// También detectar cambios automáticamente usando MutationObserver - protegido contra redeclaración
+// También detectar cambios automáticamente usando MutationObserver - MEJORADO
 if (typeof window.formulariosObserver === 'undefined') {
+    let observerTimeout = null;
+    
     window.formulariosObserver = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'childList') {
-                // Verificar si se agregaron nuevas tablas
-                const addedNodes = Array.from(mutation.addedNodes);
-                const hasTableContainer = addedNodes.some(node => 
-                    node.nodeType === Node.ELEMENT_NODE && 
-                    (node.classList?.contains('table-container') || 
-                     node.querySelector?.('.table-container'))
-                );
-                
-                if (hasTableContainer) {
-                    console.log('Nueva tabla detectada, reinicializando paginación...');
-                    setTimeout(function() {
-                        reinicializarPaginacion();
-                    }, 200);
+        // Usar debounce para evitar múltiples llamadas
+        if (observerTimeout) {
+            clearTimeout(observerTimeout);
+        }
+        
+        observerTimeout = setTimeout(function() {
+            let needsReinit = false;
+            
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList') {
+                    // Verificar si se agregaron nuevas tablas
+                    const addedNodes = Array.from(mutation.addedNodes);
+                    const hasTableContainer = addedNodes.some(node => 
+                        node.nodeType === Node.ELEMENT_NODE && 
+                        (node.classList?.contains('table-container') || 
+                         node.querySelector?.('.table-container'))
+                    );
+                    
+                    if (hasTableContainer) {
+                        needsReinit = true;
+                    }
                 }
+            });
+            
+            if (needsReinit) {
+                console.log('Nueva tabla detectada, reinicializando paginación...');
+                reinicializarPaginacion();
             }
-        });
+        }, 200); // Debounce de 200ms
     });
 
     // Observar cambios en el DOM
