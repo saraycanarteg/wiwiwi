@@ -124,68 +124,84 @@ requierePermiso('historial_cotizaciones');
             align-items: center;
             justify-content: center;
         }
+        /* Responsive: tablets */
         @media (max-width: 1100px) {
             .metricas-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto auto; }
             .metricas-grid > div { min-width: 0; }
         }
-        @media (max-width: 700px) {
-            .metricas-grid { grid-template-columns: 1fr; grid-template-rows: none; }
+        /* Responsive: móviles (apilar todo en columna) */
+        @media (max-width: 900px) {
+            .metricas-grid {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 0.7rem;
+                margin: 0.5rem auto;
+                max-width: 100vw;
+            }
+            .metricas-grid > * {
+                width: 100% !important;
+                min-width: 0 !important;
+                max-width: 100vw !important;
+            }
             .kpi-card, .metricas-section {
                 min-width: 0;
-                padding: 0.7rem 0.4rem;
+                padding: 0.7rem 0.2rem;
                 font-size: 0.97em;
-                color: #111 !important;
             }
             .kpi-icon {
                 font-size: 1.2rem;
                 min-width: 28px;
                 margin-right: 0.7rem;
-                color: #3498db !important;
             }
             .kpi-divider {
                 height: 28px;
                 margin: 0 0.7rem 0 0.1rem;
             }
-            .kpi-content, .kpi-value, .kpi-label {
-                color: #111 !important;
-            }
-            .metricas-section h4 {
-                color: #111 !important;
+            .top-table, .chart-container {
+                display: block;
+                overflow-x: auto;
+                width: 100%;
+                min-width: 350px;
             }
             .top-table th, .top-table td {
-                color: #111 !important;
+                font-size: 0.93em;
+                padding: 0.3rem 0.2rem;
             }
         }
-        @media (max-width: 500px) {
+        @media (max-width: 600px) {
             .metricas-grid {
-                grid-template-columns: 1fr;
-                gap: 0.6rem;
-                margin: 0.5rem auto;
+                gap: 0.5rem;
+                margin: 0.2rem auto;
                 max-width: 100vw;
             }
             .kpi-card, .metricas-section {
-                padding: 0.5rem 0.1rem;
+                padding: 0.4rem 0.05rem;
                 font-size: 0.95em;
-                color: #111 !important;
             }
             .kpi-icon {
                 font-size: 1em;
                 min-width: 20px;
                 margin-right: 0.4rem;
-                color: #3498db !important;
             }
             .kpi-divider {
                 height: 18px;
                 margin: 0 0.4rem 0 0.05rem;
             }
-            .kpi-content, .kpi-value, .kpi-label {
-                color: #111 !important;
-            }
-            .metricas-section h4 {
-                color: #111 !important;
-            }
             .top-table th, .top-table td {
-                color: #111 !important;
+                font-size: 0.92em;
+                padding: 0.2rem 0.1rem;
+            }
+            .top-table, .chart-container {
+                display: block;
+                overflow-x: auto;
+                width: 100%;
+                min-width: 260px;
+            }
+        }
+        /* Forzar scroll horizontal en tablas y gráficos en cualquier pantalla pequeña */
+        @media (max-width: 700px) {
+            .top-table, .chart-container {
+                min-width: 200px;
             }
         }
         /* Iconos de colores para distinguir sobre fondo blanco */
@@ -197,6 +213,11 @@ requierePermiso('historial_cotizaciones');
         .metricas-grid, .metricas-grid *, .metricas-section, .metricas-section *, .kpi-card, .kpi-card * {
             color: #111 !important;
             text-shadow: none !important;
+        }
+        /* Extra: fuerza el scroll horizontal si es necesario */
+        .top-table, .chart-container {
+            max-width: 100vw;
+            overflow-x: auto;
         }
     </style>
 </head>

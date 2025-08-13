@@ -808,4 +808,3 @@ if (!isset($conn) || $conn->connect_error) {
   }
 }
 </style>
-<link rel="stylesheet" href="../recursos/css/cotizaciones.css">

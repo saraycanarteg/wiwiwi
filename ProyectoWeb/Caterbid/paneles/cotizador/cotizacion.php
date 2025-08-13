@@ -629,6 +629,15 @@ if (!isset($conn) || $conn->connect_error) {
 
   // Mostrar tabla comparativa de paquetes seleccionados
   function mostrarComparacionPaquetes() {
+    // --- SINCRONIZAR paquetesSeleccionados CON CHECKBOXES ---
+    // Si hay checkboxes en DOM, sincronizar el array con los checkboxes marcados
+    if ($('#lista_paquetes .chk_comparar_paquete').length) {
+      paquetesSeleccionados = [];
+      $('#lista_paquetes .chk_comparar_paquete:checked').each(function() {
+        const id = parseInt($(this).data('id'), 10);
+        if (!isNaN(id)) paquetesSeleccionados.push(id);
+      });
+    }
     if (paquetesSeleccionados.length === 0) {
       $('#comparacion_paquetes').html('<div class="mb-2 text-left"><label for="iva_comparacion" class="font-weight-bold">IVA (%):</label> <input type="number" id="iva_comparacion" value="15" min="0" max="100" class="form-control form-control-sm d-inline-block" style="width:80px;"></div><div class="text-muted text-left"></div>');
       return;
@@ -744,6 +753,9 @@ if (!isset($conn) || $conn->connect_error) {
             actualizarTotalesComparacion();
           });        // Evento seleccionar paquete desde la tabla
         $('.btn_seleccionar_paquete_tabla').on('click', function(){
+          // --- PREVENIR DOBLE CLICK Y BLOQUEO ---
+          if ($(this).prop('disabled')) return;
+          $('.btn_seleccionar_paquete_tabla').prop('disabled', true); // deshabilitar todos temporalmente
           paqueteSeleccionadoId = $(this).data('id');
           paqueteSeleccionadoNombre = $(this).data('nombre');
           paqueteSeleccionadoProveedor = $(this).data('proveedor');
@@ -757,6 +769,9 @@ if (!isset($conn) || $conn->connect_error) {
             timer: 1500,
             showConfirmButton: false
           });
+          setTimeout(function() {
+            $('.btn_seleccionar_paquete_tabla').prop('disabled', false);
+          }, 800); // reactivar tras breve lapso
         });
 
         // Inicializar totales
@@ -1094,20 +1109,21 @@ if (!isset($conn) || $conn->connect_error) {
       paqueteSeleccionadoNombre = '';
       paqueteSeleccionadoProveedor = '';
       clienteSeleccionado = null;
-      
+
       // Limpiar campos
       $('#paquete_seleccionado_nombre').val('');
       $('#paquete_seleccionado_proveedor').val('');
       $('#cliente_seleccionado_nombre').val('');
       $('#cliente_seleccionado_id').val('');
       $('#formCliente')[0].reset();
-      
-      // Desmarcar checkboxes
+
+      // Desmarcar checkboxes y sincronizar array
       $('.chk_comparar_paquete').prop('checked', false);
-      
+      paquetesSeleccionados = [];
+
       // Resetear comparación
       mostrarComparacionPaquetes();
-      
+
       showSuccess('Datos limpiados correctamente');
     }
   });
@@ -1115,79 +1131,6 @@ if (!isset($conn) || $conn->connect_error) {
   // Confirmar y guardar cotización
   $('#btn_confirmar_cotizacion').on('click', function(){
     guardarCotizacion(true); // true para generar PDF
-  });
-
-  // Descargar PDF desde previsualización (sin guardar cotización)
-  $('#btn_descargar_pdf_preview').on('click', function(){
-    const paquete_id = paqueteSeleccionadoId;
-    const paquete_nombre = $('#paquete_seleccionado_nombre').val();
-    const paquete_proveedor = $('#paquete_seleccionado_proveedor').val();
-    
-    if (!paquete_id) return showError('Seleccione un paquete desde la tabla de comparación.');
-    
-    // Obtener los productos y cantidades del paquete seleccionado
-    const items = [];
-    const ivaPorc = parseFloat($('#iva_comparacion').val()) || 0;
-    
-    $(`.cantidad_comparada[data-pid="${paquete_id}"]`).each(function(){
-      const cantidad = parseInt($(this).val() || '0', 10);
-      if (cantidad > 0) {
-        items.push({
-          id_producto: parseInt($(this).data('prid'),10),
-          cantidad: cantidad
-        });
-      }
-    });
-    
-    if (items.length === 0) return showError('Seleccione al menos un producto con cantidad > 0.');
-
-    // Crear datos para el PDF (usar cliente seleccionado si existe)
-    let clienteParaPDF;
-    if (clienteSeleccionado) {
-      clienteParaPDF = clienteSeleccionado;
-    } else {
-      clienteParaPDF = {
-        nombres: '[Cliente - Previsualización]',
-        identificacion: 'PREVIEW',
-        correo: 'preview@ejemplo.com',
-        celular: 'N/A',
-        ciudad: 'N/A',
-        direccion: 'N/A'
-      };
-    }
-
-    const datosTemporales = {
-      paquete_id: paquete_id,
-      paquete_nombre: paquete_nombre,
-      paquete_proveedor: paquete_proveedor,
-      items: items,
-      iva_porcentaje: ivaPorc,
-      cliente_temporal: clienteParaPDF,
-      es_preview: !clienteSeleccionado // indicar si es preview o cliente real
-    };
-
-    $.ajax({
-      url: AJAX_URL,
-      method: 'POST',
-      data: {
-        accion: 'generar_pdf_preview',
-        datos: JSON.stringify(datosTemporales)
-      },
-      dataType: 'json',
-      success: function(resp) {
-        if (!resp) return showError('Respuesta inválida del servidor.');
-        if (resp.success && resp.pdf_url) {
-          // Abrir PDF en nueva ventana para descarga
-          window.open(resp.pdf_url, '_blank');
-          showSuccess('PDF generado correctamente para descarga.');
-        } else {
-          showError(resp.mensaje || 'Error al generar PDF de previsualización');
-        }
-      },
-      error: function(xhr) {
-        showError('Error AJAX generar PDF: ' + (xhr.responseText || xhr.statusText));
-      }
-    });
   });
 
   function guardarCotizacion(generar_pdf) {
@@ -1230,10 +1173,10 @@ if (!isset($conn) || $conn->connect_error) {
         if (resp.success) {
           showSuccess('Cotización guardada correctamente');
           if (resp.pdf_url) window.open(resp.pdf_url, '_blank');
-          
+
           // Cerrar modales
           $('#modalConfirmarCotizacion').modal('hide');
-          
+
           // Limpiar datos
           paquetesSeleccionados = [];
           paqueteSeleccionadoId = null;
@@ -1244,7 +1187,9 @@ if (!isset($conn) || $conn->connect_error) {
           $('#paquete_seleccionado_proveedor').val('');
           $('#cliente_seleccionado_nombre').val('');
           $('#cliente_seleccionado_id').val('');
+          // Desmarcar checkboxes y sincronizar array
           $('.chk_comparar_paquete').prop('checked', false);
+          paquetesSeleccionados = [];
           mostrarComparacionPaquetes();
         } else {
           showError(resp.mensaje || 'Error al guardar cotización');
@@ -1401,4 +1346,3 @@ if (!isset($conn) || $conn->connect_error) {
   margin-bottom: 1.2rem;
 }
 </style>
-<link rel="stylesheet" href="../recursos/css/cotizaciones.css">
