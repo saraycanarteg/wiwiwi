@@ -63,13 +63,13 @@ if (!isset($conn) || $conn->connect_error) {
 </div>
 
 <!-- Modal para mostrar productos -->
-<div class="modal fade" id="modalProductos" tabindex="-1" role="dialog">
+<div class="modal fade" id="modalProductos" tabindex="-1" role="dialog" aria-labelledby="modalProductosTitle" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="fas fa-boxes mr-1"></i>Productos de la Cotización</h5>
-        <button type="button" class="close" data-dismiss="modal">
-          <span>&times;</span>
+        <h5 class="modal-title" id="modalProductosTitle"><i class="fas fa-boxes mr-1"></i>Productos de la Cotización</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+          <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body" id="modalProductosBody">
@@ -83,13 +83,13 @@ if (!isset($conn) || $conn->connect_error) {
 </div>
 
 <!-- Modal para visualizar cotización completa -->
-<div class="modal fade" id="modalVisualizarCotizacion" tabindex="-1" role="dialog">
+<div class="modal fade" id="modalVisualizarCotizacion" tabindex="-1" role="dialog" aria-labelledby="modalVisualizarTitle" aria-hidden="true">
   <div class="modal-dialog modal-xl" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="fas fa-eye mr-1"></i>Visualización de Cotización</h5>
-        <button type="button" class="close" data-dismiss="modal">
-          <span>&times;</span>
+        <h5 class="modal-title" id="modalVisualizarTitle"><i class="fas fa-eye mr-1"></i>Visualización de Cotización</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+          <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body" id="modalVisualizarCotizacionBody">
@@ -105,8 +105,30 @@ if (!isset($conn) || $conn->connect_error) {
   </div>
 </div>
 
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Librerías PDF - usar CDN que funcionan juntas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
 <script>
+// Verificar que las librerías estén cargadas
+$(document).ready(function() {
+    console.log('jQuery cargado:', typeof $ !== 'undefined');
+    
+    // Esperar un poco para que las librerías se carguen
+    setTimeout(function() {
+        console.log('jsPDF disponible:', typeof window.jspdf !== 'undefined');
+        console.log('autoTable disponible:', typeof window.jspdf?.jsPDF?.API?.autoTable !== 'undefined');
+        
+        if (typeof window.jspdf === 'undefined') {
+            console.error('jsPDF no se cargó correctamente');
+        }
+    }, 1000);
+});
+
 (function($){
   // Ruta AJAX corregida
   const AJAX_URL = '../controles/ajax_historial.php';
@@ -299,10 +321,11 @@ if (!isset($conn) || $conn->connect_error) {
         cotizacionActual = resp.cotizacion;
         const cotizacion = resp.cotizacion;
         
-        // Calcular totales
-        const ivaPorc = parseFloat(cotizacion.iva_porcentaje) || 0;
-        const totalSinIva = parseFloat(cotizacion.total) / (1 + ivaPorc/100);
-        const totalIva = parseFloat(cotizacion.total) - totalSinIva;
+        // Calcular totales - CORREGIDO para usar IVA fijo
+        const ivaPorc = 15; // IVA fijo del 15% para Ecuador
+        const totalConIva = parseFloat(cotizacion.total);
+        const totalSinIva = totalConIva / (1 + ivaPorc/100);
+        const totalIva = totalConIva - totalSinIva;
         
         let html = `
           <div class="cotizacion-preview">
@@ -394,28 +417,351 @@ if (!isset($conn) || $conn->connect_error) {
     });
   };
 
-  // Función global para generar PDF
+  // Función global para generar PDF - CORREGIDA
   window.generarPDF = function(idCotizacion) {
+    console.log('Generando PDF para cotización:', idCotizacion);
+    
+    // Verificar que jsPDF esté disponible
+    if (typeof window.jspdf === 'undefined') {
+      showError('Las librerías de PDF no están disponibles. Por favor, recarga la página.');
+      return;
+    }
+    
+    // Mostrar indicador de carga
+    Swal.fire({
+      title: 'Generando PDF...',
+      text: 'Por favor espere mientras se genera el documento',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    // Obtener datos completos de la cotización
     $.ajax({
       url: AJAX_URL,
       method: 'POST',
-      data: {accion: 'generar_pdf_cotizacion', id_cotizacion: idCotizacion},
+      data: {accion: 'obtener_cotizacion_completa', id_cotizacion: idCotizacion},
       dataType: 'json',
       success: function(resp) {
+        console.log('Respuesta del servidor:', resp);
         if (!resp.success) {
-          return showError(resp.mensaje || 'Error al generar PDF');
+          Swal.close();
+          return showError(resp.mensaje || 'Error al obtener datos de la cotización');
         }
         
-        if (resp.pdf_url) {
-          window.open(resp.pdf_url, '_blank');
+        try {
+          generarPDFLocal(resp.cotizacion);
+          Swal.close();
           showSuccess('PDF generado correctamente');
+        } catch (error) {
+          Swal.close();
+          console.error('Error al generar PDF:', error);
+          showError('Error al generar el archivo PDF: ' + error.message);
         }
       },
-      error: function(xhr) {
-        showError('Error AJAX al generar PDF: ' + (xhr.responseText || xhr.statusText));
+      error: function(xhr, status, error) {
+        Swal.close();
+        console.error('Error AJAX:', {xhr, status, error});
+        console.error('Response text:', xhr.responseText);
+        showError('Error al obtener datos para el PDF. Revisa la consola para más detalles.');
       }
     });
   };
+
+  // Función para generar PDF localmente usando jsPDF - CORREGIDA
+  function generarPDFLocal(cotizacion) {
+    console.log('Generando PDF local con datos:', cotizacion);
+    
+    try {
+      // Verificar que jsPDF esté disponible
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        throw new Error('jsPDF no está disponible');
+      }
+      
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // Verificar que autoTable esté disponible
+      if (typeof doc.autoTable !== 'function') {
+        console.error('autoTable no está disponible, generando PDF simple');
+        return generarPDFSimple(cotizacion, doc);
+      }
+
+      // Configuración de colores y fuentes
+      const primaryColor = [41, 128, 185];
+      const grayColor = [128, 128, 128];
+      
+      console.log('Configurando encabezado...');
+      
+      // Encabezado
+      doc.setFontSize(20);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.text('COTIZACIÓN', 20, 25);
+      
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`#${cotizacion.id_cotizacion}`, 160, 25);
+      
+      // Fecha y estado
+      doc.setFontSize(10);
+      doc.setTextColor(grayColor[0], grayColor[1], grayColor[2]);
+      doc.text(`Fecha: ${cotizacion.fecha_formateada}`, 20, 35);
+      doc.text(`Estado: ${cotizacion.estado.toUpperCase()}`, 20, 42);
+      
+      // Línea separadora
+      doc.setLineWidth(0.5);
+      doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.line(20, 48, 190, 48);
+      
+      console.log('Agregando información del cliente...');
+      
+      // Información del cliente
+      doc.setFontSize(14);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.text('INFORMACIÓN DEL CLIENTE', 20, 60);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      let yPos = 70;
+      
+      doc.text(`Nombre/Empresa: ${cotizacion.nombres}`, 20, yPos);
+      yPos += 7;
+      doc.text(`Identificación: ${cotizacion.identificacion}`, 20, yPos);
+      yPos += 7;
+      doc.text(`Correo: ${cotizacion.correo}`, 20, yPos);
+      yPos += 7;
+      doc.text(`Celular: ${cotizacion.celular}`, 20, yPos);
+      yPos += 7;
+      if (cotizacion.ciudad) {
+        doc.text(`Ciudad: ${cotizacion.ciudad}`, 20, yPos);
+        yPos += 7;
+      }
+      if (cotizacion.direccion) {
+        doc.text(`Dirección: ${cotizacion.direccion}`, 20, yPos);
+        yPos += 7;
+      }
+      
+      // Información del evento
+      yPos += 5;
+      doc.setFontSize(14);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.text('INFORMACIÓN DEL EVENTO', 20, yPos);
+      
+      yPos += 10;
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Tipo de Evento: ${cotizacion.tipo_evento}`, 20, yPos);
+      yPos += 7;
+      if (cotizacion.proveedor_nombre) {
+        doc.text(`Proveedor: ${cotizacion.proveedor_nombre}`, 20, yPos);
+        yPos += 7;
+      }
+      
+      console.log('Generando tabla de productos...');
+      
+      // Tabla de productos
+      yPos += 10;
+      
+      // Preparar datos para la tabla
+      const tableHeaders = ['Producto', 'Categoría', 'Cantidad', 'Precio Unit.', 'Subtotal'];
+      const tableData = [];
+      
+      if (cotizacion.productos && cotizacion.productos.length > 0) {
+        cotizacion.productos.forEach(producto => {
+          tableData.push([
+            producto.nombre || '',
+            producto.categoria || '',
+            producto.cantidad ? producto.cantidad.toString() : '0',
+            `$${parseFloat(producto.precio_unitario || 0).toFixed(2)}`,
+            `$${parseFloat(producto.subtotal || 0).toFixed(2)}`
+          ]);
+        });
+      }
+      
+      // Generar tabla con autoTable
+      doc.autoTable({
+        head: [tableHeaders],
+        body: tableData,
+        startY: yPos,
+        styles: {
+          fontSize: 9,
+          cellPadding: 3,
+        },
+        headStyles: {
+          fillColor: primaryColor,
+          textColor: 255,
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245]
+        },
+        margin: { left: 20, right: 20 }
+      });
+      
+      console.log('Agregando totales...');
+      
+      // Calcular totales
+      const totalConIva = parseFloat(cotizacion.total) || 0;
+      const ivaPorc = 15;
+      const totalSinIva = totalConIva / (1 + ivaPorc/100);
+      const totalIva = totalConIva - totalSinIva;
+      
+      // Posición después de la tabla
+      const finalY = doc.lastAutoTable.finalY + 10;
+      
+      // Totales
+      const totalsX = 130;
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      
+      doc.text('Subtotal:', totalsX, finalY);
+      doc.text(`$${totalSinIva.toFixed(2)}`, totalsX + 40, finalY);
+      
+      doc.text(`IVA (${ivaPorc}%):`, totalsX, finalY + 7);
+      doc.text(`$${totalIva.toFixed(2)}`, totalsX + 40, finalY + 7);
+      
+      // Total con fondo
+      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.rect(totalsX - 5, finalY + 12, 65, 8, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'bold');
+      doc.text('TOTAL:', totalsX, finalY + 18);
+      doc.text(`$${totalConIva.toFixed(2)}`, totalsX + 40, finalY + 18);
+      
+      // Pie de página
+      const pageHeight = doc.internal.pageSize.height;
+      doc.setTextColor(grayColor[0], grayColor[1], grayColor[2]);
+      doc.setFontSize(8);
+      doc.setFont(undefined, 'normal');
+      doc.text('Este documento es una cotización válida por 30 días.', 20, pageHeight - 20);
+      doc.text(`Generado el: ${new Date().toLocaleString('es-ES')}`, 20, pageHeight - 15);
+      
+      console.log('Descargando PDF...');
+      
+      // Descargar el PDF
+      const nombreArchivo = `cotizacion_${cotizacion.id_cotizacion}_${new Date().toISOString().slice(0, 10)}.pdf`;
+      doc.save(nombreArchivo);
+      
+      console.log('PDF generado exitosamente');
+      
+    } catch (error) {
+      console.error('Error detallado al generar PDF:', error);
+      throw error;
+    }
+  }
+
+  // Función fallback para generar PDF simple sin autoTable
+  function generarPDFSimple(cotizacion, doc) {
+    console.log('Generando PDF simple sin autoTable');
+    
+    const primaryColor = [41, 128, 185];
+    const grayColor = [128, 128, 128];
+    
+    // Encabezado
+    doc.setFontSize(20);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.text('COTIZACIÓN', 20, 25);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`#${cotizacion.id_cotizacion}`, 160, 25);
+    
+    // Información básica
+    let yPos = 40;
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    
+    doc.text(`Fecha: ${cotizacion.fecha_formateada}`, 20, yPos);
+    yPos += 7;
+    doc.text(`Estado: ${cotizacion.estado.toUpperCase()}`, 20, yPos);
+    yPos += 10;
+    
+    // Información del cliente
+    doc.setFontSize(12);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.text('INFORMACIÓN DEL CLIENTE', 20, yPos);
+    yPos += 10;
+    
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Nombre: ${cotizacion.nombres}`, 20, yPos);
+    yPos += 7;
+    doc.text(`Identificación: ${cotizacion.identificacion}`, 20, yPos);
+    yPos += 7;
+    doc.text(`Correo: ${cotizacion.correo}`, 20, yPos);
+    yPos += 7;
+    doc.text(`Celular: ${cotizacion.celular}`, 20, yPos);
+    yPos += 15;
+    
+    // Información del evento
+    doc.setFontSize(12);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.text('INFORMACIÓN DEL EVENTO', 20, yPos);
+    yPos += 10;
+    
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Tipo de Evento: ${cotizacion.tipo_evento}`, 20, yPos);
+    yPos += 7;
+    if (cotizacion.proveedor_nombre) {
+      doc.text(`Proveedor: ${cotizacion.proveedor_nombre}`, 20, yPos);
+      yPos += 15;
+    } else {
+      yPos += 8;
+    }
+    
+    // Productos (formato simple)
+    doc.setFontSize(12);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.text('PRODUCTOS', 20, yPos);
+    yPos += 10;
+    
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    
+    if (cotizacion.productos && cotizacion.productos.length > 0) {
+      cotizacion.productos.forEach(producto => {
+        const linea = `${producto.nombre} - Cant: ${producto.cantidad} - $${parseFloat(producto.precio_unitario || 0).toFixed(2)} = $${parseFloat(producto.subtotal || 0).toFixed(2)}`;
+        doc.text(linea, 20, yPos);
+        yPos += 6;
+      });
+    }
+    
+    // Total
+    yPos += 10;
+    const totalConIva = parseFloat(cotizacion.total) || 0;
+    const ivaPorc = 15;
+    const totalSinIva = totalConIva / (1 + ivaPorc/100);
+    const totalIva = totalConIva - totalSinIva;
+    
+    doc.setFontSize(10);
+    doc.text(`Subtotal: $${totalSinIva.toFixed(2)}`, 130, yPos);
+    yPos += 7;
+    doc.text(`IVA (${ivaPorc}%): $${totalIva.toFixed(2)}`, 130, yPos);
+    yPos += 7;
+    
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    doc.text(`TOTAL: $${totalConIva.toFixed(2)}`, 130, yPos);
+    
+    // Pie de página
+    const pageHeight = doc.internal.pageSize.height;
+    doc.setTextColor(grayColor[0], grayColor[1], grayColor[2]);
+    doc.setFontSize(8);
+    doc.setFont(undefined, 'normal');
+    doc.text('Este documento es una cotización válida por 30 días.', 20, pageHeight - 20);
+    doc.text(`Generado el: ${new Date().toLocaleString('es-ES')}`, 20, pageHeight - 15);
+    
+    // Descargar el PDF
+    const nombreArchivo = `cotizacion_${cotizacion.id_cotizacion}_${new Date().toISOString().slice(0, 10)}.pdf`;
+    doc.save(nombreArchivo);
+    
+    console.log('PDF simple generado exitosamente');
+  }
 
   // Mostrar todas las cotizaciones
   $('#btnMostrarTodas').on('click', function(){
@@ -452,10 +798,12 @@ if (!isset($conn) || $conn->connect_error) {
     });
   });
 
-  // Generar PDF desde modal
+  // Generar PDF desde modal - MEJORADO
   $('#btnGenerarPDFModal').on('click', function(){
-    if (cotizacionActual) {
+    if (cotizacionActual && cotizacionActual.id_cotizacion) {
       generarPDF(cotizacionActual.id_cotizacion);
+    } else {
+      showError('No hay cotización seleccionada para generar PDF');
     }
   });
 
