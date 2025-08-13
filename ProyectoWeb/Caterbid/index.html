@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Caterbid - Plataforma de Catering</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="recursos/css/style.css">
+</head>
+<body>
+  <div class="contenedor-login">
+    <div class="lado-izquierdo">
+      <div class="contenedor-logo">
+        <img src="recursos/images/logo.jpeg" alt="Logo de Caterbid">
+      </div>
+      <div class="texto-bienvenida">
+        <h2>¡Bienvenido!</h2> 
+      </div>
+    </div>
+    <div class="lado-derecho">
+      <div class="encabezado-login">
+        <h1>Accede a tu cuenta</h1>
+      </div>
+      <form id="formularioLogin" class="formulario-login" action="config/login.php" method="POST">
+        <div class="grupo-campo">
+          <input type="text" name="correo" id="email" placeholder="Correo Electrónico" class="form-control" required>
+        </div>
+        <div class="grupo-campo">
+          <input type="password" name="clave" id="contrasena" placeholder="Contraseña" class="form-control" required>
+        </div>
+        <button type="submit" class="boton-ingresar">Ingresar</button>
+      </form>
+    </div>
+  </div>
+  <script src="recursos/js/main.js"></script>
+</body>
+</html>

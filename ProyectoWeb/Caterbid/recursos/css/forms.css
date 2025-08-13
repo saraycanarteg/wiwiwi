@@ -1,0 +1,173 @@
+/* ESTILO FORMULARIOS DE PROVEEDORES Y TABLAS*/ 
+        :root {
+            --primary-blue: #1a365d;
+            --light-blue: #8fabc57e;
+            --bg-gray: #f7fafc;
+        }
+        
+        body {
+            background-color: var(--bg-gray);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-title {
+            color: var(--primary-blue);
+            font-weight: bold;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .main-title i {
+            font-size: 2rem;
+        }
+        
+        .form-container {
+            background: white;
+            border: 2px solid ;
+            border-color: var(--light-blue);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-container label {
+            color: var(--primary-blue);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control {
+            border: 1px solid #cbd5e0;
+            border-radius: 5px;
+            padding: 0.75rem;
+        }
+        
+        .form-control:focus {
+            border-color: var(--light-blue);
+            box-shadow: 0 0 0 0.2rem rgba(49, 130, 206, 0.25);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--light-blue);
+            border-color: var(--light-blue);
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .table thead th {
+            background-color: var(--primary-blue);
+            color: white;
+            font-weight: 600;
+            padding: 1rem;
+            border: none;
+        }
+        
+        .table tbody td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .table tbody tr:hover {
+            background-color: #f7fafc;
+        }
+        /* Evitar scroll horizontal infinito */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        /* Truncate styles */
+        .truncate {
+            max-width: 200px; /* Adjust this value as needed */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .truncate.expanded {
+            max-width: none;
+            white-space: normal;
+            overflow: visible;
+        } 
+
+        .btn-edit {
+            background-color: #38a169;
+            border-color: #38a169;
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .btn-edit:hover {
+            background-color: #2f855a;
+            border-color: #2f855a;
+            color: white;
+        }
+        
+        .btn-delete {
+            background-color: #e53e3e;
+            border-color: #e53e3e;
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .btn-delete:hover {
+            background-color: #c53030;
+            border-color: #c53030;
+            color: white;
+        }
+        .btn-group-sm > .btn {
+            min-width: 32px;
+            padding: 0.25rem;
+        }
+
+        .btn-group-sm i.fa-fw {
+            width: 1rem;
+            text-align: center;
+        }
+        .alert {
+            margin-bottom: 1rem;
+        }
+        
+        .required {
+            color: #e53e3e;
+        }
+        
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 1rem;
+            }
+            
+            .table-responsive {
+                font-size: 0.875rem;
+            }
+            
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+        }

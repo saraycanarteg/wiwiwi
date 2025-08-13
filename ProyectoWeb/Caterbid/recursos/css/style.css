@@ -1,0 +1,249 @@
+/* ================================
+   VARIABLES GLOBALES EN ESPAÑOL
+   ================================ */
+:root {
+    --color-azul-oscuro: #2b3453;
+    --color-azul-claro: #4a5a7a;
+    --color-azul-medio: #6b7ba0;
+    --color-amarillo: #e2d49b;
+    --color-beige: #fbecb1;
+    --color-gris-fondo: #f8f9fa;
+}
+
+/* ================================
+   ESTILOS GENERALES DE CATERBID
+   ================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--color-azul-medio), transparent 95%) 50%,
+        color-mix(in srgb, #409dfd, transparent 98%) 25%,
+        transparent 50%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-x: hidden;
+}
+
+.contenedor-login {
+    background: white;
+    border-radius: 30px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    width: 100%;
+    max-width: 1000px;
+    min-height: 450px;
+    display: flex;
+    position: relative;
+}
+
+.lado-izquierdo {
+    flex: 1;
+    background: var(--color-azul-oscuro);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    border-radius: 0 100px 100px 0;
+}
+
+.contenedor-logo {
+    width: 250px;
+    height: 170px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.contenedor-logo img {
+    max-width: 220px;
+    max-height: 140px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.texto-bienvenida {
+    text-align: center;
+    max-width: 300px;
+}
+
+.texto-bienvenida h2 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.lado-derecho {
+    flex: 1;
+    padding: 60px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.encabezado-login {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.encabezado-login h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-azul-oscuro);
+    background: linear-gradient(135deg, #22274f 0%, #4a5568 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.formulario-login {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.grupo-campo input {
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid #e1e8ed;
+    border-radius: 20px;
+    font-size: 1rem;
+    background: var(--color-gris-fondo);
+    color: #2c3e50;
+    margin-top: 8px;
+    transition: all 0.3s ease;
+}
+
+.grupo-campo input:focus {
+    outline: none;
+    border-color: #22274f;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(34, 39, 79, 0.1);
+    transform: translateY(-2px);
+}
+
+.grupo-campo input::placeholder {
+    color: #95a5a6;
+}
+
+.boton-ingresar {
+    background: linear-gradient(135deg, #22274f 0%, #4a5568 100%);
+    color: white;
+    border: none;
+    padding: 18px 30px;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    transition: all 0.3s ease;
+}
+
+.boton-ingresar:hover {
+    background: linear-gradient(135deg, #1a1e3c 0%, #3a4058 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(34, 39, 79, 0.35);
+}
+
+.boton-ingresar:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(34, 39, 79, 0.2);
+}
+
+.boton-ingresar:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* ================================
+   DISEÑO RESPONSIVO
+   ================================ */
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .contenedor-login {
+        flex-direction: column;
+        max-width: 400px;
+        min-height: auto;
+    }
+
+    .lado-izquierdo {
+        padding: 40px 20px;
+        border-radius: 0;
+    }
+
+    .contenedor-logo {
+        width: 200px;
+        height: 120px;
+    }
+
+    .contenedor-logo img {
+        max-width: 160px;
+        max-height: 80px;
+    }
+
+    .texto-bienvenida h2 {
+        font-size: 1.8rem;
+    }
+
+    .lado-derecho {
+        padding: 40px 30px;
+    }
+
+    .encabezado-login h1 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .contenedor-login {
+        border-radius: 20px;
+        margin: 10px;
+    }
+
+    .lado-izquierdo {
+        padding: 30px 20px;
+    }
+
+    .lado-derecho {
+        padding: 30px 20px;
+    }
+
+    .encabezado-login h1 {
+        font-size: 1.8rem;
+    }
+
+    .texto-bienvenida h2 {
+        font-size: 1.6rem;
+    }
+
+    .contenedor-logo {
+        width: 180px;
+        height: 100px;
+    }
+
+    .contenedor-logo img {
+        max-width: 140px;
+        max-height: 70px;
+    }
+}
