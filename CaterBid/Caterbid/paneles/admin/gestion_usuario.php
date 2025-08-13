@@ -9,14 +9,6 @@ require_once '../../includes/verificar_permisos.php';
 requierePermiso('gestion_usuario');
 require_once '../../config/database.php';
 
-// Obtener usuarios con información del rol
-$usuarios_result = $conn->query("
-    SELECT u.*, r.nombre_rol 
-    FROM usuario u 
-    LEFT JOIN rol r ON u.id_rol = r.id_rol 
-    ORDER BY u.id_usuario ASC
-");
-
 // Obtener todos los roles activos para el formulario
 $roles_result = $conn->query("SELECT * FROM rol WHERE estado = 'activo' ORDER BY nombre_rol ASC");
 ?>
@@ -116,12 +108,23 @@ $roles_result = $conn->query("SELECT * FROM rol WHERE estado = 'activo' ORDER BY
                             <button type="submit" class="btn btn-primary me-2">
                                 <i class="fas fa-save me-1"></i>Guardar
                             </button>
-                            <button type="button" class="btn btn-secondary" onclick="limpiarFormulario()">
+                            <button type="button" class="btn btn-secondary" onclick="limpiar()">
                                 <i class="fas fa-eraser me-1"></i>Limpiar
                             </button>
                         </div>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón de exportación -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-danger" id="btn-exportar-pdf" onclick="exportarTablaPDF()">
+                    <i class="fas fa-file-pdf me-1"></i>Exportar PDF
+                </button>
             </div>
         </div>
     </div>
@@ -145,64 +148,13 @@ $roles_result = $conn->query("SELECT * FROM rol WHERE estado = 'activo' ORDER BY
                             </tr>
                         </thead>
                         <tbody id="tabla-usuarios">
-                            <?php if ($usuarios_result && $usuarios_result->num_rows > 0): ?>
-                                <?php while ($u = $usuarios_result->fetch_assoc()): ?>
-                                    <?php 
-                                        $badge = $u['estado'] === 'activo' ? 'success' : 'danger';
-                                        $toggle_action = $u['estado'] === 'activo' ? 'desactivar' : 'activar';
-                                        $toggle_icon = $u['estado'] === 'activo' ? 'ban' : 'check';
-                                        $toggle_class = $u['estado'] === 'activo' ? 'btn-danger' : 'btn-success';
-                                        $fecha_formateada = date('d/m/Y H:i', strtotime($u['fecha_creacion']));
-                                    ?>
-                                    <tr>
-                                        <td><?php echo $u['id_usuario']; ?></td>
-                                        <td>
-                                            <strong><?php echo htmlspecialchars($u['nombre']); ?></strong>
-                                        </td>
-                                        <td><?php echo htmlspecialchars($u['correo']); ?></td>
-                                        <td>
-                                            <span class="truncate" title="<?php echo htmlspecialchars($u['direccion'] ?? 'Sin dirección'); ?>">
-                                                <?php echo htmlspecialchars($u['direccion'] ?? 'Sin dirección'); ?>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-info">
-                                                <?php echo htmlspecialchars($u['nombre_rol'] ?? 'Sin rol'); ?>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-<?php echo $badge; ?>">
-                                                <?php echo ucfirst($u['estado']); ?>
-                                            </span>
-                                        </td>
-                                        <td><?php echo $fecha_formateada; ?></td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-edit btn-editar" 
-                                                    data-id="<?php echo $u['id_usuario']; ?>" 
-                                                    title="Editar">
-                                                    <i class="fas fa-edit fa-fw"></i>
-                                                </button>
-                                                <?php if ($u['id_usuario'] != $_SESSION['usuario']['id_usuario']): ?>
-                                                    <button class="btn <?php echo $toggle_class; ?> btn-toggle" 
-                                                        data-id="<?php echo $u['id_usuario']; ?>" 
-                                                        data-estado="<?php echo $toggle_action; ?>" 
-                                                        title="<?php echo ucfirst($toggle_action); ?>">
-                                                        <i class="fas fa-<?php echo $toggle_icon; ?> fa-fw"></i>
-                                                    </button>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endwhile; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="8" class="text-center py-4">
-                                        <i class="fas fa-inbox fa-2x text-muted mb-3"></i><br>
-                                        No hay usuarios registrados
-                                    </td>
-                                </tr>
-                            <?php endif; ?>
+                            <!-- Los datos se cargan via AJAX -->
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-muted mb-3"></i><br>
+                                    Cargando usuarios...
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -210,8 +162,14 @@ $roles_result = $conn->query("SELECT * FROM rol WHERE estado = 'activo' ORDER BY
         </div>
     </div>
 </div>
+
+<!-- Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<!-- Agregar librerías para PDF después de jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 <script src="../recursos/js/formularios.js"></script>
+<script src="../recursos/js/validaciones.js"></script>
 </body>
 </html>

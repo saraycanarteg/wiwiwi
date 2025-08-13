@@ -501,84 +501,266 @@ $(document).ready(function() {
         });
     });
 
-    
-    // Cargar tablas SOLO si existen
-    if ($('#tabla-productos').length) {
-        cargarTablaProductos();
-    }
-
-    if ($('#tabla-usuarios').length) {
-        cargarTablaUsuarios();
-    }
-
-    if ($('#tabla-proveedores').length) {
-        cargarTabla();
-    }
-
-    // Validaciones específicas de proveedores - SOLO si el formulario existe
-    if ($('#proveedorForm').length > 0) {
-        initProveedorValidations();
-    }
-
-    if ($('#tabla-roles').length) {
-        cargarTablaRoles();
-    }
-
-    if ($('#tabla-paquetes').length) {
-        cargarTablaPaquetes();
-    }
+    // Inicializar paginación al cargar la página
+    inicializarSistemaPaginacion();
 });
 
-// Funciones para cargar tablas
-function cargarTabla() {
-    $.get('../controles/ajax_proveedores.php?accion=cargar_tabla', function(html) {
-        $('#tabla-proveedores').html(html);
-    });
-}
-function cargarTablaUsuarios() {
-    console.log('Cargando tabla de usuarios...');
-    $.get('../controles/ajax_usuarios.php?accion=cargar_tabla', function(html) {
-        $('#tabla-usuarios').html(html);
-    }).fail(function() {
-        mensaje('Error al cargar tabla de usuarios', 'danger');
-    });
-}
-function cargarTablaProductos() {
-    $.get('../controles/ajax_productos.php?accion=cargar_tabla', function(html) {
-        $('#tabla-productos').html(html);
-    }).fail(function() {
-        mensaje('Error al cargar tabla de productos', 'danger');
-    });
+/* SISTEMA DE PAGINACIÓN MEJORADO */
+
+// Variable global para controlar la inicialización - protegida contra redeclaración
+if (typeof window.sistemaInicializado === 'undefined') {
+    window.sistemaInicializado = false;
 }
 
-function cargarTablaRoles() {
-    $.get('../controles/ajax_roles.php?accion=cargar_tabla', function(html) {
-        $('#tabla-roles').html(html);
-    }).fail(function() {
-        mensaje('Error al cargar tabla de roles', 'danger');
-    });
+// Configuración de tablas con paginación - protegida contra redeclaración
+if (typeof window.TABLAS_CONFIG === 'undefined') {
+    window.TABLAS_CONFIG = {
+        'proveedores': {
+            url: '../controles/ajax_proveedores.php',
+            containerId: '#tabla-proveedores'
+        },
+        'productos': {
+            url: '../controles/ajax_productos.php',
+            containerId: '#tabla-productos'
+        },
+        'usuarios': {
+            url: '../controles/ajax_usuarios.php',
+            containerId: '#tabla-usuarios'
+        },
+        'roles': {
+            url: '../controles/ajax_roles.php',
+            containerId: '#tabla-roles'
+        },
+        'paquetes': {
+            url: '../controles/ajax_paquetes.php',
+            containerId: '#tabla-paquetes'
+        },
+        'auditorias': {
+            url: '../controles/ajax_auditorias.php',
+            containerId: '#tabla-auditorias'
+        }
+    };
 }
 
-function cargarTablaPaquetes() {
-    console.log('Cargando tabla de paquetes...');
+// Función principal de inicialización del sistema de paginación
+function inicializarSistemaPaginacion() {
+    console.log('Inicializando sistema de paginación...');
     
-    const tabla = $('#tabla-paquetes');
-    if (tabla.length > 0) {
-        tabla.html('<tr><td colspan="7" class="text-center"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>');
+    // Detectar el tipo de tabla actual
+    const tipoTabla = detectarTipoTabla();
+    console.log('Tipo de tabla detectado:', tipoTabla);
+    
+    if (tipoTabla) {
+        // Asegurar que los controles de paginación estén presentes
+        garantizarControlesPaginacion(tipoTabla);
+        
+        // Configurar event listeners
+        configurarEventListeners();
+        
+        // Cargar la tabla inicial
+        cargarTablaConPaginacion(tipoTabla, 1);
+        
+        window.sistemaInicializado = true;
+        console.log('Sistema de paginación inicializado correctamente');
+    } else {
+        console.log('No se detectó ninguna tabla válida');
+    }
+}
+
+// Función mejorada para garantizar que los controles existan
+function garantizarControlesPaginacion(tipoTabla) {
+    const config = window.TABLAS_CONFIG[tipoTabla];
+    if (!config) return;
+    
+    const tableContainer = $(config.containerId).closest('.table-container');
+    
+    if (tableContainer.length > 0) {
+        // Verificar si los controles ya existen
+        let controlsContainer = tableContainer.prev('.pagination-controls');
+        
+        if (controlsContainer.length === 0) {
+            // Crear los controles si no existen
+            console.log('Creando controles de paginación para:', tipoTabla);
+            tableContainer.before(`
+                <div class="d-flex justify-content-between align-items-center mb-2 pagination-controls">
+                    <div>
+                        Mostrar 
+                        <select id="filasPorPagina" class="form-select d-inline-block w-auto">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                        </select>
+                        registros
+                    </div>
+                    <div id="paginacion"></div>
+                </div>
+            `);
+        } else {
+            console.log('Los controles de paginación ya existen para:', tipoTabla);
+        }
+        
+        // Asegurar que el selector de filas tenga el valor correcto
+        if ($('#filasPorPagina').length > 0 && !$('#filasPorPagina').val()) {
+            $('#filasPorPagina').val('10');
+        }
+    }
+}
+
+// Configurar event listeners con namespace para evitar duplicados
+function configurarEventListeners() {
+    // Remover eventos anteriores para evitar duplicados
+    $(document).off('change.paginacion').off('click.paginacion');
+    
+    // Cambio en selector de filas por página
+    $(document).on('change.paginacion', '#filasPorPagina', function() {
+        console.log('Cambio en filas por página:', $(this).val());
+        const tipo = detectarTipoTabla();
+        if (tipo) {
+            cargarTablaConPaginacion(tipo, 1);
+        }
+    });
+
+    // Click en enlaces de paginación
+    $(document).on('click.paginacion', '.pagina-link', function(e) {
+        e.preventDefault();
+        const pagina = $(this).data('pagina');
+        console.log('Click en página:', pagina);
+        const tipo = detectarTipoTabla();
+        if (tipo && pagina) {
+            cargarTablaConPaginacion(tipo, pagina);
+        }
+    });
+    
+    console.log('Event listeners configurados correctamente');
+}
+
+// Función genérica para cargar tabla con paginación mejorada
+function cargarTablaConPaginacion(tipoTabla, pagina = 1) {
+    const config = window.TABLAS_CONFIG[tipoTabla];
+    if (!config) {
+        console.error(`Configuración no encontrada para tabla: ${tipoTabla}`);
+        return;
+    }
+
+    console.log(`Cargando tabla ${tipoTabla}, página ${pagina}`);
+    
+    // Asegurar que los controles existan antes de cargar
+    garantizarControlesPaginacion(tipoTabla);
+    
+    const filas = $('#filasPorPagina').val() || 10;
+    const container = $(config.containerId);
+    
+    // Mostrar indicador de carga
+    if (container.length > 0) {
+        const colspan = container.closest('table').find('thead th').length || 7;
+        container.html(`<tr><td colspan="${colspan}" class="text-center"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>`);
     }
     
-    $.get('../controles/ajax_paquetes.php', {
-        accion: 'cargar_tabla'
+    $.get(config.url, {
+        accion: 'cargar_tabla',
+        pagina: pagina,
+        filas: filas
     })
     .done(function(html) {
-        console.log('Tabla cargada exitosamente');
-        tabla.html(html);
+        console.log(`Tabla ${tipoTabla} cargada exitosamente`);
+        container.html(html);
+        
+        // Asegurar que la paginación se muestre después de cargar los datos
+        setTimeout(function() {
+            if ($('#paginacion').children().length === 0) {
+                console.log('La paginación no se cargó, reintentando...');
+                // Si la paginación no se cargó via script en la respuesta AJAX,
+                // podríamos necesitar una llamada adicional o manejarla diferente
+            }
+        }, 100);
     })
     .fail(function(xhr, status, error) {
-        console.log('Error al cargar tabla:', status, error, xhr.responseText);
-        tabla.html('<tr><td colspan="7" class="text-center text-danger"><i class="fas fa-exclamation-triangle"></i> Error al cargar datos</td></tr>');
-        mensaje('Error al cargar tabla de paquetes', 'danger');
+        console.error(`Error al cargar tabla ${tipoTabla}:`, status, error);
+        const colspan = container.closest('table').find('thead th').length || 7;
+        container.html(`<tr><td colspan="${colspan}" class="text-center text-danger"><i class="fas fa-exclamation-triangle"></i> Error al cargar datos</td></tr>`);
+        mensaje(`Error al cargar tabla de ${tipoTabla}`, 'danger');
     });
+}
+
+// Detectar automáticamente qué tipo de tabla estamos manejando
+function detectarTipoTabla() {
+    for (const [tipo, config] of Object.entries(window.TABLAS_CONFIG)) {
+        if ($(config.containerId).length > 0) {
+            return tipo;
+        }
+    }
+    return null;
+}
+
+// Funciones de carga específicas (mantienen compatibilidad con código existente)
+function cargarTabla(pagina = 1) {
+    console.log('cargarTabla() llamada - redirigiendo a sistema genérico');
+    // Re-inicializar sistema si es necesario
+    if (!window.sistemaInicializado) {
+        inicializarSistemaPaginacion();
+    } else {
+        cargarTablaConPaginacion('proveedores', pagina);
+    }
+}
+
+function cargarTablaUsuarios(pagina = 1) {
+    console.log('cargarTablaUsuarios() llamada');
+    if (!window.sistemaInicializado) {
+        inicializarSistemaPaginacion();
+    } else {
+        cargarTablaConPaginacion('usuarios', pagina);
+    }
+}
+
+function cargarTablaProductos(pagina = 1) {
+    console.log('cargarTablaProductos() llamada');
+    if (!window.sistemaInicializado) {
+        inicializarSistemaPaginacion();
+    } else {
+        cargarTablaConPaginacion('productos', pagina);
+    }
+}
+
+function cargarTablaRoles(pagina = 1) {
+    console.log('cargarTablaRoles() llamada');
+    if (!window.sistemaInicializado) {
+        inicializarSistemaPaginacion();
+    } else {
+        cargarTablaConPaginacion('roles', pagina);
+    }
+}
+
+function cargarTablaPaquetes(pagina = 1) {
+    console.log('cargarTablaPaquetes() llamada');
+    if (!window.sistemaInicializado) {
+        inicializarSistemaPaginacion();
+    } else {
+        cargarTablaConPaginacion('paquetes', pagina);
+    }
+}
+
+function cargarTablaAuditorias(pagina = 1) {
+    console.log('cargarTablaAuditorias() llamada');
+    if (!window.sistemaInicializado) {
+        inicializarSistemaPaginacion();
+    } else {
+        cargarTablaConPaginacion('auditorias', pagina);
+    }
+}
+
+// Función para reinicializar el sistema cuando se cambia de formulario
+function reinicializarPaginacion() {
+    console.log('Reinicializando sistema de paginación...');
+    window.sistemaInicializado = false;
+    
+    // Limpiar event listeners anteriores
+    $(document).off('change.paginacion').off('click.paginacion');
+    
+    // Volver a inicializar
+    setTimeout(function() {
+        inicializarSistemaPaginacion();
+    }, 100);
 }
 
 // Función para mostrar mensajes
@@ -602,6 +784,7 @@ function limpiar() {
         limpiarUsuario();
     }
 }
+
 function limpiarUsuario() {
     $('#usuarioForm')[0].reset();
     $('input[name="accion"]').val('crear');
@@ -610,6 +793,7 @@ function limpiarUsuario() {
     $('button[type="submit"]').html('<i class="fas fa-save me-1"></i>Guardar');
     $('.password-info').remove();
 }
+
 function limpiarProducto() {
     $('#productoForm')[0].reset();
     $('input[name="accion"]').val('crear');
@@ -750,7 +934,7 @@ function initProveedorValidations() {
                 
                 if (!/^\d{10,13}$/.test(ruc)) {
                     e.preventDefault();
-                    mensaje('El RUC debe contener entre 10 y 13 dígitos', 'danger');
+                    mensaje('El RUC debe contener 10 dígitos', 'danger');
                     return;
                 }
                 
@@ -774,3 +958,235 @@ setTimeout(function() {
         }
     });
 }, 5000);
+
+// Función para ser llamada cuando se cambia de formulario
+// Esta función debe ser llamada desde tu sistema de navegación
+window.onFormularioChange = function() {
+    console.log('Detectado cambio de formulario');
+    reinicializarPaginacion();
+};
+
+// También detectar cambios automáticamente usando MutationObserver - protegido contra redeclaración
+if (typeof window.formulariosObserver === 'undefined') {
+    window.formulariosObserver = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList') {
+                // Verificar si se agregaron nuevas tablas
+                const addedNodes = Array.from(mutation.addedNodes);
+                const hasTableContainer = addedNodes.some(node => 
+                    node.nodeType === Node.ELEMENT_NODE && 
+                    (node.classList?.contains('table-container') || 
+                     node.querySelector?.('.table-container'))
+                );
+                
+                if (hasTableContainer) {
+                    console.log('Nueva tabla detectada, reinicializando paginación...');
+                    setTimeout(function() {
+                        reinicializarPaginacion();
+                    }, 200);
+                }
+            }
+        });
+    });
+
+    // Observar cambios en el DOM
+    window.formulariosObserver.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+}
+
+// FUNCIONES LEGACY MANTENIDAS PARA COMPATIBILIDAD
+
+// Función original de inicialización (mantenida para compatibilidad)
+function inicializarPaginacionGenerica() {
+    console.log('inicializarPaginacionGenerica() llamada - redirigiendo a nuevo sistema');
+    inicializarSistemaPaginacion();
+}
+
+// Crear controles de paginación dinámicamente (legacy)
+function crearControlesPaginacion(tipoTabla) {
+    console.log('crearControlesPaginacion() llamada - usando nueva implementación');
+    garantizarControlesPaginacion(tipoTabla);
+}
+
+/* SISTEMA DE EXPORTACIÓN PDF */
+
+// Función genérica para exportar tabla a PDF
+function exportarTablaPDF() {
+    // Detectar qué tipo de tabla tenemos
+    const tipoTabla = detectarTipoTabla();
+    if (!tipoTabla) {
+        mensaje('No se pudo detectar el tipo de tabla para exportar', 'danger');
+        return;
+    }
+
+    // Configuración específica para cada tipo de tabla
+    const configuraciones = {
+        'proveedores': {
+            titulo: 'Reporte de Proveedores',
+            url: '../controles/ajax_proveedores.php',
+            columnas: ['ID', 'Nombre', 'RUC', 'Email', 'Teléfono', 'Estado', 'Dirección'],
+            campos: ['id_proveedor', 'nombre', 'ruc', 'correo', 'telefono', 'estado', 'direccion']
+        },
+        'productos': {
+            titulo: 'Reporte de Productos',
+            url: '../controles/ajax_productos.php',
+            columnas: ['ID', 'Nombre', 'Descripción', 'Precio', 'Stock', 'Categoría', 'Proveedor', 'Estado'],
+            campos: ['id_producto', 'nombre', 'descripcion', 'precio_unitario', 'cantidad_disponible', 'categoria', 'proveedor_nombre', 'estado']
+        },
+        'usuarios': {
+            titulo: 'Reporte de Usuarios',
+            url: '../controles/ajax_usuarios.php',
+            columnas: ['ID', 'Nombre', 'Email', 'Rol', 'Estado', 'Fecha Registro'],
+            campos: ['id_usuario', 'nombre', 'correo', 'rol_nombre', 'estado', 'fecha_creacion']
+        },
+        'roles': {
+            titulo: 'Reporte de Roles y Permisos',
+            url: '../controles/ajax_roles.php',
+            columnas: ['ID', 'Nombre del Rol', 'Descripción', 'Permisos', 'Estado'],
+            campos: ['id_rol', 'nombre_rol', 'descripcion', 'permisos_lista', 'estado']
+        },
+        'paquetes': {
+            titulo: 'Reporte de Paquetes',
+            url: '../controles/ajax_paquetes.php',
+            columnas: ['ID', 'Tipo de Evento', 'Proveedor', 'Total Productos', 'Fecha Creación', 'Estado'],
+            campos: ['id_paquete', 'tipo_evento', 'proveedor_nombre', 'total_productos', 'fecha_creacion', 'estado']
+        },
+        'auditorias': {
+            titulo: 'Reporte de Auditorías',
+            url: '../controles/ajax_auditorias.php',
+            columnas: ['ID Log', 'Usuario', 'Tabla', 'Valor Anterior', 'Nuevo Valor', 'Fecha'],
+            campos: ['id_auditoria', 'id_usuario', 'tabla_afectada', 'valor_anterior_corto', 'valor_nuevo_corto', 'fecha_cambio']
+        }
+    };
+
+    const config = configuraciones[tipoTabla];
+    if (!config) {
+        mensaje('Configuración de exportación no encontrada', 'danger');
+        return;
+    }
+
+    // Mostrar indicador de carga
+    const btnExportar = $('#btn-exportar-pdf');
+    const textoOriginal = btnExportar.html();
+    btnExportar.html('<i class="fas fa-spinner fa-spin"></i> Generando PDF...').prop('disabled', true);
+
+    // Obtener todos los datos para exportar
+    $.get(config.url, {
+        accion: 'exportar_pdf',
+        todos: true
+    })
+    .done(function(response) {
+        try {
+            let datos;
+            if (typeof response === 'string') {
+                datos = JSON.parse(response);
+            } else {
+                datos = response;
+            }
+
+            if (datos.success && datos.data) {
+                generarPDF(config, datos.data);
+            } else {
+                mensaje('Error al obtener datos para exportar: ' + (datos.mensaje || 'Error desconocido'), 'danger');
+            }
+        } catch (error) {
+            console.error('Error al procesar respuesta:', error);
+            mensaje('Error al procesar los datos para exportar', 'danger');
+        }
+    })
+    .fail(function() {
+        mensaje('Error de conexión al obtener datos para exportar', 'danger');
+    })
+    .always(function() {
+        btnExportar.html(textoOriginal).prop('disabled', false);
+    });
+}
+
+// Función para generar el PDF con jsPDF - VERSIÓN SIMPLE
+function generarPDF(config, datos) {
+    try {
+        // Usar window.jspdf.jsPDF como en el gestionar_paquete que funcionaba
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4'); // Landscape para más espacio
+
+        // Configurar fuente
+        doc.setFont('helvetica');
+
+        // Título del documento
+        doc.setFontSize(16);
+        doc.setTextColor(40, 40, 40);
+        doc.text(config.titulo, 20, 20);
+
+        // Fecha de generación
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        const fechaActual = new Date().toLocaleString('es-ES');
+        doc.text(`Generado el: ${fechaActual}`, 20, 30);
+
+        // Preparar datos para la tabla
+        const filas = datos.map(fila => {
+            return config.campos.map(campo => {
+                let valor = fila[campo] || '';
+                
+                // Formatear valores específicos
+                if (campo === 'precio_unitario' && valor) {
+                    valor = '$' + parseFloat(valor).toFixed(2);
+                } else if (campo === 'fecha_creacion' && valor) {
+                    valor = new Date(valor).toLocaleDateString('es-ES');
+                } else if (campo === 'fecha_cambio' && valor) {
+                    valor = new Date(valor).toLocaleString('es-ES');
+                } else if ((campo === 'valor_anterior_corto' || campo === 'valor_nuevo_corto') && valor) {
+                    // Truncar valores largos para auditorías
+                    valor = valor.length > 30 ? valor.substring(0, 30) + '...' : valor;
+                } else if (campo === 'estado' && valor) {
+                    valor = valor.charAt(0).toUpperCase() + valor.slice(1);
+                }
+                
+                return String(valor);
+            });
+        });
+
+        console.log(`Generando PDF con ${datos.length} registros`); // Debug
+
+        // Generar tabla con autoTable
+        doc.autoTable({
+            head: [config.columnas],
+            body: filas,
+            startY: 40,
+            styles: {
+                fontSize: 8,
+                cellPadding: 2,
+            },
+            headStyles: {
+                fillColor: [41, 128, 185],
+                textColor: 255,
+                fontStyle: 'bold'
+            },
+            alternateRowStyles: {
+                fillColor: [245, 245, 245]
+            },
+            margin: { top: 40, left: 20, right: 20 }
+        });
+
+        // Agregar número de página en el pie
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setTextColor(150);
+            doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.getWidth() - 40, doc.internal.pageSize.getHeight() - 10);
+        }
+
+        // Descargar el PDF
+        const nombreArchivo = `${config.titulo.toLowerCase().replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`;
+        doc.save(nombreArchivo);
+
+        mensaje(`PDF generado exitosamente con ${datos.length} registros`, 'success');
+
+    } catch (error) {
+        console.error('Error al generar PDF:', error);
+        mensaje('Error al generar el archivo PDF: ' + error.message, 'danger');
+    }
+}

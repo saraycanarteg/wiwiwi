@@ -9,17 +9,7 @@ require_once '../../includes/verificar_permisos.php';
 requierePermiso('gestion_paquete');
 require_once '../../config/database.php';
 
-// Obtener paquetes con información de proveedor
-$paquetes_result = $conn->query("
-    SELECT p.*, pr.nombre as proveedor_nombre,
-           COUNT(pp.id_producto) as total_productos,
-           COALESCE(SUM(pp.cantidad_producto), 0) as total_cantidad
-    FROM paquete p 
-    LEFT JOIN proveedor pr ON p.id_proveedor = pr.id_proveedor 
-    LEFT JOIN paquete_producto pp ON p.id_paquete = pp.id_paquete
-    GROUP BY p.id_paquete, p.id_proveedor, p.tipo_evento, p.fecha_creacion, p.estado, pr.nombre
-    ORDER BY p.fecha_creacion DESC
-");
+// Remover las consultas directas, ahora se cargan via AJAX
 
 // Obtener proveedores activos
 $proveedores_select = $conn->query("SELECT id_proveedor, nombre FROM proveedor WHERE estado = 'activo' ORDER BY nombre ASC");
@@ -55,7 +45,7 @@ $tipos_eventos = [
         'Sesiones fotográficas',
         'Catering para producciones'
     ]
-];
+    ];
 ?>
 
 <!DOCTYPE html>
@@ -202,6 +192,17 @@ $tipos_eventos = [
         </div>
     </div>
     
+    <!-- Botón de exportación -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-danger" id="btn-exportar-pdf" onclick="exportarTablaPDF()">
+                    <i class="fas fa-file-pdf me-1"></i>Exportar PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Tabla de Paquetes -->
     <div class="row">
         <div class="col-12">
@@ -220,56 +221,13 @@ $tipos_eventos = [
                             </tr>
                         </thead>
                         <tbody id="tabla-paquetes">
-                            <?php if ($paquetes_result && $paquetes_result->num_rows > 0): ?>
-                                <?php while ($p = $paquetes_result->fetch_assoc()): ?>
-                                    <?php 
-                                        $badge = $p['estado'] === 'activo' ? 'success' : 'danger';
-                                        $toggle_action = $p['estado'] === 'activo' ? 'activar' : 'activar';
-                                        $toggle_icon = $p['estado'] === 'activo' ? 'ban' : 'check';
-                                        $toggle_class = $p['estado'] === 'activo' ? 'btn-danger' : 'btn-success';
-                                    ?>
-                                    <tr>
-                                        <td><?php echo $p['id_paquete']; ?></td>
-                                        <td><?php echo htmlspecialchars($p['tipo_evento']); ?></td>
-                                        <td>
-                                            <?php if ($p['proveedor_nombre']): ?>
-                                                <span class="text-muted">#<?php echo $p['id_proveedor']; ?></span><br>
-                                                <?php echo htmlspecialchars($p['proveedor_nombre']); ?>
-                                            <?php else: ?>
-                                                <span class="text-muted">Sin proveedor</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-info"><?php echo $p['total_productos']; ?> productos</span>
-                                            <?php if ($p['total_cantidad'] > 0): ?>
-                                                <br><small class="text-muted"><?php echo $p['total_cantidad']; ?> unidades total</small>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td><?php echo date('d/m/Y', strtotime($p['fecha_creacion'])); ?></td>
-                                        <td><span class="badge bg-<?php echo $badge; ?>"><?php echo ucfirst($p['estado']); ?></span></td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-info btn-ver" data-id="<?php echo $p['id_paquete']; ?>" title="Ver detalles">
-                                                    <i class="fas fa-eye fa-fw"></i>
-                                                </button>
-                                                <button class="btn btn-edit btn-editar" data-id="<?php echo $p['id_paquete']; ?>" title="Editar">
-                                                    <i class="fas fa-edit fa-fw"></i>
-                                                </button>
-                                                <button class="btn <?php echo $toggle_class; ?> btn-toggle" data-id="<?php echo $p['id_paquete']; ?>" data-estado="<?php echo $toggle_action; ?>" title="<?php echo ucfirst($toggle_action); ?>">
-                                                    <i class="fas fa-<?php echo $toggle_icon; ?> fa-fw"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endwhile; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="7" class="text-center py-4">
-                                        <i class="fas fa-inbox fa-2x text-muted mb-3"></i><br>
-                                        No hay paquetes registrados
-                                    </td>
-                                </tr>
-                            <?php endif; ?>
+                            <!-- Los datos se cargan via AJAX -->
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-muted mb-3"></i><br>
+                                    Cargando paquetes...
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -319,6 +277,9 @@ $tipos_eventos = [
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<!-- Agregar librerías para PDF después de jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 <script src="../recursos/js/formularios.js"></script>
 <script src="../recursos/js/validaciones.js"></script>
 

@@ -6,6 +6,7 @@ if (!isset($_SESSION['usuario'])) {
 }
 
 require_once '../../includes/verificar_permisos.php';
+
 requierePermiso('gestion_rolperm');
 require_once '../../config/database.php';
 // Obtener roles con cantidad de permisos asignados
@@ -110,6 +111,17 @@ $permisos_result = $conn->query("SELECT * FROM permiso ORDER BY nombre_permiso A
         </div>
     </div>
 
+    <!-- Botón de exportación -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-danger" id="btn-exportar-pdf" onclick="exportarTablaPDF()">
+                    <i class="fas fa-file-pdf me-1"></i>Exportar PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Tabla -->
     <div class="row">
         <div class="col-12">
@@ -121,57 +133,19 @@ $permisos_result = $conn->query("SELECT * FROM permiso ORDER BY nombre_permiso A
                                 <th>ID</th>
                                 <th>Nombre del Rol</th>
                                 <th>Descripción</th>
+                                <th>Permisos</th>
                                 <th>Estado</th>
-                                <th>Permisos Asignados</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tabla-roles">
-                            <?php if ($roles_result && $roles_result->num_rows > 0): ?>
-                                <?php while ($r = $roles_result->fetch_assoc()): ?>
-                                    <?php 
-                                        $badge = $r['estado'] === 'activo' ? 'success' : 'danger';
-                                        $toggle_action = $r['estado'] === 'activo' ? 'desactivar' : 'activar';
-                                        $toggle_icon = $r['estado'] === 'activo' ? 'ban' : 'check';
-                                        $toggle_class = $r['estado'] === 'activo' ? 'btn-danger' : 'btn-success';
-                                    ?>
-                                    <tr>
-                                        <td><?php echo $r['id_rol']; ?></td>
-                                        <td>
-                                            <strong><?php echo htmlspecialchars($r['nombre_rol']); ?></strong>
-                                        </td>
-                                        <td><?php echo htmlspecialchars($r['descripcion'] ?? 'Sin descripción'); ?></td>
-                                        <td>
-                                            <span class="badge bg-info">
-                                                <?php echo $r['cantidad_permisos']; ?> permiso<?php echo $r['cantidad_permisos'] != 1 ? 's' : ''; ?>
-                                            </span>
-                                        </td>
-                                        <td><span class="badge bg-<?php echo $badge; ?>"><?php echo ucfirst($r['estado']); ?></span></td>
-                                          <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-edit btn-editar" data-id="<?php echo $r['id_rol']; ?>" title="Editar">
-                                                    <i class="fas fa-edit fa-fw"></i>
-                                                </button>
-                                                <?php if ($r['id_rol'] > 3): ?>
-                                                    <button class="btn <?php echo $toggle_class; ?> btn-toggle" 
-                                                        data-id="<?php echo $r['id_rol']; ?>" 
-                                                        data-estado="<?php echo $toggle_action; ?>" 
-                                                        title="<?php echo ucfirst($toggle_action); ?>">
-                                                        <i class="fas fa-<?php echo $toggle_icon; ?> fa-fw"></i>
-                                                    </button>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endwhile; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="6" class="text-center py-4">
-                                        <i class="fas fa-inbox fa-2x text-muted mb-3"></i><br>
-                                        No hay roles registrados
-                                    </td>
-                                </tr>
-                            <?php endif; ?>
+                            <!-- Los datos se cargan via AJAX -->
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-muted mb-3"></i><br>
+                                    Cargando roles...
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -180,8 +154,12 @@ $permisos_result = $conn->query("SELECT * FROM permiso ORDER BY nombre_permiso A
     </div>
 </div>
 
+<!-- Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<!-- Agregar librerías para PDF después de jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 <script src="../recursos/js/formularios.js"></script>
 <script src="../recursos/js/validaciones.js"></script>
 </body>

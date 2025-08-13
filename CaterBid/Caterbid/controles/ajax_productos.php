@@ -8,18 +8,125 @@ if (!isset($_SESSION['usuario'])) {
     exit();
 }
 
-// Verificar permisos específicos para productos
-$permisos_usuario = isset($_SESSION['usuario']['permisos']) ? $_SESSION['usuario']['permisos'] : [];
-$tiene_permiso = in_array('registrar_producto', $permisos_usuario) || 
-                 in_array('crud_productos', $permisos_usuario) ||
-                 (isset($_SESSION['usuario']['rol_nombre']) && $_SESSION['usuario']['rol_nombre'] == 'bodeguero');
+require_once '../config/database.php';
 
-if (!$tiene_permiso) {
-    echo json_encode(['success' => false, 'mensaje' => 'No tiene permisos para gestionar productos']);
-    exit();
+// Función genérica para manejar paginación
+function manejarPaginacionTabla($conn, $tabla, $campoOrden, $camposSelect = '*', $condicionWhere = '1=1', $joins = '') {
+    $pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+    $filas = isset($_GET['filas']) ? (int)$_GET['filas'] : 10;
+    
+    // Validaciones
+    if ($pagina < 1) $pagina = 1;
+    if ($filas < 1) $filas = 10;
+    if ($filas > 100) $filas = 100; // Límite máximo
+    
+    $offset = ($pagina - 1) * $filas;
+    
+    try {
+        // Obtener total de registros
+        $countQuery = "SELECT COUNT(*) as total FROM $tabla $joins WHERE $condicionWhere";
+        $totalQuery = $conn->query($countQuery);
+        if (!$totalQuery) {
+            throw new Exception("Error en consulta de conteo: " . $conn->error);
+        }
+        
+        $totalRegistros = $totalQuery->fetch_assoc()['total'];
+        $totalPaginas = ceil($totalRegistros / $filas);
+        
+        // Obtener registros de la página actual
+        $query = "SELECT $camposSelect FROM $tabla $joins WHERE $condicionWhere ORDER BY $campoOrden LIMIT $filas OFFSET $offset";
+        $result = $conn->query($query);
+        
+        if (!$result) {
+            throw new Exception("Error en consulta de datos: " . $conn->error);
+        }
+        
+        return [
+            'result' => $result,
+            'totalRegistros' => $totalRegistros,
+            'totalPaginas' => $totalPaginas,
+            'paginaActual' => $pagina,
+            'filasPorPagina' => $filas
+        ];
+        
+    } catch (Exception $e) {
+        return [
+            'error' => true,
+            'mensaje' => $e->getMessage()
+        ];
+    }
 }
 
-require_once '../config/database.php';
+// Función para generar HTML de paginación
+function generarPaginacion($totalPaginas, $paginaActual, $mostrarVecinos = 2) {
+    if ($totalPaginas <= 1) return '';
+    
+    $html = '<nav aria-label="Paginación de tabla">';
+    $html .= '<ul class="pagination pagination-sm justify-content-center mb-0">';
+    
+    // Botón Anterior
+    if ($paginaActual > 1) {
+        $html .= '<li class="page-item">';
+        $html .= '<a class="page-link pagina-link" href="#" data-pagina="' . ($paginaActual - 1) . '" aria-label="Anterior">';
+        $html .= '<span aria-hidden="true">&laquo;</span>';
+        $html .= '</a></li>';
+    } else {
+        $html .= '<li class="page-item disabled">';
+        $html .= '<span class="page-link">&laquo;</span>';
+        $html .= '</li>';
+    }
+    
+    // Números de página
+    $inicio = max(1, $paginaActual - $mostrarVecinos);
+    $fin = min($totalPaginas, $paginaActual + $mostrarVecinos);
+    
+    // Primera página si no está en el rango
+    if ($inicio > 1) {
+        $html .= '<li class="page-item">';
+        $html .= '<a class="page-link pagina-link" href="#" data-pagina="1">1</a>';
+        $html .= '</li>';
+        if ($inicio > 2) {
+            $html .= '<li class="page-item disabled"><span class="page-link">...</span></li>';
+        }
+    }
+    
+    // Páginas del rango
+    for ($i = $inicio; $i <= $fin; $i++) {
+        $active = ($i == $paginaActual) ? 'active' : '';
+        $html .= '<li class="page-item ' . $active . '">';
+        if ($i == $paginaActual) {
+            $html .= '<span class="page-link">' . $i . '</span>';
+        } else {
+            $html .= '<a class="page-link pagina-link" href="#" data-pagina="' . $i . '">' . $i . '</a>';
+        }
+        $html .= '</li>';
+    }
+    
+    // Última página si no está en el rango
+    if ($fin < $totalPaginas) {
+        if ($fin < $totalPaginas - 1) {
+            $html .= '<li class="page-item disabled"><span class="page-link">...</span></li>';
+        }
+        $html .= '<li class="page-item">';
+        $html .= '<a class="page-link pagina-link" href="#" data-pagina="' . $totalPaginas . '">' . $totalPaginas . '</a>';
+        $html .= '</li>';
+    }
+    
+    // Botón Siguiente
+    if ($paginaActual < $totalPaginas) {
+        $html .= '<li class="page-item">';
+        $html .= '<a class="page-link pagina-link" href="#" data-pagina="' . ($paginaActual + 1) . '" aria-label="Siguiente">';
+        $html .= '<span aria-hidden="true">&raquo;</span>';
+        $html .= '</a></li>';
+    } else {
+        $html .= '<li class="page-item disabled">';
+        $html .= '<span class="page-link">&raquo;</span>';
+        $html .= '</li>';
+    }
+    
+    $html .= '</ul></nav>';
+    return $html;
+}
 
 // Verificar conexión
 if (!isset($conn) || $conn->connect_error) {
@@ -40,9 +147,8 @@ try {
             $categoria = trim($_POST['categoria'] ?? '');
             $id_proveedor = intval($_POST['id_proveedor'] ?? 0);
             
-            // Validaciones
-            if (empty($nombre) || empty($descripcion) || empty($categoria)) {
-                echo json_encode(['success' => false, 'mensaje' => 'Los campos nombre, descripción y categoría son requeridos']);
+            if (empty($nombre) || empty($descripcion) || empty($categoria) || $id_proveedor <= 0) {
+                echo json_encode(['success' => false, 'mensaje' => 'Todos los campos son requeridos']);
                 exit();
             }
             
@@ -56,30 +162,9 @@ try {
                 exit();
             }
             
-            if ($id_proveedor <= 0) {
-                echo json_encode(['success' => false, 'mensaje' => 'Debe seleccionar un proveedor válido']);
-                exit();
-            }
-            
-            // Validar categorías permitidas
-            $categorias_validas = ['Comida', 'Bebidas', 'Menaje y utensilios', 'Equipos y mobiliario', 'Personal y servicios', 'Decoración y ambientación'];
-            if (!in_array($categoria, $categorias_validas)) {
-                echo json_encode(['success' => false, 'mensaje' => 'Categoría no válida']);
-                exit();
-            }
-            
-            // Verificar que el proveedor existe y está activo
-            $stmt = $conn->prepare("SELECT id_proveedor FROM proveedor WHERE id_proveedor = ? AND estado = 'activo'");
-            $stmt->bind_param("i", $id_proveedor);
-            $stmt->execute();
-            if (!$stmt->get_result()->fetch_assoc()) {
-                echo json_encode(['success' => false, 'mensaje' => 'El proveedor seleccionado no existe o está inactivo']);
-                exit();
-            }
-            
             if ($accion === 'crear') {
-                $stmt = $conn->prepare("INSERT INTO producto (nombre, descripcion, precio_unitario, cantidad_disponible, categoria, id_proveedor, fecha_creacion) VALUES (?, ?, ?, ?, ?, ?, NOW())");
-                $stmt->bind_param("ssdisi", $nombre, $descripcion, $precio_unitario, $cantidad_disponible, $categoria, $id_proveedor);
+                $stmt = $conn->prepare("INSERT INTO producto (nombre, descripcion, precio_unitario, cantidad_disponible, categoria, id_proveedor) VALUES (?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param("ssdiis", $nombre, $descripcion, $precio_unitario, $cantidad_disponible, $categoria, $id_proveedor);
                 $success = $stmt->execute();
                 $mensaje = $success ? 'Producto creado exitosamente' : 'Error al crear producto';
 
@@ -138,12 +223,24 @@ try {
             break;
             
         case 'cargar_tabla':
-            $result = $conn->query("
-                SELECT p.*, pr.nombre as proveedor_nombre 
-                FROM producto p 
-                LEFT JOIN proveedor pr ON p.id_proveedor = pr.id_proveedor 
-                ORDER BY p.fecha_creacion DESC
-            ");
+            $joins = 'LEFT JOIN proveedor pr ON producto.id_proveedor = pr.id_proveedor';
+            $campos = 'producto.*, pr.nombre as proveedor_nombre';
+            
+            $paginacion = manejarPaginacionTabla(
+                $conn, 
+                'producto', 
+                'producto.fecha_creacion DESC',
+                $campos,
+                '1=1',
+                $joins
+            );
+            
+            if (isset($paginacion['error'])) {
+                echo "<tr><td colspan='9' class='text-center text-danger'><i class='fas fa-exclamation-triangle'></i> " . $paginacion['mensaje'] . "</td></tr>";
+                break;
+            }
+            
+            $result = $paginacion['result'];
             
             if ($result && $result->num_rows > 0) {
                 while ($p = $result->fetch_assoc()) {
@@ -152,10 +249,6 @@ try {
                     $toggle_icon = $p['estado'] === 'activo' ? 'ban' : 'check';
                     $toggle_class = $p['estado'] === 'activo' ? 'btn-danger' : 'btn-success';
                     
-                    $proveedor_info = $p['proveedor_nombre'] ? 
-                        "<span class='text-muted'>#" . $p['id_proveedor'] . "</span><br>" . htmlspecialchars($p['proveedor_nombre']) : 
-                        "<span class='text-muted'>Sin proveedor</span>";
-                    
                     echo "<tr>
                         <td>{$p['id_producto']}</td>
                         <td>" . htmlspecialchars($p['nombre']) . "</td>
@@ -163,7 +256,16 @@ try {
                         <td>$" . number_format($p['precio_unitario'], 2) . "</td>
                         <td>{$p['cantidad_disponible']}</td>
                         <td>" . htmlspecialchars($p['categoria']) . "</td>
-                        <td>{$proveedor_info}</td>
+                        <td>";
+                    
+                    if ($p['proveedor_nombre']) {
+                        echo "<span class='text-muted'>#" . $p['id_proveedor'] . "</span><br>";
+                        echo htmlspecialchars($p['proveedor_nombre']);
+                    } else {
+                        echo "<span class='text-muted'>Sin proveedor</span>";
+                    }
+                    
+                    echo "</td>
                         <td><span class='badge bg-{$badge}'>" . ucfirst($p['estado']) . "</span></td>
                         <td>
                             <div class='btn-group btn-group-sm'>
@@ -180,10 +282,33 @@ try {
             } else {
                 echo "<tr><td colspan='9' class='text-center py-4'><i class='fas fa-inbox fa-2x text-muted mb-3'></i><br>No hay productos registrados</td></tr>";
             }
+            
+            // Generar paginación y enviarla al JavaScript
+            echo '<script>
+                $("#paginacion").html(`' . addslashes(generarPaginacion($paginacion['totalPaginas'], $paginacion['paginaActual'])) . '`);
+            </script>';
             break;
             
         case 'test':
             echo json_encode(['success' => true, 'mensaje' => 'Conexión exitosa', 'datos' => ['accion' => $accion, 'session' => isset($_SESSION['usuario']) ? 'OK' : 'NO', 'conn' => isset($conn) ? 'OK' : 'NO']]);
+            break;
+            
+        case 'exportar_pdf':
+            // Obtener todos los registros para exportar con información del proveedor
+            $query = "SELECT p.*, pr.nombre as proveedor_nombre 
+                     FROM producto p 
+                     LEFT JOIN proveedor pr ON p.id_proveedor = pr.id_proveedor 
+                     ORDER BY p.fecha_creacion DESC";
+            $result = $conn->query($query);
+            
+            $datos = [];
+            if ($result && $result->num_rows > 0) {
+                while ($row = $result->fetch_assoc()) {
+                    $datos[] = $row;
+                }
+            }
+            
+            echo json_encode(['success' => true, 'data' => $datos]);
             break;
             
         default:

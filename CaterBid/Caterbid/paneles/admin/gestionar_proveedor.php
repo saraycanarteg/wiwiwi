@@ -8,7 +8,7 @@ if (!isset($_SESSION['usuario'])) {
 require_once '../../includes/verificar_permisos.php';
 requierePermiso('gestionar_proveedor');
 require_once '../../config/database.php';
-$proveedores_result = $conn->query("SELECT * FROM proveedor ORDER BY fecha_creacion DESC");
+// Remover la consulta directa, ahora se carga via AJAX
 ?>
 
 <!DOCTYPE html>
@@ -96,6 +96,17 @@ $proveedores_result = $conn->query("SELECT * FROM proveedor ORDER BY fecha_creac
         </div>
     </div>
     
+    <!-- Botón de exportación -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-danger" id="btn-exportar-pdf" onclick="exportarTablaPDF()">
+                    <i class="fas fa-file-pdf me-1"></i>Exportar PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Tabla -->
     <div class="row">
         <div class="col-12">
@@ -108,42 +119,13 @@ $proveedores_result = $conn->query("SELECT * FROM proveedor ORDER BY fecha_creac
                             </tr>
                         </thead>
                         <tbody id="tabla-proveedores">
-                            <?php if ($proveedores_result && $proveedores_result->num_rows > 0): ?>
-                                <?php while ($p = $proveedores_result->fetch_assoc()): ?>
-                                    <?php 
-                                        $badge = $p['estado'] === 'activo' ? 'success' : 'danger';
-                                        $toggle_action = $p['estado'] === 'activo' ? 'desactivar' : 'activar';
-                                        $toggle_icon = $p['estado'] === 'activo' ? 'ban' : 'check';
-                                        $toggle_class = $p['estado'] === 'activo' ? 'btn-danger' : 'btn-success';
-                                    ?>
-                                    <tr>
-                                        <td><?php echo $p['id_proveedor']; ?></td>
-                                        <td><?php echo htmlspecialchars($p['nombre']); ?></td>
-                                        <td><?php echo htmlspecialchars($p['ruc']); ?></td>
-                                        <td><?php echo htmlspecialchars($p['correo']); ?></td>
-                                        <td><?php echo htmlspecialchars($p['telefono']); ?></td>
-                                        <td><span class="badge bg-<?php echo $badge; ?>"><?php echo ucfirst($p['estado']); ?></span></td>
-                                        <td><?php echo htmlspecialchars($p['direccion']); ?></td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-edit btn-editar" data-id="<?php echo $p['id_proveedor']; ?>" title="Editar">
-                                                    <i class="fas fa-edit fa-fw"></i>
-                                                </button>
-                                                <button class="btn <?php echo $toggle_class; ?> btn-toggle" data-id="<?php echo $p['id_proveedor']; ?>" data-estado="<?php echo $toggle_action; ?>" title="<?php echo ucfirst($toggle_action); ?>">
-                                                    <i class="fas fa-<?php echo $toggle_icon; ?> fa-fw"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endwhile; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="8" class="text-center py-4">
-                                        <i class="fas fa-inbox fa-2x text-muted mb-3"></i><br>
-                                        No hay proveedores registrados
-                                    </td>
-                                </tr>
-                            <?php endif; ?>
+                            <!-- Los datos se cargan via AJAX -->
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-muted mb-3"></i><br>
+                                    Cargando proveedores...
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -152,8 +134,12 @@ $proveedores_result = $conn->query("SELECT * FROM proveedor ORDER BY fecha_creac
     </div>
 </div>
 
+<!-- Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<!-- Agregar librerías para PDF después de jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 <script src="../recursos/js/formularios.js"></script>
 <script src="../recursos/js/validaciones.js"></script>
 </body>

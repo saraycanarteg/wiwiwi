@@ -8,12 +8,9 @@ if (!isset($_SESSION['usuario'])) {
 require_once '../../includes/verificar_permisos.php';
 requierePermiso('gestionar_productos');
 require_once '../../config/database.php';
-$productos_result = $conn->query("
-    SELECT p.*, pr.nombre as proveedor_nombre 
-    FROM producto p 
-    LEFT JOIN proveedor pr ON p.id_proveedor = pr.id_proveedor 
-    ORDER BY p.fecha_creacion DESC
-");
+
+// Remover la consulta directa, ahora se carga via AJAX
+// $productos_result = $conn->query("..."));
 
 // Obtener proveedores para el selector
 $proveedores_select = $conn->query("SELECT id_proveedor, nombre FROM proveedor WHERE estado = 'activo' ORDER BY nombre ASC");
@@ -130,6 +127,17 @@ $proveedores_select = $conn->query("SELECT id_proveedor, nombre FROM proveedor W
         </div>
     </div>
     
+    <!-- Botón de exportación -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-danger" id="btn-exportar-pdf" onclick="exportarTablaPDF()">
+                    <i class="fas fa-file-pdf me-1"></i>Exportar PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Tabla -->
     <div class="row">
         <div class="col-12">
@@ -150,50 +158,13 @@ $proveedores_select = $conn->query("SELECT id_proveedor, nombre FROM proveedor W
                             </tr>
                         </thead>
                         <tbody id="tabla-productos">
-                            <?php if ($productos_result && $productos_result->num_rows > 0): ?>
-                                <?php while ($p = $productos_result->fetch_assoc()): ?>
-                                    <?php 
-                                        $badge = $p['estado'] === 'activo' ? 'success' : 'danger';
-                                        $toggle_action = $p['estado'] === 'activo' ? 'activar' : 'activar';
-                                        $toggle_icon = $p['estado'] === 'activo' ? 'ban' : 'check';
-                                        $toggle_class = $p['estado'] === 'activo' ? 'btn-danger' : 'btn-success';
-                                    ?>
-                                    <tr>
-                                        <td><?php echo $p['id_producto']; ?></td>
-                                        <td><?php echo htmlspecialchars($p['nombre']); ?></td>
-                                        <td><?php echo htmlspecialchars($p['descripcion']); ?></td>
-                                        <td>$<?php echo number_format($p['precio_unitario'], 2); ?></td>
-                                        <td><?php echo $p['cantidad_disponible']; ?></td>
-                                        <td><?php echo htmlspecialchars($p['categoria']); ?></td>
-                                        <td>
-                                            <?php if ($p['proveedor_nombre']): ?>
-                                                <span class="text-muted">#<?php echo $p['id_proveedor']; ?></span><br>
-                                                <?php echo htmlspecialchars($p['proveedor_nombre']); ?>
-                                            <?php else: ?>
-                                                <span class="text-muted">Sin proveedor</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td><span class="badge bg-<?php echo $badge; ?>"><?php echo ucfirst($p['estado']); ?></span></td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-edit btn-editar" data-id="<?php echo $p['id_producto']; ?>" title="Editar">
-                                                    <i class="fas fa-edit fa-fw"></i>
-                                                </button>
-                                                <button class="btn <?php echo $toggle_class; ?> btn-toggle" data-id="<?php echo $p['id_producto']; ?>" data-estado="<?php echo $toggle_action; ?>" title="<?php echo ucfirst($toggle_action); ?>">
-                                                    <i class="fas fa-<?php echo $toggle_icon; ?> fa-fw"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endwhile; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="9" class="text-center py-4">
-                                        <i class="fas fa-inbox fa-2x text-muted mb-3"></i><br>
-                                        No hay productos registrados
-                                    </td>
-                                </tr>
-                            <?php endif; ?>
+                            <!-- Los datos se cargan via AJAX -->
+                            <tr>
+                                <td colspan="9" class="text-center py-4">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-muted mb-3"></i><br>
+                                    Cargando productos...
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -202,8 +173,12 @@ $proveedores_select = $conn->query("SELECT id_proveedor, nombre FROM proveedor W
     </div>
 </div>
 
+<!-- Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<!-- Agregar librerías para PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 <script src="../recursos/js/formularios.js"></script>
 <script src="../recursos/js/validaciones.js"></script>
 </body>
