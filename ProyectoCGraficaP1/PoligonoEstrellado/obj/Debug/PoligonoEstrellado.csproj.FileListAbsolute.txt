@@ -1,0 +1,13 @@
+C:\Users\domenica\source\repos\Villagomez_Domenica_Leccion1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.csproj.AssemblyReference.cache
+C:\Users\domenica\source\repos\Villagomez_Domenica_Leccion1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.frmPoligonoEstrellado.resources
+C:\Users\domenica\source\repos\Villagomez_Domenica_Leccion1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.Properties.Resources.resources
+C:\Users\domenica\source\repos\Villagomez_Domenica_Leccion1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.csproj.GenerateResource.cache
+C:\Users\domenica\source\repos\Villagomez_Domenica_Leccion1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.csproj.CoreCompileInputs.cache
+C:\Users\domenica\source\repos\Villagomez_Domenica_Leccion1\PoligonoEstrellado\bin\Debug\PoligonoEstrellado.exe.config
+C:\Users\domenica\source\repos\Villagomez_Domenica_Leccion1\PoligonoEstrellado\bin\Debug\PoligonoEstrellado.exe
+C:\Users\domenica\source\repos\Villagomez_Domenica_Leccion1\PoligonoEstrellado\bin\Debug\PoligonoEstrellado.pdb
+C:\Users\domenica\source\repos\Villagomez_Domenica_Leccion1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.exe
+C:\Users\domenica\source\repos\Villagomez_Domenica_Leccion1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.pdb
+C:\Users\domenica\source\repos\Villagomez_Domenica_Leccion1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.exe.config
+C:\Users\domenica\source\repos\Villagomez_Domenica_Leccion1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.frmHexagono.resources
+C:\Users\domenica\source\repos\Villagomez_Domenica_Leccion1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.MenuProyecto.resources
