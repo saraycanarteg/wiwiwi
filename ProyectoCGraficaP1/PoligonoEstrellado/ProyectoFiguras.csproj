@@ -46,6 +46,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CGema10.cs" />
+    <Compile Include="CTrianguloEstrella.cs" />
+    <Compile Include="frmGema10Lados.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmGema10Lados.Designer.cs">
+      <DependentUpon>frmGema10Lados.cs</DependentUpon>
+    </Compile>
     <Compile Include="frmHexagono.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -58,6 +66,12 @@
     <Compile Include="frmPoligonoEstrellado.Designer.cs">
       <DependentUpon>frmPoligonoEstrellado.cs</DependentUpon>
     </Compile>
+    <Compile Include="frmTrianguloEstrella.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmTrianguloEstrella.Designer.cs">
+      <DependentUpon>frmTrianguloEstrella.cs</DependentUpon>
+    </Compile>
     <Compile Include="Hexagono.cs" />
     <Compile Include="MenuProyecto.cs">
       <SubType>Form</SubType>
@@ -69,11 +83,17 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Transformacion.cs" />
+    <EmbeddedResource Include="frmGema10Lados.resx">
+      <DependentUpon>frmGema10Lados.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmHexagono.resx">
       <DependentUpon>frmHexagono.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmPoligonoEstrellado.resx">
       <DependentUpon>frmPoligonoEstrellado.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmTrianguloEstrella.resx">
+      <DependentUpon>frmTrianguloEstrella.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MenuProyecto.resx">
       <DependentUpon>MenuProyecto.cs</DependentUpon>

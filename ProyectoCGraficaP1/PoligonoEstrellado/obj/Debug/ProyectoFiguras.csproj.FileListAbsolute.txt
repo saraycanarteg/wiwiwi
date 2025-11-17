@@ -1,0 +1,15 @@
+C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\bin\Debug\PoligonoEstrellado.exe.config
+C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\bin\Debug\PoligonoEstrellado.exe
+C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\bin\Debug\PoligonoEstrellado.pdb
+C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\ProyectoFiguras.csproj.AssemblyReference.cache
+C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.exe.config
+C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.frmGema10Lados.resources
+C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.frmHexagono.resources
+C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.frmPoligonoEstrellado.resources
+C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.MenuProyecto.resources
+C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.Properties.Resources.resources
+C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\ProyectoFiguras.csproj.GenerateResource.cache
+C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\ProyectoFiguras.csproj.CoreCompileInputs.cache
+C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.exe
+C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.pdb
+C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.frmTrianguloEstrella.resources

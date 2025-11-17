@@ -41,5 +41,21 @@ namespace PoligonoEstrellado
             frmHexagono.MdiParent = this;
             frmHexagono.Show();
         }
+
+        private void puntasYGema10LadosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            CerrarFormulariosHijos();
+            frmGema10Lados frmGema10Lados= frmGema10Lados.Instancia;
+            frmGema10Lados.MdiParent = this;
+            frmGema10Lados.Show();
+        }
+
+        private void puntasToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            CerrarFormulariosHijos();
+            frmTrianguloEstrella frmTrianguloEstrella = frmTrianguloEstrella.Instancia;
+            frmTrianguloEstrella.MdiParent = this;
+            frmTrianguloEstrella.Show();
+        }
     }
 }

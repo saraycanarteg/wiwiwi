@@ -42,14 +42,14 @@
             // 
             // menuStrip1
             // 
-            this.menuStrip1.GripMargin = new System.Windows.Forms.Padding(2, 2, 0, 2);
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.figurasToolStripMenuItem,
             this.figurasCompuestasToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1098, 33);
+            this.menuStrip1.Padding = new System.Windows.Forms.Padding(4, 1, 0, 1);
+            this.menuStrip1.Size = new System.Drawing.Size(829, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -60,27 +60,28 @@
             this.puntasYPentagonosToolStripMenuItem,
             this.puntasYGema10LadosToolStripMenuItem});
             this.figurasToolStripMenuItem.Name = "figurasToolStripMenuItem";
-            this.figurasToolStripMenuItem.Size = new System.Drawing.Size(197, 29);
+            this.figurasToolStripMenuItem.Size = new System.Drawing.Size(131, 22);
             this.figurasToolStripMenuItem.Text = "Poligonos Estrellados";
             // 
             // y8PuntasToolStripMenuItem
             // 
             this.y8PuntasToolStripMenuItem.Name = "y8PuntasToolStripMenuItem";
-            this.y8PuntasToolStripMenuItem.Size = new System.Drawing.Size(321, 34);
+            this.y8PuntasToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
             this.y8PuntasToolStripMenuItem.Text = "16 y 8 puntas";
             this.y8PuntasToolStripMenuItem.Click += new System.EventHandler(this.y8PuntasToolStripMenuItem_Click);
             // 
             // puntasYPentagonosToolStripMenuItem
             // 
             this.puntasYPentagonosToolStripMenuItem.Name = "puntasYPentagonosToolStripMenuItem";
-            this.puntasYPentagonosToolStripMenuItem.Size = new System.Drawing.Size(321, 34);
+            this.puntasYPentagonosToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
             this.puntasYPentagonosToolStripMenuItem.Text = "5 puntas y Pentagonos";
             // 
             // puntasYGema10LadosToolStripMenuItem
             // 
             this.puntasYGema10LadosToolStripMenuItem.Name = "puntasYGema10LadosToolStripMenuItem";
-            this.puntasYGema10LadosToolStripMenuItem.Size = new System.Drawing.Size(321, 34);
-            this.puntasYGema10LadosToolStripMenuItem.Text = "5 puntas y Gema 10 lados";
+            this.puntasYGema10LadosToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.puntasYGema10LadosToolStripMenuItem.Text = "Gema de 10 lados";
+            this.puntasYGema10LadosToolStripMenuItem.Click += new System.EventHandler(this.puntasYGema10LadosToolStripMenuItem_Click);
             // 
             // figurasCompuestasToolStripMenuItem
             // 
@@ -89,37 +90,39 @@
             this.pentagonoToolStripMenuItem,
             this.floresToolStripMenuItem});
             this.figurasCompuestasToolStripMenuItem.Name = "figurasCompuestasToolStripMenuItem";
-            this.figurasCompuestasToolStripMenuItem.Size = new System.Drawing.Size(85, 29);
+            this.figurasCompuestasToolStripMenuItem.Size = new System.Drawing.Size(57, 22);
             this.figurasCompuestasToolStripMenuItem.Text = "Figuras";
             // 
             // puntasToolStripMenuItem
             // 
             this.puntasToolStripMenuItem.Name = "puntasToolStripMenuItem";
-            this.puntasToolStripMenuItem.Size = new System.Drawing.Size(251, 34);
-            this.puntasToolStripMenuItem.Text = "8 puntas";
+            this.puntasToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.puntasToolStripMenuItem.Text = "Estrella 8 puntas";
+            this.puntasToolStripMenuItem.Click += new System.EventHandler(this.puntasToolStripMenuItem_Click);
             // 
             // pentagonoToolStripMenuItem
             // 
             this.pentagonoToolStripMenuItem.Name = "pentagonoToolStripMenuItem";
-            this.pentagonoToolStripMenuItem.Size = new System.Drawing.Size(251, 34);
+            this.pentagonoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.pentagonoToolStripMenuItem.Text = "Hexagono Ciclico";
             this.pentagonoToolStripMenuItem.Click += new System.EventHandler(this.pentagonoToolStripMenuItem_Click);
             // 
             // floresToolStripMenuItem
             // 
             this.floresToolStripMenuItem.Name = "floresToolStripMenuItem";
-            this.floresToolStripMenuItem.Size = new System.Drawing.Size(251, 34);
+            this.floresToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.floresToolStripMenuItem.Text = "Flores";
             // 
             // MenuProyecto
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(1098, 664);
+            this.ClientSize = new System.Drawing.Size(829, 511);
             this.Controls.Add(this.menuStrip1);
             this.IsMdiContainer = true;
             this.MainMenuStrip = this.menuStrip1;
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "MenuProyecto";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Menu Proyecto";
