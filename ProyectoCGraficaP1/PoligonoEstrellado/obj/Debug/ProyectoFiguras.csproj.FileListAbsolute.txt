@@ -30,3 +30,20 @@ D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGr
 D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.exe
 D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.pdb
 D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\Figuras_Dos_Y_Seis.Frm_Figura_6.resources
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\bin\Debug\PoligonoEstrellado.exe.config
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\bin\Debug\PoligonoEstrellado.exe
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\bin\Debug\PoligonoEstrellado.pdb
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\ProyectoFiguras.csproj.AssemblyReference.cache
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.exe.config
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.frmGema10Lados.resources
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.frmHexagono.resources
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.frmPoligonoEstrellado.resources
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.frmTrianguloEstrella.resources
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\Figuras_Dos_Y_Seis.Frm_Figura_2.resources
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\Figuras_Dos_Y_Seis.Frm_Figura_6.resources
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.MenuProyecto.resources
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.Properties.Resources.resources
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\ProyectoFiguras.csproj.GenerateResource.cache
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\ProyectoFiguras.csproj.CoreCompileInputs.cache
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.exe
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.pdb

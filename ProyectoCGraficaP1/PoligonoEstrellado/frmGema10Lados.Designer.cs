@@ -35,12 +35,6 @@
             this.lblAltura = new System.Windows.Forms.Label();
             this.btnReset = new System.Windows.Forms.Button();
             this.btnDibujar = new System.Windows.Forms.Button();
-            this.grbOutputs = new System.Windows.Forms.GroupBox();
-            this.checkCoordenadas = new System.Windows.Forms.CheckBox();
-            this.txtPerimetro = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.txtArea = new System.Windows.Forms.TextBox();
-            this.lblArea = new System.Windows.Forms.Label();
             this.grbTransformaciones = new System.Windows.Forms.GroupBox();
             this.tkbEscala = new System.Windows.Forms.TrackBar();
             this.btnDetener = new System.Windows.Forms.Button();
@@ -50,7 +44,6 @@
             this.grbCanvas.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picBox)).BeginInit();
             this.grbInputs.SuspendLayout();
-            this.grbOutputs.SuspendLayout();
             this.grbTransformaciones.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tkbEscala)).BeginInit();
             this.SuspendLayout();
@@ -58,21 +51,18 @@
             // grbCanvas
             // 
             this.grbCanvas.Controls.Add(this.picBox);
-            this.grbCanvas.Location = new System.Drawing.Point(322, 26);
-            this.grbCanvas.Margin = new System.Windows.Forms.Padding(2);
+            this.grbCanvas.Location = new System.Drawing.Point(483, 40);
             this.grbCanvas.Name = "grbCanvas";
-            this.grbCanvas.Padding = new System.Windows.Forms.Padding(2);
-            this.grbCanvas.Size = new System.Drawing.Size(467, 393);
+            this.grbCanvas.Size = new System.Drawing.Size(700, 605);
             this.grbCanvas.TabIndex = 13;
             this.grbCanvas.TabStop = false;
             this.grbCanvas.Text = "Gráfico";
             // 
             // picBox
             // 
-            this.picBox.Location = new System.Drawing.Point(18, 17);
-            this.picBox.Margin = new System.Windows.Forms.Padding(2);
+            this.picBox.Location = new System.Drawing.Point(27, 26);
             this.picBox.Name = "picBox";
-            this.picBox.Size = new System.Drawing.Size(432, 354);
+            this.picBox.Size = new System.Drawing.Size(648, 545);
             this.picBox.TabIndex = 0;
             this.picBox.TabStop = false;
             // 
@@ -82,39 +72,34 @@
             this.grbInputs.Controls.Add(this.lblAltura);
             this.grbInputs.Controls.Add(this.btnReset);
             this.grbInputs.Controls.Add(this.btnDibujar);
-            this.grbInputs.Location = new System.Drawing.Point(11, 26);
-            this.grbInputs.Margin = new System.Windows.Forms.Padding(2);
+            this.grbInputs.Location = new System.Drawing.Point(16, 40);
             this.grbInputs.Name = "grbInputs";
-            this.grbInputs.Padding = new System.Windows.Forms.Padding(2);
-            this.grbInputs.Size = new System.Drawing.Size(294, 92);
+            this.grbInputs.Size = new System.Drawing.Size(441, 189);
             this.grbInputs.TabIndex = 14;
             this.grbInputs.TabStop = false;
             this.grbInputs.Text = "Entradas";
             // 
             // txtRadio
             // 
-            this.txtRadio.Location = new System.Drawing.Point(90, 29);
-            this.txtRadio.Margin = new System.Windows.Forms.Padding(2);
+            this.txtRadio.Location = new System.Drawing.Point(135, 45);
             this.txtRadio.Name = "txtRadio";
-            this.txtRadio.Size = new System.Drawing.Size(174, 20);
+            this.txtRadio.Size = new System.Drawing.Size(259, 26);
             this.txtRadio.TabIndex = 5;
             // 
             // lblAltura
             // 
             this.lblAltura.AutoSize = true;
-            this.lblAltura.Location = new System.Drawing.Point(17, 33);
-            this.lblAltura.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.lblAltura.Location = new System.Drawing.Point(26, 51);
             this.lblAltura.Name = "lblAltura";
-            this.lblAltura.Size = new System.Drawing.Size(69, 13);
+            this.lblAltura.Size = new System.Drawing.Size(104, 20);
             this.lblAltura.TabIndex = 4;
             this.lblAltura.Text = "Altura (radio):";
             // 
             // btnReset
             // 
-            this.btnReset.Location = new System.Drawing.Point(160, 59);
-            this.btnReset.Margin = new System.Windows.Forms.Padding(2);
+            this.btnReset.Location = new System.Drawing.Point(240, 91);
             this.btnReset.Name = "btnReset";
-            this.btnReset.Size = new System.Drawing.Size(61, 23);
+            this.btnReset.Size = new System.Drawing.Size(92, 35);
             this.btnReset.TabIndex = 3;
             this.btnReset.Text = "Resetear";
             this.btnReset.UseVisualStyleBackColor = true;
@@ -122,80 +107,13 @@
             // 
             // btnDibujar
             // 
-            this.btnDibujar.Location = new System.Drawing.Point(63, 59);
-            this.btnDibujar.Margin = new System.Windows.Forms.Padding(2);
+            this.btnDibujar.Location = new System.Drawing.Point(94, 91);
             this.btnDibujar.Name = "btnDibujar";
-            this.btnDibujar.Size = new System.Drawing.Size(61, 23);
+            this.btnDibujar.Size = new System.Drawing.Size(92, 35);
             this.btnDibujar.TabIndex = 2;
             this.btnDibujar.Text = "Dibujar";
             this.btnDibujar.UseVisualStyleBackColor = true;
             this.btnDibujar.Click += new System.EventHandler(this.btnDibujar_Click);
-            // 
-            // grbOutputs
-            // 
-            this.grbOutputs.Controls.Add(this.checkCoordenadas);
-            this.grbOutputs.Controls.Add(this.txtPerimetro);
-            this.grbOutputs.Controls.Add(this.label1);
-            this.grbOutputs.Controls.Add(this.txtArea);
-            this.grbOutputs.Controls.Add(this.lblArea);
-            this.grbOutputs.Location = new System.Drawing.Point(11, 145);
-            this.grbOutputs.Margin = new System.Windows.Forms.Padding(2);
-            this.grbOutputs.Name = "grbOutputs";
-            this.grbOutputs.Padding = new System.Windows.Forms.Padding(2);
-            this.grbOutputs.Size = new System.Drawing.Size(294, 101);
-            this.grbOutputs.TabIndex = 15;
-            this.grbOutputs.TabStop = false;
-            this.grbOutputs.Text = "Salidas";
-            // 
-            // checkCoordenadas
-            // 
-            this.checkCoordenadas.AutoSize = true;
-            this.checkCoordenadas.Location = new System.Drawing.Point(155, 19);
-            this.checkCoordenadas.Margin = new System.Windows.Forms.Padding(2);
-            this.checkCoordenadas.Name = "checkCoordenadas";
-            this.checkCoordenadas.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.checkCoordenadas.Size = new System.Drawing.Size(127, 17);
-            this.checkCoordenadas.TabIndex = 9;
-            this.checkCoordenadas.Text = "Mostrar Coordenadas";
-            this.checkCoordenadas.UseVisualStyleBackColor = true;
-            // 
-            // txtPerimetro
-            // 
-            this.txtPerimetro.Location = new System.Drawing.Point(67, 47);
-            this.txtPerimetro.Margin = new System.Windows.Forms.Padding(2);
-            this.txtPerimetro.Name = "txtPerimetro";
-            this.txtPerimetro.ReadOnly = true;
-            this.txtPerimetro.Size = new System.Drawing.Size(57, 20);
-            this.txtPerimetro.TabIndex = 7;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(11, 51);
-            this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(51, 13);
-            this.label1.TabIndex = 6;
-            this.label1.Text = "Perimetro";
-            // 
-            // txtArea
-            // 
-            this.txtArea.Location = new System.Drawing.Point(67, 19);
-            this.txtArea.Margin = new System.Windows.Forms.Padding(2);
-            this.txtArea.Name = "txtArea";
-            this.txtArea.ReadOnly = true;
-            this.txtArea.Size = new System.Drawing.Size(57, 20);
-            this.txtArea.TabIndex = 5;
-            // 
-            // lblArea
-            // 
-            this.lblArea.AutoSize = true;
-            this.lblArea.Location = new System.Drawing.Point(11, 23);
-            this.lblArea.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.lblArea.Name = "lblArea";
-            this.lblArea.Size = new System.Drawing.Size(29, 13);
-            this.lblArea.TabIndex = 4;
-            this.lblArea.Text = "Area";
             // 
             // grbTransformaciones
             // 
@@ -204,31 +122,27 @@
             this.grbTransformaciones.Controls.Add(this.lblEscala);
             this.grbTransformaciones.Controls.Add(this.btnTrasladar);
             this.grbTransformaciones.Controls.Add(this.btnRotar);
-            this.grbTransformaciones.Location = new System.Drawing.Point(11, 266);
-            this.grbTransformaciones.Margin = new System.Windows.Forms.Padding(2);
+            this.grbTransformaciones.Location = new System.Drawing.Point(16, 292);
             this.grbTransformaciones.Name = "grbTransformaciones";
-            this.grbTransformaciones.Padding = new System.Windows.Forms.Padding(2);
-            this.grbTransformaciones.Size = new System.Drawing.Size(294, 153);
+            this.grbTransformaciones.Size = new System.Drawing.Size(441, 352);
             this.grbTransformaciones.TabIndex = 16;
             this.grbTransformaciones.TabStop = false;
             this.grbTransformaciones.Text = "Transformaciones";
             // 
             // tkbEscala
             // 
-            this.tkbEscala.Location = new System.Drawing.Point(103, 33);
-            this.tkbEscala.Margin = new System.Windows.Forms.Padding(2);
+            this.tkbEscala.Location = new System.Drawing.Point(154, 51);
             this.tkbEscala.Name = "tkbEscala";
-            this.tkbEscala.Size = new System.Drawing.Size(161, 45);
+            this.tkbEscala.Size = new System.Drawing.Size(242, 69);
             this.tkbEscala.TabIndex = 7;
             this.tkbEscala.Value = 1;
             this.tkbEscala.Scroll += new System.EventHandler(this.tkbEscala_Scroll);
             // 
             // btnDetener
             // 
-            this.btnDetener.Location = new System.Drawing.Point(108, 95);
-            this.btnDetener.Margin = new System.Windows.Forms.Padding(2);
+            this.btnDetener.Location = new System.Drawing.Point(162, 146);
             this.btnDetener.Name = "btnDetener";
-            this.btnDetener.Size = new System.Drawing.Size(61, 23);
+            this.btnDetener.Size = new System.Drawing.Size(92, 35);
             this.btnDetener.TabIndex = 6;
             this.btnDetener.Text = "Detener";
             this.btnDetener.UseVisualStyleBackColor = true;
@@ -237,19 +151,17 @@
             // lblEscala
             // 
             this.lblEscala.AutoSize = true;
-            this.lblEscala.Location = new System.Drawing.Point(40, 33);
-            this.lblEscala.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.lblEscala.Location = new System.Drawing.Point(60, 51);
             this.lblEscala.Name = "lblEscala";
-            this.lblEscala.Size = new System.Drawing.Size(39, 13);
+            this.lblEscala.Size = new System.Drawing.Size(57, 20);
             this.lblEscala.TabIndex = 5;
             this.lblEscala.Text = "Escala";
             // 
             // btnTrasladar
             // 
-            this.btnTrasladar.Location = new System.Drawing.Point(174, 95);
-            this.btnTrasladar.Margin = new System.Windows.Forms.Padding(2);
+            this.btnTrasladar.Location = new System.Drawing.Point(261, 146);
             this.btnTrasladar.Name = "btnTrasladar";
-            this.btnTrasladar.Size = new System.Drawing.Size(61, 23);
+            this.btnTrasladar.Size = new System.Drawing.Size(92, 35);
             this.btnTrasladar.TabIndex = 3;
             this.btnTrasladar.Text = "Trasladar";
             this.btnTrasladar.UseVisualStyleBackColor = true;
@@ -257,10 +169,9 @@
             // 
             // btnRotar
             // 
-            this.btnRotar.Location = new System.Drawing.Point(43, 95);
-            this.btnRotar.Margin = new System.Windows.Forms.Padding(2);
+            this.btnRotar.Location = new System.Drawing.Point(64, 146);
             this.btnRotar.Name = "btnRotar";
-            this.btnRotar.Size = new System.Drawing.Size(61, 23);
+            this.btnRotar.Size = new System.Drawing.Size(92, 35);
             this.btnRotar.TabIndex = 2;
             this.btnRotar.Text = "Rotar";
             this.btnRotar.UseVisualStyleBackColor = true;
@@ -268,13 +179,13 @@
             // 
             // frmGema10Lados
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(1200, 692);
             this.Controls.Add(this.grbTransformaciones);
-            this.Controls.Add(this.grbOutputs);
             this.Controls.Add(this.grbInputs);
             this.Controls.Add(this.grbCanvas);
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "frmGema10Lados";
             this.Text = "frmGema10Lados";
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.frmGema10Lados_KeyDown);
@@ -282,8 +193,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.picBox)).EndInit();
             this.grbInputs.ResumeLayout(false);
             this.grbInputs.PerformLayout();
-            this.grbOutputs.ResumeLayout(false);
-            this.grbOutputs.PerformLayout();
             this.grbTransformaciones.ResumeLayout(false);
             this.grbTransformaciones.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tkbEscala)).EndInit();
@@ -300,12 +209,6 @@
         private System.Windows.Forms.Label lblAltura;
         private System.Windows.Forms.Button btnReset;
         private System.Windows.Forms.Button btnDibujar;
-        private System.Windows.Forms.GroupBox grbOutputs;
-        private System.Windows.Forms.CheckBox checkCoordenadas;
-        private System.Windows.Forms.TextBox txtPerimetro;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox txtArea;
-        private System.Windows.Forms.Label lblArea;
         private System.Windows.Forms.GroupBox grbTransformaciones;
         private System.Windows.Forms.TrackBar tkbEscala;
         private System.Windows.Forms.Button btnDetener;
