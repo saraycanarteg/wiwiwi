@@ -13,3 +13,20 @@ C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\ProyectoCGraficaP1\PoligonoEstrel
 C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.exe
 C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.pdb
 C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.frmTrianguloEstrella.resources
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\bin\Debug\PoligonoEstrellado.exe.config
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\bin\Debug\PoligonoEstrellado.exe
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\bin\Debug\PoligonoEstrellado.pdb
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\ProyectoFiguras.csproj.AssemblyReference.cache
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.exe.config
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.frmGema10Lados.resources
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.frmHexagono.resources
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.frmPoligonoEstrellado.resources
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.frmTrianguloEstrella.resources
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\Figuras_Dos_Y_Seis.Frm_Figura_2.resources
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.MenuProyecto.resources
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.Properties.Resources.resources
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\ProyectoFiguras.csproj.GenerateResource.cache
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\ProyectoFiguras.csproj.CoreCompileInputs.cache
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.exe
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\PoligonoEstrellado.pdb
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\ProyectoCGraficaP1\PoligonoEstrellado\obj\Debug\Figuras_Dos_Y_Seis.Frm_Figura_6.resources

@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="CGema10.cs" />
     <Compile Include="CTrianguloEstrella.cs" />
+    <Compile Include="Figura_2.cs" />
     <Compile Include="frmGema10Lados.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -72,6 +73,18 @@
     <Compile Include="frmTrianguloEstrella.Designer.cs">
       <DependentUpon>frmTrianguloEstrella.cs</DependentUpon>
     </Compile>
+    <Compile Include="Frm_Figura_2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Frm_Figura_2.Designer.cs">
+      <DependentUpon>Frm_Figura_2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Frm_Figura_6.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Frm_Figura_6.Designer.cs">
+      <DependentUpon>Frm_Figura_6.cs</DependentUpon>
+    </Compile>
     <Compile Include="Hexagono.cs" />
     <Compile Include="MenuProyecto.cs">
       <SubType>Form</SubType>
@@ -82,6 +95,7 @@
     <Compile Include="PoligonoEstrellado.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Simbolo_Afrodita.cs" />
     <Compile Include="Transformacion.cs" />
     <EmbeddedResource Include="frmGema10Lados.resx">
       <DependentUpon>frmGema10Lados.cs</DependentUpon>
@@ -94,6 +108,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmTrianguloEstrella.resx">
       <DependentUpon>frmTrianguloEstrella.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Frm_Figura_2.resx">
+      <DependentUpon>Frm_Figura_2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Frm_Figura_6.resx">
+      <DependentUpon>Frm_Figura_6.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MenuProyecto.resx">
       <DependentUpon>MenuProyecto.cs</DependentUpon>

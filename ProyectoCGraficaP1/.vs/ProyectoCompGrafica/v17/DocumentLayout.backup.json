@@ -1,34 +1,42 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\Usuario\\Desktop\\CuartoSemestre\\wiwiwi\\ProyectoCGraficaP1\\",
+  "WorkspaceRootPath": "D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|c:\\users\\usuario\\desktop\\cuartosemestre\\wiwiwi\\proyectocgraficap1\\poligonoestrellado\\cgema10.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|solutionrelative:poligonoestrellado\\cgema10.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|d:\\universidad\\5to semestre\\computaci\u00F3n gr\u00E1fica\\repositorio\\wiwiwi\\proyectocgraficap1\\poligonoestrellado\\menuproyecto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|solutionrelative:poligonoestrellado\\menuproyecto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|c:\\users\\usuario\\desktop\\cuartosemestre\\wiwiwi\\proyectocgraficap1\\poligonoestrellado\\frmgema10lados.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|solutionrelative:poligonoestrellado\\frmgema10lados.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|d:\\universidad\\5to semestre\\computaci\u00F3n gr\u00E1fica\\repositorio\\wiwiwi\\proyectocgraficap1\\poligonoestrellado\\menuproyecto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|solutionrelative:poligonoestrellado\\menuproyecto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|c:\\users\\usuario\\desktop\\cuartosemestre\\wiwiwi\\proyectocgraficap1\\poligonoestrellado\\frmgema10lados.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|solutionrelative:poligonoestrellado\\frmgema10lados.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+      "AbsoluteMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\poligonoestrellado\\frmtrianguloestrella.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|solutionrelative:poligonoestrellado\\frmtrianguloestrella.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|c:\\users\\usuario\\desktop\\cuartosemestre\\wiwiwi\\proyectocgraficap1\\poligonoestrellado\\frmgema10lados.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|solutionrelative:poligonoestrellado\\frmgema10lados.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|c:\\users\\usuario\\desktop\\cuartosemestre\\wiwiwi\\proyectocgraficap1\\poligonoestrellado\\frmhexagono.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|d:\\universidad\\5to semestre\\computaci\u00F3n gr\u00E1fica\\repositorio\\wiwiwi\\proyectocgraficap1\\poligonoestrellado\\frmhexagono.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|solutionrelative:poligonoestrellado\\frmhexagono.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|c:\\users\\usuario\\desktop\\cuartosemestre\\wiwiwi\\proyectocgraficap1\\poligonoestrellado\\transformacion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\poligonoestrellado\\transformacion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|solutionrelative:poligonoestrellado\\transformacion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|c:\\users\\usuario\\desktop\\cuartosemestre\\wiwiwi\\proyectocgraficap1\\poligonoestrellado\\frmtrianguloestrella.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|solutionrelative:poligonoestrellado\\frmtrianguloestrella.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\poligonoestrellado\\cgema10.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|solutionrelative:poligonoestrellado\\cgema10.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\poligonoestrellado\\frmgema10lados.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|solutionrelative:poligonoestrellado\\frmgema10lados.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\poligonoestrellado\\frmgema10lados.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|solutionrelative:poligonoestrellado\\frmgema10lados.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\poligonoestrellado\\frmgema10lados.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{27D6E7DE-90FA-4B58-9CB1-20807A8D80D0}|PoligonoEstrellado\\ProyectoFiguras.csproj|solutionrelative:poligonoestrellado\\frmgema10lados.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -38,17 +46,17 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 2,
               "Title": "frmTrianguloEstrella.cs",
-              "DocumentMoniker": "C:\\Users\\Usuario\\Desktop\\CuartoSemestre\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\frmTrianguloEstrella.cs",
+              "DocumentMoniker": "D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\frmTrianguloEstrella.cs",
               "RelativeDocumentMoniker": "PoligonoEstrellado\\frmTrianguloEstrella.cs",
-              "ToolTip": "C:\\Users\\Usuario\\Desktop\\CuartoSemestre\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\frmTrianguloEstrella.cs",
+              "ToolTip": "D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\frmTrianguloEstrella.cs",
               "RelativeToolTip": "PoligonoEstrellado\\frmTrianguloEstrella.cs",
-              "ViewState": "AgIAAKEAAAAAAAAAAAAIwLAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAQAAAAAAAAAAAAAABEAAAAsAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-17T22:47:49.892Z",
               "IsPinned": true,
@@ -56,80 +64,101 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "frmGema10Lados.Designer.cs",
-              "DocumentMoniker": "C:\\Users\\Usuario\\Desktop\\CuartoSemestre\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\frmGema10Lados.Designer.cs",
-              "RelativeDocumentMoniker": "PoligonoEstrellado\\frmGema10Lados.Designer.cs",
-              "ToolTip": "C:\\Users\\Usuario\\Desktop\\CuartoSemestre\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\frmGema10Lados.Designer.cs",
-              "RelativeToolTip": "PoligonoEstrellado\\frmGema10Lados.Designer.cs",
-              "ViewState": "AgIAAAwBAAAAAAAAAAAMwAwBAAAAAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "MenuProyecto.cs",
+              "DocumentMoniker": "D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\MenuProyecto.cs",
+              "RelativeDocumentMoniker": "PoligonoEstrellado\\MenuProyecto.cs",
+              "ToolTip": "D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\MenuProyecto.cs",
+              "RelativeToolTip": "PoligonoEstrellado\\MenuProyecto.cs",
+              "ViewState": "AgIAADYAAAAAAAAAAAAAwEoAAAAgAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-17T23:50:58.705Z",
+              "WhenOpened": "2025-11-18T01:58:28.545Z",
+              "IsPinned": true,
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 1,
+              "Title": "MenuProyecto.cs [Dise\u00F1o]",
+              "DocumentMoniker": "D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\MenuProyecto.cs",
+              "RelativeDocumentMoniker": "PoligonoEstrellado\\MenuProyecto.cs",
+              "ToolTip": "D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\MenuProyecto.cs [Dise\u00F1o]",
+              "RelativeToolTip": "PoligonoEstrellado\\MenuProyecto.cs [Dise\u00F1o]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-18T01:58:05.937Z",
+              "EditorCaption": " [Dise\u00F1o]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "frmGema10Lados.Designer.cs",
+              "DocumentMoniker": "D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\frmGema10Lados.Designer.cs",
+              "RelativeDocumentMoniker": "PoligonoEstrellado\\frmGema10Lados.Designer.cs",
+              "ToolTip": "D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\frmGema10Lados.Designer.cs",
+              "RelativeToolTip": "PoligonoEstrellado\\frmGema10Lados.Designer.cs",
+              "ViewState": "AgIAAAwBAAAAAAAAAAAMwAwBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-17T23:50:58.705Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "Transformacion.cs",
-              "DocumentMoniker": "C:\\Users\\Usuario\\Desktop\\CuartoSemestre\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\Transformacion.cs",
+              "DocumentMoniker": "D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\Transformacion.cs",
               "RelativeDocumentMoniker": "PoligonoEstrellado\\Transformacion.cs",
-              "ToolTip": "C:\\Users\\Usuario\\Desktop\\CuartoSemestre\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\Transformacion.cs",
+              "ToolTip": "D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\Transformacion.cs",
               "RelativeToolTip": "PoligonoEstrellado\\Transformacion.cs",
-              "ViewState": "AgIAADcAAAAAAAAAAAAAwDwAAAAxAAAAAAAAAA==",
+              "ViewState": "AgIAAEwAAAAAAAAAAAAgwDwAAAAxAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-17T23:42:32.839Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 5,
               "Title": "CGema10.cs",
-              "DocumentMoniker": "C:\\Users\\Usuario\\Desktop\\CuartoSemestre\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\CGema10.cs",
+              "DocumentMoniker": "D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\CGema10.cs",
               "RelativeDocumentMoniker": "PoligonoEstrellado\\CGema10.cs",
-              "ToolTip": "C:\\Users\\Usuario\\Desktop\\CuartoSemestre\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\CGema10.cs",
+              "ToolTip": "D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\CGema10.cs",
               "RelativeToolTip": "PoligonoEstrellado\\CGema10.cs",
-              "ViewState": "AgIAABkCAAAAAAAAAAAqwC0CAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0CAAAcAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-17T23:21:53.213Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-17T23:21:53.213Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 3,
               "Title": "frmHexagono.cs",
-              "DocumentMoniker": "C:\\Users\\Usuario\\Desktop\\CuartoSemestre\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\frmHexagono.cs",
+              "DocumentMoniker": "D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\frmHexagono.cs",
               "RelativeDocumentMoniker": "PoligonoEstrellado\\frmHexagono.cs",
-              "ToolTip": "C:\\Users\\Usuario\\Desktop\\CuartoSemestre\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\frmHexagono.cs",
+              "ToolTip": "D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\frmHexagono.cs",
               "RelativeToolTip": "PoligonoEstrellado\\frmHexagono.cs",
-              "ViewState": "AgIAACoAAAAAAAAAAAAowC8AAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAACwAAAAAAAAAAAAAwEMAAAAkAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-17T23:06:20.173Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 6,
               "Title": "frmGema10Lados.cs",
-              "DocumentMoniker": "C:\\Users\\Usuario\\Desktop\\CuartoSemestre\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\frmGema10Lados.cs",
+              "DocumentMoniker": "D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\frmGema10Lados.cs",
               "RelativeDocumentMoniker": "PoligonoEstrellado\\frmGema10Lados.cs",
-              "ToolTip": "C:\\Users\\Usuario\\Desktop\\CuartoSemestre\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\frmGema10Lados.cs",
+              "ToolTip": "D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\frmGema10Lados.cs",
               "RelativeToolTip": "PoligonoEstrellado\\frmGema10Lados.cs",
               "ViewState": "AgIAAB0AAAAAAAAAAAA3wDIAAAAYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-17T22:28:37.837Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-17T22:28:37.837Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 7,
               "Title": "frmGema10Lados.cs [Dise\u00F1o]",
-              "DocumentMoniker": "C:\\Users\\Usuario\\Desktop\\CuartoSemestre\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\frmGema10Lados.cs",
+              "DocumentMoniker": "D:\\Universidad\\5to Semestre\\Computaci\u00F3n Gr\u00E1fica\\Repositorio\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\frmGema10Lados.cs",
               "RelativeDocumentMoniker": "PoligonoEstrellado\\frmGema10Lados.cs",
               "ToolTip": "C:\\Users\\Usuario\\Desktop\\CuartoSemestre\\wiwiwi\\ProyectoCGraficaP1\\PoligonoEstrellado\\frmGema10Lados.cs [Dise\u00F1o]",
-              "RelativeToolTip": "PoligonoEstrellado\\frmGema10Lados.cs [Dise\u00F1o]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-17T22:26:25.304Z",
-              "EditorCaption": " [Dise\u00F1o]"
+              "WhenOpened": "2025-11-17T22:26:25.304Z"
             }
           ]
         }

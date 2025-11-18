@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Figuras_Dos_Y_Seis;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -56,6 +57,22 @@ namespace PoligonoEstrellado
             frmTrianguloEstrella frmTrianguloEstrella = frmTrianguloEstrella.Instancia;
             frmTrianguloEstrella.MdiParent = this;
             frmTrianguloEstrella.Show();
+        }
+
+        private void puntasYPentagonosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            CerrarFormulariosHijos();
+            Frm_Figura_2 frm_Figura_2 = Frm_Figura_2.Instancia;
+            frm_Figura_2.MdiParent = this;
+            frm_Figura_2.Show();
+        }
+
+        private void floresToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            CerrarFormulariosHijos();
+            Frm_Figura_6 frm_Figura_6 = Frm_Figura_6.Instancia;
+            frm_Figura_6.MdiParent = this;
+            frm_Figura_6.Show();
         }
     }
 }
