@@ -11,15 +11,14 @@ namespace Proyecto_3D
         private Motor3D motor;
         private List<Figura3D> figuras;
         private Figura3D figuraSeleccionada;
-        
-        // Para el renderizado
+
         private Bitmap bufferImagen;
         private Timer timerRender;
-        
-        // Para la interacción con mouse
+
         private bool mousePresionado = false;
         private bool mousePanear = false;
         private Point ultimaPosicionMouse;
+        private bool necesitaRenderizar = true;
 
         public Form1()
         {
@@ -34,14 +33,40 @@ namespace Proyecto_3D
             motor = new Motor3D(panelViewport.Width, panelViewport.Height);
             bufferImagen = new Bitmap(panelViewport.Width, panelViewport.Height);
 
-            // Configurar timer para renderizado continuo
+            // Habilitar double buffering en el panel para eliminar titileo
+            typeof(Panel).InvokeMember("DoubleBuffered",
+                System.Reflection.BindingFlags.SetProperty |
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic,
+                null, panelViewport, new object[] { true });
+
+            trackBarIntensidadLuz.Minimum = 0;
+            trackBarIntensidadLuz.Maximum = 100;
+            trackBarIntensidadLuz.Value = 80;
+            trackBarIntensidadLuz.TickFrequency = 10;
+
+            // Timer para renderizado - solo renderiza cuando hay cambios
             timerRender = new Timer();
             timerRender.Interval = 16; // ~60 FPS
-            timerRender.Tick += (s, e) => RenderizarEscena();
+            timerRender.Tick += TimerRender_Tick;
             timerRender.Start();
 
             // Agregar un cubo inicial
             AgregarCubo();
+        }
+
+        private void TimerRender_Tick(object sender, EventArgs e)
+        {
+            if (necesitaRenderizar)
+            {
+                RenderizarEscena();
+                necesitaRenderizar = false;
+            }
+        }
+
+        private void SolicitarRenderizado()
+        {
+            necesitaRenderizar = true;
         }
 
         private void ConfigurarEventos()
@@ -55,10 +80,12 @@ namespace Proyecto_3D
             panelViewport.Resize += (s, e) => {
                 if (panelViewport.Width > 0 && panelViewport.Height > 0)
                 {
+                    bufferImagen?.Dispose();
                     bufferImagen = new Bitmap(panelViewport.Width, panelViewport.Height);
                     motor.AnchoVista = panelViewport.Width;
                     motor.AltoVista = panelViewport.Height;
                     motor.AspectRatio = (double)panelViewport.Width / panelViewport.Height;
+                    SolicitarRenderizado();
                 }
             };
 
@@ -71,17 +98,17 @@ namespace Proyecto_3D
             btnToroide.Click += (s, e) => AgregarToroide();
 
             // Eventos de transformaciones
-            numPosX.ValueChanged += (s, e) => ActualizarTransformacion();
-            numPosY.ValueChanged += (s, e) => ActualizarTransformacion();
-            numPosZ.ValueChanged += (s, e) => ActualizarTransformacion();
+            numPosX.ValueChanged += (s, e) => { ActualizarTransformacion(); SolicitarRenderizado(); };
+            numPosY.ValueChanged += (s, e) => { ActualizarTransformacion(); SolicitarRenderizado(); };
+            numPosZ.ValueChanged += (s, e) => { ActualizarTransformacion(); SolicitarRenderizado(); };
 
-            numRotX.ValueChanged += (s, e) => ActualizarTransformacion();
-            numRotY.ValueChanged += (s, e) => ActualizarTransformacion();
-            numRotZ.ValueChanged += (s, e) => ActualizarTransformacion();
+            numRotX.ValueChanged += (s, e) => { ActualizarTransformacion(); SolicitarRenderizado(); };
+            numRotY.ValueChanged += (s, e) => { ActualizarTransformacion(); SolicitarRenderizado(); };
+            numRotZ.ValueChanged += (s, e) => { ActualizarTransformacion(); SolicitarRenderizado(); };
 
-            numEscX.ValueChanged += (s, e) => ActualizarTransformacion();
-            numEscY.ValueChanged += (s, e) => ActualizarTransformacion();
-            numEscZ.ValueChanged += (s, e) => ActualizarTransformacion();
+            numEscX.ValueChanged += (s, e) => { ActualizarTransformacion(); SolicitarRenderizado(); };
+            numEscY.ValueChanged += (s, e) => { ActualizarTransformacion(); SolicitarRenderizado(); };
+            numEscZ.ValueChanged += (s, e) => { ActualizarTransformacion(); SolicitarRenderizado(); };
 
             // Eventos de lista de objetos
             listObjetos.SelectedIndexChanged += ListObjetos_SelectedIndexChanged;
@@ -99,6 +126,7 @@ namespace Proyecto_3D
                 if (figuraSeleccionada != null)
                 {
                     figuraSeleccionada.MostrarRelleno = chkMostrarRelleno.Checked;
+                    SolicitarRenderizado();
                 }
             };
             chkVisible.CheckedChanged += (s, e) => {
@@ -106,6 +134,35 @@ namespace Proyecto_3D
                 {
                     figuraSeleccionada.Visible = chkVisible.Checked;
                     ActualizarListaObjetos();
+                    SolicitarRenderizado();
+                }
+            };
+
+            // Eventos de iluminación
+            trackBarIntensidadLuz.Minimum = 0;
+            trackBarIntensidadLuz.Maximum = 100;
+            trackBarIntensidadLuz.Value = 80;
+            trackBarIntensidadLuz.TickFrequency = 10;
+
+            trackBarIntensidadLuz.ValueChanged += (s, e) => {
+                if (figuraSeleccionada != null)
+                {
+                    figuraSeleccionada.IntensidadLuz = trackBarIntensidadLuz.Value / 100.0;
+                    lblIntensidadLuz.Text = $"Intensidad: {trackBarIntensidadLuz.Value}%";
+                    SolicitarRenderizado();
+                }
+            };
+
+            // Eventos de textura
+            cmbTextura.Items.Clear();
+            cmbTextura.Items.AddRange(new object[] { "Cristal", "Piedra", "Esponja", "Oro", "Diamante" });
+            cmbTextura.SelectedIndex = 0;
+
+            cmbTextura.SelectedIndexChanged += (s, e) => {
+                if (figuraSeleccionada != null)
+                {
+                    figuraSeleccionada.TipoTextura = (TipoTextura)cmbTextura.SelectedIndex;
+                    SolicitarRenderizado();
                 }
             };
 
@@ -114,8 +171,8 @@ namespace Proyecto_3D
             btnEliminar.Click += (s, e) => EliminarFiguraSeleccionada();
             btnResetCamara.Click += (s, e) => ResetearCamara();
 
-            chkMostrarEjes.CheckedChanged += (s, e) => RenderizarEscena();
-            chkMostrarGrid.CheckedChanged += (s, e) => RenderizarEscena();
+            chkMostrarEjes.CheckedChanged += (s, e) => SolicitarRenderizado();
+            chkMostrarGrid.CheckedChanged += (s, e) => SolicitarRenderizado();
         }
 
         #region Agregar Figuras
@@ -167,6 +224,7 @@ namespace Proyecto_3D
             figuras.Add(figura);
             ActualizarListaObjetos();
             SeleccionarFigura(figura);
+            SolicitarRenderizado();
         }
 
         #endregion
@@ -175,7 +233,7 @@ namespace Proyecto_3D
 
         private void PanelViewport_MouseDown(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Middle || 
+            if (e.Button == MouseButtons.Middle ||
                 (e.Button == MouseButtons.Left && ModifierKeys == Keys.Shift))
             {
                 mousePanear = true;
@@ -184,30 +242,35 @@ namespace Proyecto_3D
             {
                 mousePresionado = true;
             }
-            
+
             ultimaPosicionMouse = e.Location;
         }
 
         private void PanelViewport_MouseMove(object sender, MouseEventArgs e)
         {
+            bool huboMovimiento = false;
+
             if (mousePresionado && !mousePanear)
             {
-                // Rotar cámara
                 double deltaX = e.X - ultimaPosicionMouse.X;
                 double deltaY = e.Y - ultimaPosicionMouse.Y;
-
                 motor.RotarCamara(deltaX * 0.5, -deltaY * 0.5);
+                huboMovimiento = true;
             }
             else if (mousePanear)
             {
-                // Panear cámara
                 double deltaX = e.X - ultimaPosicionMouse.X;
                 double deltaY = e.Y - ultimaPosicionMouse.Y;
-
                 motor.PanearCamara(-deltaX, deltaY);
+                huboMovimiento = true;
             }
 
             ultimaPosicionMouse = e.Location;
+
+            if (huboMovimiento)
+            {
+                SolicitarRenderizado();
+            }
         }
 
         private void PanelViewport_MouseUp(object sender, MouseEventArgs e)
@@ -219,6 +282,7 @@ namespace Proyecto_3D
         private void PanelViewport_MouseWheel(object sender, MouseEventArgs e)
         {
             motor.ZoomCamara(-e.Delta * 0.005);
+            SolicitarRenderizado();
         }
 
         #endregion
@@ -231,23 +295,19 @@ namespace Proyecto_3D
 
             using (Graphics g = Graphics.FromImage(bufferImagen))
             {
-                // Fondo oscuro estilo Blender
                 g.Clear(Color.FromArgb(50, 50, 50));
                 g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
-                // Dibujar grid si está habilitado
                 if (chkMostrarGrid.Checked)
                 {
                     motor.DibujarGrid(g, 10, 1);
                 }
 
-                // Dibujar ejes si está habilitado
                 if (chkMostrarEjes.Checked)
                 {
                     motor.DibujarEjes(g, 2);
                 }
 
-                // Aplicar transformaciones y dibujar figuras
                 foreach (var figura in figuras)
                 {
                     motor.AplicarTransformaciones(figura);
@@ -262,7 +322,7 @@ namespace Proyecto_3D
         {
             if (bufferImagen != null)
             {
-                e.Graphics.DrawImage(bufferImagen, 0, 0);
+                e.Graphics.DrawImageUnscaled(bufferImagen, 0, 0);
             }
         }
 
@@ -274,7 +334,7 @@ namespace Proyecto_3D
         {
             int selectedIndex = listObjetos.SelectedIndex;
             listObjetos.Items.Clear();
-            
+
             foreach (var figura in figuras)
             {
                 string icono = figura.Visible ? "👁" : "🚫";
@@ -297,19 +357,19 @@ namespace Proyecto_3D
 
         private void SeleccionarFigura(Figura3D figura)
         {
-            // Deseleccionar todas
             foreach (var f in figuras)
                 f.Seleccionada = false;
 
             figuraSeleccionada = figura;
             figura.Seleccionada = true;
 
-            // Actualizar UI
             ActualizarPanelPropiedades();
-            
+
             int index = figuras.IndexOf(figura);
             if (index >= 0)
                 listObjetos.SelectedIndex = index;
+
+            SolicitarRenderizado();
         }
 
         private void ActualizarPanelPropiedades()
@@ -322,7 +382,7 @@ namespace Proyecto_3D
 
             panelPropiedades.Enabled = true;
 
-            // Actualizar valores sin disparar eventos
+            // Deshabilitar eventos temporalmente
             numPosX.ValueChanged -= ActualizarTransformacion;
             numPosY.ValueChanged -= ActualizarTransformacion;
             numPosZ.ValueChanged -= ActualizarTransformacion;
@@ -333,6 +393,7 @@ namespace Proyecto_3D
             numEscY.ValueChanged -= ActualizarTransformacion;
             numEscZ.ValueChanged -= ActualizarTransformacion;
 
+            // Actualizar valores
             numPosX.Value = (decimal)figuraSeleccionada.Posicion.X;
             numPosY.Value = (decimal)figuraSeleccionada.Posicion.Y;
             numPosZ.Value = (decimal)figuraSeleccionada.Posicion.Z;
@@ -351,7 +412,26 @@ namespace Proyecto_3D
             btnColorLinea.BackColor = figuraSeleccionada.ColorLinea;
             btnColorRelleno.BackColor = figuraSeleccionada.ColorRelleno;
 
-            // Re-suscribir eventos
+            // Actualizar controles de iluminación
+            if (trackBarIntensidadLuz.Minimum != 0 || trackBarIntensidadLuz.Maximum != 100)
+            {
+                trackBarIntensidadLuz.Minimum = 0;
+                trackBarIntensidadLuz.Maximum = 100;
+            }
+
+            int intensidad = (int)(figuraSeleccionada.IntensidadLuz * 100);
+            intensidad = Math.Max(0, Math.Min(100, intensidad)); // Asegurar que esté en rango
+            trackBarIntensidadLuz.Value = intensidad;
+            lblIntensidadLuz.Text = $"Intensidad: {intensidad}%";
+
+            // Actualizar textura
+            if (cmbTextura.Items.Count == 0)
+            {
+                cmbTextura.Items.AddRange(new object[] { "Cristal", "Piedra", "Esponja", "Oro", "Diamante" });
+            }
+            cmbTextura.SelectedIndex = (int)figuraSeleccionada.TipoTextura;
+
+            // Re-habilitar eventos
             numPosX.ValueChanged += ActualizarTransformacion;
             numPosY.ValueChanged += ActualizarTransformacion;
             numPosZ.ValueChanged += ActualizarTransformacion;
@@ -391,6 +471,7 @@ namespace Proyecto_3D
                 {
                     figuraSeleccionada.ColorLinea = dlg.Color;
                     btnColorLinea.BackColor = dlg.Color;
+                    SolicitarRenderizado();
                 }
             }
         }
@@ -406,6 +487,7 @@ namespace Proyecto_3D
                 {
                     figuraSeleccionada.ColorRelleno = dlg.Color;
                     btnColorRelleno.BackColor = dlg.Color;
+                    SolicitarRenderizado();
                 }
             }
         }
@@ -415,7 +497,7 @@ namespace Proyecto_3D
             if (figuraSeleccionada == null) return;
 
             var duplicado = figuraSeleccionada.Clonar();
-            duplicado.Posicion.X += 1.5; // Desplazar un poco
+            duplicado.Posicion.X += 1.5;
             AgregarFigura(duplicado);
         }
 
@@ -427,6 +509,7 @@ namespace Proyecto_3D
             figuraSeleccionada = null;
             ActualizarListaObjetos();
             panelPropiedades.Enabled = false;
+            SolicitarRenderizado();
         }
 
         private void ResetearCamara()
@@ -436,8 +519,16 @@ namespace Proyecto_3D
             motor.DistanciaCamara = 5;
             motor.ObjetivoCamara = new Punto3D(0, 0, 0);
             motor.ActualizarPosicionCamara();
+            SolicitarRenderizado();
         }
 
         #endregion
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            timerRender?.Stop();
+            bufferImagen?.Dispose();
+            base.OnFormClosing(e);
+        }
     }
 }

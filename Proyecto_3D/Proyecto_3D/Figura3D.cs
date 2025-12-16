@@ -5,16 +5,26 @@ using System.Linq;
 
 namespace Proyecto_3D
 {
+    public enum TipoTextura
+    {
+        Cristal,
+        Piedra,
+        Esponja,
+        Oro,
+        Diamante
+    }
+
     /// <summary>
     /// Representa una figura 3D con sus vértices, aristas y propiedades
     /// </summary>
     public class Figura3D
     {
         public List<Punto3D> Vertices { get; set; }
-        public List<Punto3D> VerticesOriginales { get; set; } // Para resetear transformaciones
+        public List<Punto3D> VerticesOriginales { get; set; }
         public List<Arista> Aristas { get; set; }
-        public List<List<int>> Caras { get; set; } // Cada cara es una lista de índices de vértices
-        
+        public List<List<int>> Caras { get; set; }
+        public List<Punto3D> NormalesCaras { get; set; } // Normales para iluminación
+
         public string Nombre { get; set; }
         public Color ColorLinea { get; set; }
         public Color ColorRelleno { get; set; }
@@ -22,9 +32,14 @@ namespace Proyecto_3D
         public bool Visible { get; set; }
         public bool Seleccionada { get; set; }
 
+        // Propiedades de iluminación
+        public double IntensidadLuz { get; set; } = 0.8;
+        public double LuzAmbiente { get; set; } = 0.3;
+        public TipoTextura TipoTextura { get; set; } = TipoTextura.Cristal;
+
         // Transformaciones acumuladas
         public Punto3D Posicion { get; set; }
-        public Punto3D Rotacion { get; set; } // En grados
+        public Punto3D Rotacion { get; set; }
         public Punto3D Escala { get; set; }
 
         public Figura3D(string nombre = "Figura")
@@ -33,7 +48,8 @@ namespace Proyecto_3D
             VerticesOriginales = new List<Punto3D>();
             Aristas = new List<Arista>();
             Caras = new List<List<int>>();
-            
+            NormalesCaras = new List<Punto3D>();
+
             Nombre = nombre;
             ColorLinea = Color.White;
             ColorRelleno = Color.FromArgb(100, 100, 150, 200);
@@ -52,6 +68,31 @@ namespace Proyecto_3D
             foreach (var v in Vertices)
             {
                 VerticesOriginales.Add(v.Clone());
+            }
+        }
+
+        public void CalcularNormalesCaras()
+        {
+            NormalesCaras.Clear();
+
+            foreach (var cara in Caras)
+            {
+                if (cara.Count < 3)
+                {
+                    NormalesCaras.Add(new Punto3D(0, 1, 0));
+                    continue;
+                }
+
+                // Tomar los tres primeros vértices para calcular la normal
+                Punto3D v0 = Vertices[cara[0]];
+                Punto3D v1 = Vertices[cara[1]];
+                Punto3D v2 = Vertices[cara[2]];
+
+                Punto3D edge1 = v1 - v0;
+                Punto3D edge2 = v2 - v0;
+
+                Punto3D normal = Punto3D.ProductoCruz(edge1, edge2).VectorNormalizado();
+                NormalesCaras.Add(normal);
             }
         }
 
@@ -74,6 +115,25 @@ namespace Proyecto_3D
             );
         }
 
+        public Color ObtenerColorTextura()
+        {
+            switch (TipoTextura)
+            {
+                case TipoTextura.Cristal:
+                    return Color.FromArgb(180, 200, 230, 255); // Azul translúcido
+                case TipoTextura.Piedra:
+                    return Color.FromArgb(200, 100, 100, 100); // Gris
+                case TipoTextura.Esponja:
+                    return Color.FromArgb(200, 220, 200, 80); // Amarillo verdoso
+                case TipoTextura.Oro:
+                    return Color.FromArgb(220, 255, 215, 0); // Dorado
+                case TipoTextura.Diamante:
+                    return Color.FromArgb(200, 180, 250, 255); // Celeste brillante
+                default:
+                    return ColorRelleno;
+            }
+        }
+
         #region Figuras Primitivas
 
         public static Figura3D CrearCubo(double tamaño = 1.0)
@@ -92,17 +152,14 @@ namespace Proyecto_3D
             figura.Vertices.Add(new Punto3D(-s, s, s));   // 7
 
             // 12 aristas del cubo
-            // Cara frontal
             figura.Aristas.Add(new Arista(0, 1));
             figura.Aristas.Add(new Arista(1, 2));
             figura.Aristas.Add(new Arista(2, 3));
             figura.Aristas.Add(new Arista(3, 0));
-            // Cara trasera
             figura.Aristas.Add(new Arista(4, 5));
             figura.Aristas.Add(new Arista(5, 6));
             figura.Aristas.Add(new Arista(6, 7));
             figura.Aristas.Add(new Arista(7, 4));
-            // Conexiones
             figura.Aristas.Add(new Arista(0, 4));
             figura.Aristas.Add(new Arista(1, 5));
             figura.Aristas.Add(new Arista(2, 6));
@@ -110,11 +167,11 @@ namespace Proyecto_3D
 
             // Caras
             figura.Caras.Add(new List<int> { 0, 1, 2, 3 }); // Frente
-            figura.Caras.Add(new List<int> { 4, 5, 6, 7 }); // Atrás
-            figura.Caras.Add(new List<int> { 0, 1, 5, 4 }); // Abajo
-            figura.Caras.Add(new List<int> { 3, 2, 6, 7 }); // Arriba
+            figura.Caras.Add(new List<int> { 5, 4, 7, 6 }); // Atrás
+            figura.Caras.Add(new List<int> { 0, 4, 5, 1 }); // Abajo
+            figura.Caras.Add(new List<int> { 2, 6, 7, 3 }); // Arriba
             figura.Caras.Add(new List<int> { 0, 3, 7, 4 }); // Izquierda
-            figura.Caras.Add(new List<int> { 1, 2, 6, 5 }); // Derecha
+            figura.Caras.Add(new List<int> { 1, 5, 6, 2 }); // Derecha
 
             figura.GuardarEstadoOriginal();
             return figura;
@@ -124,7 +181,6 @@ namespace Proyecto_3D
         {
             var figura = new Figura3D("Esfera");
 
-            // Generar vértices
             for (int i = 0; i <= anillos; i++)
             {
                 double phi = Math.PI * i / anillos;
@@ -141,7 +197,7 @@ namespace Proyecto_3D
                 }
             }
 
-            // Generar aristas
+            // Generar aristas y caras
             for (int i = 0; i < anillos; i++)
             {
                 for (int j = 0; j < segmentos; j++)
@@ -149,10 +205,14 @@ namespace Proyecto_3D
                     int actual = i * (segmentos + 1) + j;
                     int siguiente = actual + segmentos + 1;
 
-                    // Arista horizontal
                     figura.Aristas.Add(new Arista(actual, actual + 1));
-                    // Arista vertical
                     figura.Aristas.Add(new Arista(actual, siguiente));
+
+                    // Crear caras (triángulos)
+                    if (i < anillos && j < segmentos)
+                    {
+                        figura.Caras.Add(new List<int> { actual, siguiente, siguiente + 1, actual + 1 });
+                    }
                 }
             }
 
@@ -183,22 +243,19 @@ namespace Proyecto_3D
                 figura.Vertices.Add(new Punto3D(x, -h, z));
             }
 
-            // Aristas del círculo superior
+            // Aristas
             for (int i = 0; i < segmentos; i++)
             {
                 figura.Aristas.Add(new Arista(i, (i + 1) % segmentos));
-            }
-
-            // Aristas del círculo inferior
-            for (int i = 0; i < segmentos; i++)
-            {
                 figura.Aristas.Add(new Arista(segmentos + i, segmentos + ((i + 1) % segmentos)));
+                figura.Aristas.Add(new Arista(i, segmentos + i));
             }
 
-            // Aristas verticales
+            // Caras laterales
             for (int i = 0; i < segmentos; i++)
             {
-                figura.Aristas.Add(new Arista(i, segmentos + i));
+                int next = (i + 1) % segmentos;
+                figura.Caras.Add(new List<int> { i, segmentos + i, segmentos + next, next });
             }
 
             figura.GuardarEstadoOriginal();
@@ -210,10 +267,8 @@ namespace Proyecto_3D
             var figura = new Figura3D("Cono");
             double h = altura / 2;
 
-            // Vértice superior (punta del cono)
             figura.Vertices.Add(new Punto3D(0, h, 0));
 
-            // Círculo de la base
             for (int i = 0; i < segmentos; i++)
             {
                 double angulo = 2 * Math.PI * i / segmentos;
@@ -222,16 +277,17 @@ namespace Proyecto_3D
                 figura.Vertices.Add(new Punto3D(x, -h, z));
             }
 
-            // Aristas desde la punta hasta la base
             for (int i = 1; i <= segmentos; i++)
             {
                 figura.Aristas.Add(new Arista(0, i));
+                figura.Aristas.Add(new Arista(i, (i % segmentos) + 1));
             }
 
-            // Aristas del círculo base
+            // Caras laterales
             for (int i = 1; i <= segmentos; i++)
             {
-                figura.Aristas.Add(new Arista(i, (i % segmentos) + 1));
+                int next = (i % segmentos) + 1;
+                figura.Caras.Add(new List<int> { 0, i, next });
             }
 
             figura.GuardarEstadoOriginal();
@@ -244,39 +300,32 @@ namespace Proyecto_3D
             double s = tamaño / 2;
             double h = tamaño;
 
-            // Vértice superior
-            figura.Vertices.Add(new Punto3D(0, h, 0)); // 0
+            figura.Vertices.Add(new Punto3D(0, h, 0));
+            figura.Vertices.Add(new Punto3D(-s, 0, -s));
+            figura.Vertices.Add(new Punto3D(s, 0, -s));
+            figura.Vertices.Add(new Punto3D(s, 0, s));
+            figura.Vertices.Add(new Punto3D(-s, 0, s));
 
-            // Base cuadrada
-            figura.Vertices.Add(new Punto3D(-s, 0, -s)); // 1
-            figura.Vertices.Add(new Punto3D(s, 0, -s));  // 2
-            figura.Vertices.Add(new Punto3D(s, 0, s));   // 3
-            figura.Vertices.Add(new Punto3D(-s, 0, s));  // 4
-
-            // Aristas desde el vértice a la base
             for (int i = 1; i <= 4; i++)
             {
                 figura.Aristas.Add(new Arista(0, i));
             }
-
-            // Aristas de la base
             figura.Aristas.Add(new Arista(1, 2));
             figura.Aristas.Add(new Arista(2, 3));
             figura.Aristas.Add(new Arista(3, 4));
             figura.Aristas.Add(new Arista(4, 1));
 
-            // Caras
-            figura.Caras.Add(new List<int> { 1, 2, 3, 4 }); // Base
-            figura.Caras.Add(new List<int> { 0, 1, 2 });    // Cara 1
-            figura.Caras.Add(new List<int> { 0, 2, 3 });    // Cara 2
-            figura.Caras.Add(new List<int> { 0, 3, 4 });    // Cara 3
-            figura.Caras.Add(new List<int> { 0, 4, 1 });    // Cara 4
+            figura.Caras.Add(new List<int> { 1, 2, 3, 4 });
+            figura.Caras.Add(new List<int> { 0, 1, 2 });
+            figura.Caras.Add(new List<int> { 0, 2, 3 });
+            figura.Caras.Add(new List<int> { 0, 3, 4 });
+            figura.Caras.Add(new List<int> { 0, 4, 1 });
 
             figura.GuardarEstadoOriginal();
             return figura;
         }
 
-        public static Figura3D CrearToroide(double radioMayor = 1.5, double radioMenor = 0.5, int segmentos = 16, int tubos = 12)
+        public static Figura3D CrearToroide(double radioMayor = 1.5, double radioMenor = 0.5, int segmentos = 24, int tubos = 16)
         {
             var figura = new Figura3D("Toroide");
 
@@ -300,7 +349,7 @@ namespace Proyecto_3D
                 }
             }
 
-            // Generar aristas
+            // Aristas y caras
             for (int i = 0; i < segmentos; i++)
             {
                 for (int j = 0; j < tubos; j++)
@@ -311,6 +360,12 @@ namespace Proyecto_3D
 
                     figura.Aristas.Add(new Arista(actual, siguiente));
                     figura.Aristas.Add(new Arista(actual, siguienteTubo));
+
+                    // Cara cuadrangular
+                    int nextI = ((i + 1) % segmentos) * tubos + j;
+                    int nextJ = i * tubos + ((j + 1) % tubos);
+                    int nextIJ = ((i + 1) % segmentos) * tubos + ((j + 1) % tubos);
+                    figura.Caras.Add(new List<int> { actual, nextI, nextIJ, nextJ });
                 }
             }
 
@@ -328,6 +383,9 @@ namespace Proyecto_3D
                 ColorRelleno = ColorRelleno,
                 MostrarRelleno = MostrarRelleno,
                 Visible = Visible,
+                IntensidadLuz = IntensidadLuz,
+                LuzAmbiente = LuzAmbiente,
+                TipoTextura = TipoTextura,
                 Posicion = Posicion.Clone(),
                 Rotacion = Rotacion.Clone(),
                 Escala = Escala.Clone()
@@ -335,13 +393,13 @@ namespace Proyecto_3D
 
             foreach (var v in Vertices)
                 clon.Vertices.Add(v.Clone());
-            
+
             foreach (var v in VerticesOriginales)
                 clon.VerticesOriginales.Add(v.Clone());
-            
+
             foreach (var a in Aristas)
                 clon.Aristas.Add(new Arista(a.Inicio, a.Fin));
-            
+
             foreach (var cara in Caras)
                 clon.Caras.Add(new List<int>(cara));
 

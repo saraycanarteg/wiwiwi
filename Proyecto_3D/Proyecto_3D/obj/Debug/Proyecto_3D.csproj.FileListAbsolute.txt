@@ -8,3 +8,14 @@ D:\Universidad\5to Semestre\Computación Gráfica\P2\Proyecto\Proyecto_3D\Proyec
 D:\Universidad\5to Semestre\Computación Gráfica\P2\Proyecto\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.exe
 D:\Universidad\5to Semestre\Computación Gráfica\P2\Proyecto\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.pdb
 D:\Universidad\5to Semestre\Computación Gráfica\P2\Proyecto\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.exe.config
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\Proyecto_3D\Proyecto_3D\bin\Debug\Proyecto_3D.exe.config
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\Proyecto_3D\Proyecto_3D\bin\Debug\Proyecto_3D.exe
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\Proyecto_3D\Proyecto_3D\bin\Debug\Proyecto_3D.pdb
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.csproj.AssemblyReference.cache
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.exe.config
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.Properties.Resources.resources
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.csproj.GenerateResource.cache
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.csproj.CoreCompileInputs.cache
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.exe
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.pdb
+C:\Users\domenica\OneDrive - UNIVERSIDAD DE LAS FUERZAS ARMADAS ESPE\5software\Computación Gráfica\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.Form1.resources

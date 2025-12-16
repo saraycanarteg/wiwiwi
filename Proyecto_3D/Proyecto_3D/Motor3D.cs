@@ -1,34 +1,31 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 
 namespace Proyecto_3D
 {
     /// <summary>
-    /// Motor de renderizado y transformaciones 3D
+    /// Motor de renderizado y transformaciones 3D con iluminación
     /// </summary>
     public class Motor3D
     {
-        // Parámetros de cámara
         public Punto3D PosicionCamara { get; set; }
         public Punto3D ObjetivoCamara { get; set; }
         public Punto3D UpCamara { get; set; }
-        
-        public double DistanciaCamara { get; set; }
-        public double AnguloOrbitaH { get; set; } // Horizontal (azimut)
-        public double AnguloOrbitaV { get; set; } // Vertical (elevación)
 
-        // Parámetros de proyección
-        public double CampoVision { get; set; } // Field of View en grados
+        public double DistanciaCamara { get; set; }
+        public double AnguloOrbitaH { get; set; }
+        public double AnguloOrbitaV { get; set; }
+
+        public double CampoVision { get; set; }
         public double AspectRatio { get; set; }
         public double PlanosCercano { get; set; }
         public double PlanosLejano { get; set; }
 
-        // Viewport
         public int AnchoVista { get; set; }
         public int AltoVista { get; set; }
 
-        // Iluminación
         public Punto3D DireccionLuz { get; set; }
 
         public Motor3D(int ancho, int alto)
@@ -36,7 +33,6 @@ namespace Proyecto_3D
             AnchoVista = ancho;
             AltoVista = alto;
 
-            // Configuración inicial de cámara orbital
             DistanciaCamara = 5;
             AnguloOrbitaH = 45;
             AnguloOrbitaV = 30;
@@ -45,13 +41,11 @@ namespace Proyecto_3D
 
             ActualizarPosicionCamara();
 
-            // Configuración de proyección
             CampoVision = 60;
             AspectRatio = (double)ancho / alto;
             PlanosCercano = 0.1;
             PlanosLejano = 100;
 
-            // Luz
             DireccionLuz = new Punto3D(1, -1, -1).VectorNormalizado();
         }
 
@@ -76,7 +70,6 @@ namespace Proyecto_3D
             AnguloOrbitaH += deltaH;
             AnguloOrbitaV += deltaV;
 
-            // Limitar ángulo vertical
             if (AnguloOrbitaV > 89) AnguloOrbitaV = 89;
             if (AnguloOrbitaV < -89) AnguloOrbitaV = -89;
 
@@ -94,7 +87,6 @@ namespace Proyecto_3D
 
         public void PanearCamara(double deltaX, double deltaY)
         {
-            // Calcular vectores derecha y arriba de la cámara
             Punto3D adelante = (ObjetivoCamara - PosicionCamara).VectorNormalizado();
             Punto3D derecha = Punto3D.ProductoCruz(adelante, UpCamara).VectorNormalizado();
             Punto3D arriba = Punto3D.ProductoCruz(derecha, adelante).VectorNormalizado();
@@ -179,19 +171,17 @@ namespace Proyecto_3D
             {
                 Punto3D p = figura.VerticesOriginales[i].Clone();
 
-                // Aplicar escala
                 p = Escalar(p, centro, figura.Escala.X, figura.Escala.Y, figura.Escala.Z);
-
-                // Aplicar rotaciones
                 p = RotarX(p, centro, figura.Rotacion.X);
                 p = RotarY(p, centro, figura.Rotacion.Y);
                 p = RotarZ(p, centro, figura.Rotacion.Z);
-
-                // Aplicar traslación
                 p = Trasladar(p, figura.Posicion.X, figura.Posicion.Y, figura.Posicion.Z);
 
                 figura.Vertices[i] = p;
             }
+
+            // Calcular normales después de transformar
+            figura.CalcularNormalesCaras();
         }
 
         #endregion
@@ -200,22 +190,19 @@ namespace Proyecto_3D
 
         public PointF ProyectarPunto(Punto3D punto)
         {
-            // Matriz de vista (view matrix)
             Punto3D z = (PosicionCamara - ObjetivoCamara).VectorNormalizado();
             Punto3D x = Punto3D.ProductoCruz(UpCamara, z).VectorNormalizado();
             Punto3D y = Punto3D.ProductoCruz(z, x);
 
-            // Transformar punto al espacio de la cámara
             Punto3D puntoRelativo = punto - PosicionCamara;
-            
+
             double xe = Punto3D.ProductoPunto(puntoRelativo, x);
             double ye = Punto3D.ProductoPunto(puntoRelativo, y);
             double ze = Punto3D.ProductoPunto(puntoRelativo, z);
 
-            // Proyección perspectiva
             if (ze >= -PlanosCercano)
             {
-                ze = -PlanosCercano - 0.01; // Evitar división por cero
+                ze = -PlanosCercano - 0.01;
             }
 
             double fov = CampoVision * Math.PI / 180.0;
@@ -224,11 +211,150 @@ namespace Proyecto_3D
             double xp = (-xe * d) / (-ze);
             double yp = (-ye * d) / (-ze);
 
-            // Convertir a coordenadas de pantalla
             float screenX = (float)((xp + 1) * AnchoVista / 2);
             float screenY = (float)((1 - yp / AspectRatio) * AltoVista / 2);
 
             return new PointF(screenX, screenY);
+        }
+
+        private Color CalcularColorConIluminacion(Figura3D figura, Punto3D normal)
+        {
+            // Componente ambiente
+            double ambiente = figura.LuzAmbiente;
+
+            // Componente difusa (Lambert)
+            double difusa = Math.Max(0, -Punto3D.ProductoPunto(normal, DireccionLuz));
+            difusa *= figura.IntensidadLuz;
+
+            // Combinar ambiente + difusa
+            double factorLuz = Math.Min(1.0, ambiente + difusa);
+
+            // Obtener color base según textura
+            Color colorBase = figura.ObtenerColorTextura();
+
+            // Aplicar propiedades especiales por textura
+            switch (figura.TipoTextura)
+            {
+                case TipoTextura.Cristal:
+                    // Cristal: más transparente y con brillo
+                    factorLuz = Math.Min(1.0, factorLuz * 1.3);
+                    break;
+
+                case TipoTextura.Diamante:
+                    // Diamante: muy brillante
+                    factorLuz = Math.Min(1.0, factorLuz * 1.5 + 0.2);
+                    break;
+
+                case TipoTextura.Oro:
+                    // Oro: reflejo metálico
+                    factorLuz = Math.Min(1.0, factorLuz * 1.2 + 0.1);
+                    break;
+
+                case TipoTextura.Piedra:
+                    // Piedra: más opaco
+                    factorLuz = Math.Max(0.3, factorLuz * 0.9);
+                    break;
+
+                case TipoTextura.Esponja:
+                    // Esponja: difuso y suave
+                    factorLuz = Math.Max(0.4, factorLuz);
+                    break;
+            }
+
+            // Aplicar iluminación al color
+            int r = (int)(colorBase.R * factorLuz);
+            int g = (int)(colorBase.G * factorLuz);
+            int b = (int)(colorBase.B * factorLuz);
+
+            r = Math.Max(0, Math.Min(255, r));
+            g = Math.Max(0, Math.Min(255, g));
+            b = Math.Max(0, Math.Min(255, b));
+
+            return Color.FromArgb(colorBase.A, r, g, b);
+        }
+
+        private Brush CrearBrushTextura(Figura3D figura, Punto3D normal, PointF[] puntos)
+        {
+            Color colorIluminado = CalcularColorConIluminacion(figura, normal);
+
+            switch (figura.TipoTextura)
+            {
+                case TipoTextura.Cristal:
+                    // Degradado con efecto vidrio
+                    if (puntos.Length >= 2)
+                    {
+                        Color c1 = Color.FromArgb(colorIluminado.A,
+                            Math.Min(255, colorIluminado.R + 40),
+                            Math.Min(255, colorIluminado.G + 40),
+                            Math.Min(255, colorIluminado.B + 40));
+
+                        try
+                        {
+                            return new LinearGradientBrush(
+                                puntos[0],
+                                puntos[puntos.Length / 2],
+                                c1, colorIluminado);
+                        }
+                        catch
+                        {
+                            return new SolidBrush(colorIluminado);
+                        }
+                    }
+                    return new SolidBrush(colorIluminado);
+
+                case TipoTextura.Diamante:
+                    // Efecto brillante con degradado
+                    if (puntos.Length >= 2)
+                    {
+                        Color c1 = Color.FromArgb(colorIluminado.A, 255, 255, 255);
+                        try
+                        {
+                            return new LinearGradientBrush(
+                                puntos[0],
+                                puntos[puntos.Length - 1],
+                                c1, colorIluminado);
+                        }
+                        catch
+                        {
+                            return new SolidBrush(colorIluminado);
+                        }
+                    }
+                    return new SolidBrush(colorIluminado);
+
+                case TipoTextura.Oro:
+                    // Degradado dorado
+                    if (puntos.Length >= 2)
+                    {
+                        Color c1 = Color.FromArgb(colorIluminado.A,
+                            Math.Min(255, colorIluminado.R + 30),
+                            Math.Min(255, colorIluminado.G + 20),
+                            colorIluminado.B);
+
+                        try
+                        {
+                            return new LinearGradientBrush(
+                                puntos[0],
+                                puntos[puntos.Length / 2],
+                                colorIluminado, c1);
+                        }
+                        catch
+                        {
+                            return new SolidBrush(colorIluminado);
+                        }
+                    }
+                    return new SolidBrush(colorIluminado);
+
+                case TipoTextura.Piedra:
+                    // Color sólido mate
+                    return new SolidBrush(colorIluminado);
+
+                case TipoTextura.Esponja:
+                    // Color sólido más suave
+                    return new SolidBrush(colorIluminado);
+
+                default:
+                    return new SolidBrush(colorIluminado);
+            }
         }
 
         public void DibujarFigura(Graphics g, Figura3D figura)
@@ -242,53 +368,70 @@ namespace Proyecto_3D
                 puntosProyectados.Add(ProyectarPunto(vertice));
             }
 
-            // Dibujar caras con relleno si está habilitado
+            // Dibujar caras con iluminación
             if (figura.MostrarRelleno && figura.Caras.Count > 0)
             {
-                using (Brush brush = new SolidBrush(figura.ColorRelleno))
+                for (int i = 0; i < figura.Caras.Count; i++)
                 {
-                    foreach (var cara in figura.Caras)
+                    var cara = figura.Caras[i];
+                    if (cara.Count < 3) continue;
+
+                    PointF[] puntos = new PointF[cara.Count];
+                    bool todosValidos = true;
+
+                    for (int j = 0; j < cara.Count; j++)
                     {
-                        if (cara.Count >= 3)
+                        if (cara[j] >= puntosProyectados.Count)
                         {
-                            PointF[] puntos = new PointF[cara.Count];
-                            for (int i = 0; i < cara.Count; i++)
-                            {
-                                if (cara[i] < puntosProyectados.Count)
-                                    puntos[i] = puntosProyectados[cara[i]];
-                            }
-                            
-                            try
-                            {
-                                g.FillPolygon(brush, puntos);
-                            }
-                            catch { }
+                            todosValidos = false;
+                            break;
                         }
+                        puntos[j] = puntosProyectados[cara[j]];
                     }
-                }
-            }
 
-            // Dibujar aristas
-            Pen pen = figura.Seleccionada 
-                ? new Pen(Color.Yellow, 2) 
-                : new Pen(figura.ColorLinea, 1);
+                    if (!todosValidos) continue;
 
-            foreach (var arista in figura.Aristas)
-            {
-                if (arista.Inicio < puntosProyectados.Count && 
-                    arista.Fin < puntosProyectados.Count)
-                {
+                    // Obtener normal de la cara
+                    Punto3D normal = i < figura.NormalesCaras.Count
+                        ? figura.NormalesCaras[i]
+                        : new Punto3D(0, 1, 0);
+
+                    // Backface culling
+                    Punto3D dirCamara = (PosicionCamara - figura.ObtenerCentro()).VectorNormalizado();
+                    if (Punto3D.ProductoPunto(normal, dirCamara) < 0)
+                        continue;
+
                     try
                     {
-                        g.DrawLine(pen, 
-                            puntosProyectados[arista.Inicio], 
-                            puntosProyectados[arista.Fin]);
+                        using (Brush brush = CrearBrushTextura(figura, normal, puntos))
+                        {
+                            g.FillPolygon(brush, puntos);
+                        }
                     }
                     catch { }
                 }
             }
 
-            pen.Dispose();
+            // Dibujar aristas con color correcto
+            using (Pen pen = figura.Seleccionada
+                ? new Pen(Color.Yellow, 2)
+                : new Pen(figura.ColorLinea, 1))
+            {
+                foreach (var arista in figura.Aristas)
+                {
+                    if (arista.Inicio < puntosProyectados.Count &&
+                        arista.Fin < puntosProyectados.Count)
+                    {
+                        try
+                        {
+                            g.DrawLine(pen,
+                                puntosProyectados[arista.Inicio],
+                                puntosProyectados[arista.Fin]);
+                        }
+                        catch { }
+                    }
+                }
+            }
         }
 
         public void DibujarEjes(Graphics g, double longitud = 2)
@@ -303,34 +446,33 @@ namespace Proyecto_3D
             PointF pY = ProyectarPunto(ejeY);
             PointF pZ = ProyectarPunto(ejeZ);
 
-            // Eje X - Rojo
-            g.DrawLine(new Pen(Color.Red, 2), pOrigen, pX);
-            // Eje Y - Verde
-            g.DrawLine(new Pen(Color.Lime, 2), pOrigen, pY);
-            // Eje Z - Azul
-            g.DrawLine(new Pen(Color.Blue, 2), pOrigen, pZ);
+            using (Pen penX = new Pen(Color.Red, 2))
+            using (Pen penY = new Pen(Color.Lime, 2))
+            using (Pen penZ = new Pen(Color.Blue, 2))
+            {
+                g.DrawLine(penX, pOrigen, pX);
+                g.DrawLine(penY, pOrigen, pY);
+                g.DrawLine(penZ, pOrigen, pZ);
+            }
         }
 
         public void DibujarGrid(Graphics g, int tamaño = 10, double espaciado = 1)
         {
-            Pen penGrid = new Pen(Color.FromArgb(50, 255, 255, 255), 1);
-
-            for (int i = -tamaño; i <= tamaño; i++)
+            using (Pen penGrid = new Pen(Color.FromArgb(50, 255, 255, 255), 1))
             {
-                double pos = i * espaciado;
-                
-                // Líneas en X
-                PointF p1 = ProyectarPunto(new Punto3D(-tamaño * espaciado, 0, pos));
-                PointF p2 = ProyectarPunto(new Punto3D(tamaño * espaciado, 0, pos));
-                try { g.DrawLine(penGrid, p1, p2); } catch { }
+                for (int i = -tamaño; i <= tamaño; i++)
+                {
+                    double pos = i * espaciado;
 
-                // Líneas en Z
-                p1 = ProyectarPunto(new Punto3D(pos, 0, -tamaño * espaciado));
-                p2 = ProyectarPunto(new Punto3D(pos, 0, tamaño * espaciado));
-                try { g.DrawLine(penGrid, p1, p2); } catch { }
+                    PointF p1 = ProyectarPunto(new Punto3D(-tamaño * espaciado, 0, pos));
+                    PointF p2 = ProyectarPunto(new Punto3D(tamaño * espaciado, 0, pos));
+                    try { g.DrawLine(penGrid, p1, p2); } catch { }
+
+                    p1 = ProyectarPunto(new Punto3D(pos, 0, -tamaño * espaciado));
+                    p2 = ProyectarPunto(new Punto3D(pos, 0, tamaño * espaciado));
+                    try { g.DrawLine(penGrid, p1, p2); } catch { }
+                }
             }
-
-            penGrid.Dispose();
         }
 
         #endregion
