@@ -165,7 +165,8 @@ namespace Proyecto_3D
             if (figura.VerticesOriginales.Count == 0)
                 return;
 
-            Punto3D centro = new Punto3D(0, 0, 0);
+            // Usar el centro de la figura para transformaciones locales
+            Punto3D centro = figura.ObtenerCentro();
 
             for (int i = 0; i < figura.Vertices.Count; i++)
             {
@@ -190,29 +191,32 @@ namespace Proyecto_3D
 
         public PointF ProyectarPunto(Punto3D punto)
         {
-            Punto3D z = (PosicionCamara - ObjetivoCamara).VectorNormalizado();
-            Punto3D x = Punto3D.ProductoCruz(UpCamara, z).VectorNormalizado();
-            Punto3D y = Punto3D.ProductoCruz(z, x);
+            // Vector forward (dirección mirada), right y up correctos
+            Punto3D forward = (ObjetivoCamara - PosicionCamara).VectorNormalizado();
+            Punto3D right = Punto3D.ProductoCruz(forward, UpCamara).VectorNormalizado();
+            Punto3D up = Punto3D.ProductoCruz(right, forward).VectorNormalizado();
 
             Punto3D puntoRelativo = punto - PosicionCamara;
 
-            double xe = Punto3D.ProductoPunto(puntoRelativo, x);
-            double ye = Punto3D.ProductoPunto(puntoRelativo, y);
-            double ze = Punto3D.ProductoPunto(puntoRelativo, z);
+            double xe = Punto3D.ProductoPunto(puntoRelativo, right);
+            double ye = Punto3D.ProductoPunto(puntoRelativo, up);
+            double ze = Punto3D.ProductoPunto(puntoRelativo, forward);
 
-            if (ze >= -PlanosCercano)
+            // Evitar planos demasiado cercanos o puntos detrás de la cámara
+            if (ze <= PlanosCercano)
             {
-                ze = -PlanosCercano - 0.01;
+                ze = PlanosCercano + 0.01;
             }
 
             double fov = CampoVision * Math.PI / 180.0;
             double d = 1.0 / Math.Tan(fov / 2.0);
 
-            double xp = (-xe * d) / (-ze);
-            double yp = (-ye * d) / (-ze);
+            // Aplicar aspect ratio en X (correcto) y mapear a NDC
+            double xp = (xe * d) / (ze * AspectRatio);
+            double yp = (ye * d) / ze;
 
             float screenX = (float)((xp + 1) * AnchoVista / 2);
-            float screenY = (float)((1 - yp / AspectRatio) * AltoVista / 2);
+            float screenY = (float)((1 - yp) * AltoVista / 2);
 
             return new PointF(screenX, screenY);
         }
@@ -369,10 +373,42 @@ namespace Proyecto_3D
             }
 
             // Dibujar caras con iluminación
+            // Reemplaza la sección de dibujo de caras dentro de DibujarFigura por esta versión
+            // (mantén el resto del método DibujarFigura igual)
+
+            // Dibujar caras con iluminación y ordenado por profundidad (painter)
             if (figura.MostrarRelleno && figura.Caras.Count > 0)
             {
+                // Calcular profundidad media de cada cara
+                var listaCaras = new List<Tuple<int, double>>(); // (index, depth)
+                Punto3D dirCamara = (PosicionCamara - figura.ObtenerCentro()).VectorNormalizado();
+
                 for (int i = 0; i < figura.Caras.Count; i++)
                 {
+                    var cara = figura.Caras[i];
+                    double suma = 0;
+                    int cnt = 0;
+                    foreach (int idx in cara)
+                    {
+                        if (idx < figura.Vertices.Count)
+                        {
+                            Punto3D v = figura.Vertices[idx];
+                            Punto3D rel = v - PosicionCamara;
+                            suma += Punto3D.ProductoPunto(rel, dirCamara);
+                            cnt++;
+                        }
+                    }
+                    double media = (cnt > 0) ? (suma / cnt) : 0;
+                    listaCaras.Add(Tuple.Create(i, media));
+                }
+
+                // Ordenar de más lejano a más cercano
+                listaCaras.Sort((a, b) => b.Item2.CompareTo(a.Item2));
+
+                // Dibujar en ese orden
+                foreach (var t in listaCaras)
+                {
+                    int i = t.Item1;
                     var cara = figura.Caras[i];
                     if (cara.Count < 3) continue;
 
@@ -391,13 +427,11 @@ namespace Proyecto_3D
 
                     if (!todosValidos) continue;
 
-                    // Obtener normal de la cara
                     Punto3D normal = i < figura.NormalesCaras.Count
                         ? figura.NormalesCaras[i]
                         : new Punto3D(0, 1, 0);
 
-                    // Backface culling
-                    Punto3D dirCamara = (PosicionCamara - figura.ObtenerCentro()).VectorNormalizado();
+                    // Backface culling (mantener lógica previa)
                     if (Punto3D.ProductoPunto(normal, dirCamara) < 0)
                         continue;
 
@@ -413,9 +447,7 @@ namespace Proyecto_3D
             }
 
             // Dibujar aristas con color correcto
-            using (Pen pen = figura.Seleccionada
-                ? new Pen(Color.Yellow, 2)
-                : new Pen(figura.ColorLinea, 1))
+            using (Pen penBase = new Pen(figura.ColorLinea, 2))
             {
                 foreach (var arista in figura.Aristas)
                 {
@@ -424,11 +456,34 @@ namespace Proyecto_3D
                     {
                         try
                         {
-                            g.DrawLine(pen,
+                            g.DrawLine(penBase,
                                 puntosProyectados[arista.Inicio],
                                 puntosProyectados[arista.Fin]);
                         }
                         catch { }
+                    }
+                }
+            }
+
+            // Si está seleccionada, dibujar overlay para destacar (no sustituir el color)
+            if (figura.Seleccionada)
+            {
+                using (Pen penSel = new Pen(Color.Yellow, 1))
+                {
+                    penSel.Alignment = System.Drawing.Drawing2D.PenAlignment.Center;
+                    foreach (var arista in figura.Aristas)
+                    {
+                        if (arista.Inicio < puntosProyectados.Count &&
+                            arista.Fin < puntosProyectados.Count)
+                        {
+                            try
+                            {
+                                g.DrawLine(penSel,
+                                    puntosProyectados[arista.Inicio],
+                                    puntosProyectados[arista.Fin]);
+                            }
+                            catch { }
+                        }
                     }
                 }
             }
@@ -438,8 +493,8 @@ namespace Proyecto_3D
         {
             Punto3D origen = new Punto3D(0, 0, 0);
             Punto3D ejeX = new Punto3D(longitud, 0, 0);
-            Punto3D ejeY = new Punto3D(0, longitud, 0);
-            Punto3D ejeZ = new Punto3D(0, 0, longitud);
+            Punto3D ejeY = new Punto3D(0, 0, longitud);
+            Punto3D ejeZ = new Punto3D(0, longitud, 0);
 
             PointF pOrigen = ProyectarPunto(origen);
             PointF pX = ProyectarPunto(ejeX);
@@ -449,10 +504,18 @@ namespace Proyecto_3D
             using (Pen penX = new Pen(Color.Red, 2))
             using (Pen penY = new Pen(Color.Lime, 2))
             using (Pen penZ = new Pen(Color.Blue, 2))
+            using (Brush labelBrush = new SolidBrush(Color.White))
+            using (Font f = new Font("Segoe UI", 9))
             {
-                g.DrawLine(penX, pOrigen, pX);
-                g.DrawLine(penY, pOrigen, pY);
-                g.DrawLine(penZ, pOrigen, pZ);
+                try { g.DrawLine(penX, pOrigen, pX); } catch { }
+                try { g.DrawLine(penY, pOrigen, pY); } catch { }
+                try { g.DrawLine(penZ, pOrigen, pZ); } catch { }
+
+                // Dibujar etiquetas para evitar confusiones
+                float off = 4f;
+                try { g.DrawString("X", f, labelBrush, pX.X + off, pX.Y + off); } catch { }
+                try { g.DrawString("Y", f, labelBrush, pY.X + off, pY.Y + off); } catch { }
+                try { g.DrawString("Z", f, labelBrush, pZ.X + off, pZ.Y + off); } catch { }
             }
         }
 

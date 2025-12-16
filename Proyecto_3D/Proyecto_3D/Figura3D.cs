@@ -117,20 +117,49 @@ namespace Proyecto_3D
 
         public Color ObtenerColorTextura()
         {
+            // Usar ColorRelleno como base y aplicar tint según tipo de textura
+            Color baseColor = ColorRelleno;
+            int alpha;
+
             switch (TipoTextura)
             {
                 case TipoTextura.Cristal:
-                    return Color.FromArgb(180, 200, 230, 255); // Azul translúcido
+                    alpha = Math.Min(220, Math.Max(40, (int)baseColor.A / 2));
+                    return Color.FromArgb(alpha, baseColor.R, baseColor.G, baseColor.B);
+
                 case TipoTextura.Piedra:
-                    return Color.FromArgb(200, 100, 100, 100); // Gris
+                    alpha = Math.Min(255, Math.Max(150, (int)baseColor.A));
+                    // Tonificar hacia gris
+                    int rP = ((int)baseColor.R + 100) / 2;
+                    int gP = ((int)baseColor.G + 100) / 2;
+                    int bP = ((int)baseColor.B + 100) / 2;
+                    return Color.FromArgb(alpha, rP, gP, bP);
+
                 case TipoTextura.Esponja:
-                    return Color.FromArgb(200, 220, 200, 80); // Amarillo verdoso
+                    alpha = Math.Min(230, (int)baseColor.A);
+                    // Aclarar un poco
+                    int rS = Math.Min(255, (int)baseColor.R + 20);
+                    int gS = Math.Min(255, (int)baseColor.G + 20);
+                    int bS = Math.Min(255, (int)baseColor.B + 10);
+                    return Color.FromArgb(alpha, rS, gS, bS);
+
                 case TipoTextura.Oro:
-                    return Color.FromArgb(220, 255, 215, 0); // Dorado
+                    alpha = Math.Min(255, (int)baseColor.A);
+                    // Dorado aproximado mezclando
+                    int rO = Math.Min(255, ((int)baseColor.R + 255) / 2);
+                    int gO = Math.Min(255, ((int)baseColor.G + 215) / 2);
+                    int bO = Math.Min(255, (int)baseColor.B / 2);
+                    return Color.FromArgb(alpha, rO, gO, bO);
+
                 case TipoTextura.Diamante:
-                    return Color.FromArgb(200, 180, 250, 255); // Celeste brillante
+                    alpha = Math.Min(220, Math.Max(120, (int)baseColor.A));
+                    int rD = Math.Min(255, (int)baseColor.R + 30);
+                    int gD = Math.Min(255, (int)baseColor.G + 30);
+                    int bD = Math.Min(255, (int)baseColor.B + 50);
+                    return Color.FromArgb(alpha, rD, gD, bD);
+
                 default:
-                    return ColorRelleno;
+                    return baseColor;
             }
         }
 
