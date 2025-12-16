@@ -1,0 +1,605 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
+
+namespace Proyecto_3D
+{
+    public partial class Form1 : Form
+    {
+        private Motor3D motor;
+        private List<Figura3D> figuras;
+        private Figura3D figuraSeleccionada;
+
+        private Bitmap bufferImagen;
+        private Timer timerRender;
+
+        private bool mousePresionado = false;
+        private bool mousePanear = false;
+        private bool rightMouseRotate = false;
+        private Point ultimaPosicionMouse;
+        private bool necesitaRenderizar = true;
+
+        private HashSet<Keys> teclasPresionadas = new HashSet<Keys>();
+
+        public Form1()
+        {
+            InitializeComponent();
+            InicializarEscena();
+            ConfigurarEventos();
+        }
+
+        private void InicializarEscena()
+        {
+            figuras = new List<Figura3D>();
+            motor = new Motor3D(panelViewport.Width, panelViewport.Height);
+            bufferImagen = new Bitmap(panelViewport.Width, panelViewport.Height);
+
+            // Habilitar double buffering en el panel para eliminar titileo
+            typeof(Panel).InvokeMember("DoubleBuffered",
+                System.Reflection.BindingFlags.SetProperty |
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic,
+                null, panelViewport, new object[] { true });
+
+            trackBarIntensidadLuz.Minimum = 0;
+            trackBarIntensidadLuz.Maximum = 100;
+            trackBarIntensidadLuz.Value = 80;
+            trackBarIntensidadLuz.TickFrequency = 10;
+
+            // Timer para renderizado - solo renderiza cuando hay cambios
+            timerRender = new Timer();
+            timerRender.Interval = 16; // ~60 FPS
+            timerRender.Tick += TimerRender_Tick;
+            timerRender.Start();
+
+            // Agregar un cubo inicial
+            AgregarCubo();
+
+            // Inicializar combobox modo camara
+            cmbModoCamara.SelectedIndex = 0; // Orbital por defecto
+        }
+
+        private void TimerRender_Tick(object sender, EventArgs e)
+        {
+            // Manejar movimiento de cámara libre por teclado
+            if (motor != null && motor.CamaraModo == Motor3D.ModoCamara.Libre && teclasPresionadas.Count > 0)
+            {
+                double speed = motor.FreeCamSpeed;
+                double forward = 0, right = 0, up = 0;
+                if (teclasPresionadas.Contains(Keys.W)) forward += speed;
+                if (teclasPresionadas.Contains(Keys.S)) forward -= speed;
+                if (teclasPresionadas.Contains(Keys.A)) right -= speed;
+                if (teclasPresionadas.Contains(Keys.D)) right += speed;
+                if (teclasPresionadas.Contains(Keys.Q)) up -= speed;
+                if (teclasPresionadas.Contains(Keys.E)) up += speed;
+                if (forward != 0 || right != 0 || up != 0)
+                {
+                    motor.MoverCamaraLibre(forward, right, up);
+                    SolicitarRenderizado();
+                }
+            }
+
+            if (necesitaRenderizar)
+            {
+                RenderizarEscena();
+                necesitaRenderizar = false;
+            }
+        }
+
+        private void SolicitarRenderizado()
+        {
+            necesitaRenderizar = true;
+        }
+
+        private void ConfigurarEventos()
+        {
+            // Eventos del viewport
+            panelViewport.Paint += PanelViewport_Paint;
+            panelViewport.MouseDown += PanelViewport_MouseDown;
+            panelViewport.MouseMove += PanelViewport_MouseMove;
+            panelViewport.MouseUp += PanelViewport_MouseUp;
+            panelViewport.MouseWheel += PanelViewport_MouseWheel;
+            panelViewport.Resize += (s, e) => {
+                if (panelViewport.Width > 0 && panelViewport.Height > 0)
+                {
+                    bufferImagen?.Dispose();
+                    bufferImagen = new Bitmap(panelViewport.Width, panelViewport.Height);
+                    motor.AnchoVista = panelViewport.Width;
+                    motor.AltoVista = panelViewport.Height;
+                    motor.AspectRatio = (double)panelViewport.Width / panelViewport.Height;
+                    SolicitarRenderizado();
+                }
+            };
+
+            // Capturar teclado para cámara libre
+            this.KeyDown += Form1_KeyDown;
+            this.KeyUp += Form1_KeyUp;
+
+            // Eventos de botones de figuras
+            btnCubo.Click += (s, e) => AgregarCubo();
+            btnEsfera.Click += (s, e) => AgregarEsfera();
+            btnCilindro.Click += (s, e) => AgregarCilindro();
+            btnCono.Click += (s, e) => AgregarCono();
+            btnPiramide.Click += (s, e) => AgregarPiramide();
+            btnToroide.Click += (s, e) => AgregarToroide();
+
+            // Eventos de transformaciones
+            numPosX.ValueChanged += (s, e) => { ActualizarTransformacion(); SolicitarRenderizado(); };
+            numPosY.ValueChanged += (s, e) => { ActualizarTransformacion(); SolicitarRenderizado(); };
+            numPosZ.ValueChanged += (s, e) => { ActualizarTransformacion(); SolicitarRenderizado(); };
+
+            numRotX.ValueChanged += (s, e) => { ActualizarTransformacion(); SolicitarRenderizado(); };
+            numRotY.ValueChanged += (s, e) => { ActualizarTransformacion(); SolicitarRenderizado(); };
+            numRotZ.ValueChanged += (s, e) => { ActualizarTransformacion(); SolicitarRenderizado(); };
+
+            numEscX.ValueChanged += (s, e) => { ActualizarTransformacion(); SolicitarRenderizado(); };
+            numEscY.ValueChanged += (s, e) => { ActualizarTransformacion(); SolicitarRenderizado(); };
+            numEscZ.ValueChanged += (s, e) => { ActualizarTransformacion(); SolicitarRenderizado(); };
+
+            // Eventos de lista de objetos
+            listObjetos.SelectedIndexChanged += ListObjetos_SelectedIndexChanged;
+            listObjetos.KeyDown += (s, e) => {
+                if (e.KeyCode == Keys.Delete && listObjetos.SelectedItem != null)
+                {
+                    EliminarFiguraSeleccionada();
+                }
+            };
+
+            // Eventos de propiedades visuales
+            btnColorLinea.Click += (s, e) => CambiarColorLinea();
+            btnColorRelleno.Click += (s, e) => CambiarColorRelleno();
+            chkMostrarRelleno.CheckedChanged += (s, e) => {
+                if (figuraSeleccionada != null)
+                {
+                    figuraSeleccionada.MostrarRelleno = chkMostrarRelleno.Checked;
+                    SolicitarRenderizado();
+                }
+            };
+            chkVisible.CheckedChanged += (s, e) => {
+                if (figuraSeleccionada != null)
+                {
+                    figuraSeleccionada.Visible = chkVisible.Checked;
+                    ActualizarListaObjetos();
+                    SolicitarRenderizado();
+                }
+            };
+
+            // Eventos de iluminación
+            trackBarIntensidadLuz.Minimum = 0;
+            trackBarIntensidadLuz.Maximum = 100;
+            trackBarIntensidadLuz.Value = 80;
+            trackBarIntensidadLuz.TickFrequency = 10;
+
+            trackBarIntensidadLuz.ValueChanged += (s, e) => {
+                if (figuraSeleccionada != null)
+                {
+                    figuraSeleccionada.IntensidadLuz = trackBarIntensidadLuz.Value / 100.0;
+                    lblIntensidadLuz.Text = $"Intensidad: {trackBarIntensidadLuz.Value}%";
+                    SolicitarRenderizado();
+                }
+            };
+
+            // Eventos de textura
+            cmbTextura.Items.Clear();
+            cmbTextura.Items.AddRange(new object[] { "Cristal", "Piedra", "Esponja", "Oro", "Diamante" });
+            cmbTextura.SelectedIndex = 0;
+
+            cmbTextura.SelectedIndexChanged += (s, e) => {
+                if (figuraSeleccionada != null)
+                {
+                    figuraSeleccionada.TipoTextura = (TipoTextura)cmbTextura.SelectedIndex;
+                    SolicitarRenderizado();
+                }
+            };
+
+            // Botones de utilidad
+            btnDuplicar.Click += (s, e) => DuplicarFiguraSeleccionada();
+            btnEliminar.Click += (s, e) => EliminarFiguraSeleccionada();
+            btnResetCamara.Click += (s, e) => ResetearCamara();
+
+            chkMostrarEjes.CheckedChanged += (s, e) => SolicitarRenderizado();
+            chkMostrarGrid.CheckedChanged += (s, e) => SolicitarRenderizado();
+
+            // Combo modo camara
+            cmbModoCamara.SelectedIndexChanged += (s, e) => {
+                switch (cmbModoCamara.SelectedIndex)
+                {
+                    case 0: motor.CamaraModo = Motor3D.ModoCamara.Orbital; break;
+                    case 1: motor.CamaraModo = Motor3D.ModoCamara.Libre; break;
+                    case 2: motor.CamaraModo = Motor3D.ModoCamara.Fija; break;
+                }
+                // Si cambiamos a libre, actualizar free cam pos/yaw/pitch desde la orbital actual
+                if (motor.CamaraModo == Motor3D.ModoCamara.Libre)
+                {
+                    motor.FreeCamPos = motor.PosicionCamara.Clone();
+                    motor.FreeCamYaw = motor.AnguloOrbitaH;
+                    motor.FreeCamPitch = motor.AnguloOrbitaV;
+                }
+                SolicitarRenderizado();
+            };
+        }
+
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            teclasPresionadas.Add(e.KeyCode);
+        }
+
+        private void Form1_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (teclasPresionadas.Contains(e.KeyCode)) teclasPresionadas.Remove(e.KeyCode);
+        }
+
+        #region Agregar Figuras
+
+        private void AgregarCubo()
+        {
+            var cubo = Figura3D.CrearCubo(1.0);
+            cubo.Nombre = $"Cubo_{figuras.Count + 1}";
+            AgregarFigura(cubo);
+        }
+
+        private void AgregarEsfera()
+        {
+            var esfera = Figura3D.CrearEsfera(1.0, 16, 12);
+            esfera.Nombre = $"Esfera_{figuras.Count + 1}";
+            AgregarFigura(esfera);
+        }
+
+        private void AgregarCilindro()
+        {
+            var cilindro = Figura3D.CrearCilindro(0.5, 2.0, 16);
+            cilindro.Nombre = $"Cilindro_{figuras.Count + 1}";
+            AgregarFigura(cilindro);
+        }
+
+        private void AgregarCono()
+        {
+            var cono = Figura3D.CrearCono(1.0, 2.0, 16);
+            cono.Nombre = $"Cono_{figuras.Count + 1}";
+            AgregarFigura(cono);
+        }
+
+        private void AgregarPiramide()
+        {
+            var piramide = Figura3D.CrearPiramide(1.0);
+            piramide.Nombre = $"Pirámide_{figuras.Count + 1}";
+            AgregarFigura(piramide);
+        }
+
+        private void AgregarToroide()
+        {
+            var toroide = Figura3D.CrearToroide(1.5, 0.5, 24, 16);
+            toroide.Nombre = $"Toroide_{figuras.Count + 1}";
+            AgregarFigura(toroide);
+        }
+
+        private void AgregarFigura(Figura3D figura)
+        {
+            figuras.Add(figura);
+            ActualizarListaObjetos();
+            SeleccionarFigura(figura);
+            SolicitarRenderizado();
+        }
+
+        #endregion
+
+        #region Interacción con Mouse
+
+        private void PanelViewport_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Middle ||
+                (e.Button == MouseButtons.Left && ModifierKeys == Keys.Shift))
+            {
+                mousePanear = true;
+            }
+            else if (e.Button == MouseButtons.Left)
+            {
+                mousePresionado = true;
+            }
+
+            if (e.Button == MouseButtons.Right)
+            {
+                rightMouseRotate = true;
+            }
+
+            ultimaPosicionMouse = e.Location;
+        }
+
+        private void PanelViewport_MouseMove(object sender, MouseEventArgs e)
+        {
+            bool huboMovimiento = false;
+
+            if (rightMouseRotate && motor.CamaraModo == Motor3D.ModoCamara.Libre)
+            {
+                double deltaX = e.X - ultimaPosicionMouse.X;
+                double deltaY = e.Y - ultimaPosicionMouse.Y;
+                motor.RotarCamara(deltaX * 0.2, -deltaY * 0.2);
+                huboMovimiento = true;
+            }
+            else if (mousePresionado && !mousePanear)
+            {
+                double deltaX = e.X - ultimaPosicionMouse.X;
+                double deltaY = e.Y - ultimaPosicionMouse.Y;
+                motor.RotarCamara(deltaX * 0.5, -deltaY * 0.5);
+                huboMovimiento = true;
+            }
+            else if (mousePanear)
+            {
+                double deltaX = e.X - ultimaPosicionMouse.X;
+                double deltaY = e.Y - ultimaPosicionMouse.Y;
+                motor.PanearCamara(-deltaX, deltaY);
+                huboMovimiento = true;
+            }
+
+            ultimaPosicionMouse = e.Location;
+
+            if (huboMovimiento)
+            {
+                SolicitarRenderizado();
+            }
+        }
+
+        private void PanelViewport_MouseUp(object sender, MouseEventArgs e)
+        {
+            mousePresionado = false;
+            mousePanear = false;
+            rightMouseRotate = false;
+        }
+
+        private void PanelViewport_MouseWheel(object sender, MouseEventArgs e)
+        {
+            motor.ZoomCamara(-e.Delta * 0.005);
+            SolicitarRenderizado();
+        }
+
+        #endregion
+
+        #region Renderizado
+
+        private void RenderizarEscena()
+        {
+            if (bufferImagen == null) return;
+
+            using (Graphics g = Graphics.FromImage(bufferImagen))
+            {
+                g.Clear(Color.FromArgb(50, 50, 50));
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+
+                if (chkMostrarGrid.Checked)
+                {
+                    motor.DibujarGrid(g, 10, 1);
+                }
+
+                if (chkMostrarEjes.Checked)
+                {
+                    motor.DibujarEjes(g, 2);
+                }
+
+                foreach (var figura in figuras)
+                {
+                    motor.AplicarTransformaciones(figura);
+                    motor.DibujarFigura(g, figura);
+                }
+            }
+
+            panelViewport.Invalidate();
+        }
+
+        private void PanelViewport_Paint(object sender, PaintEventArgs e)
+        {
+            if (bufferImagen != null)
+            {
+                e.Graphics.DrawImageUnscaled(bufferImagen, 0, 0);
+            }
+        }
+
+        #endregion
+
+        #region Gestión de Objetos
+
+        private void ActualizarListaObjetos()
+        {
+            int selectedIndex = listObjetos.SelectedIndex;
+            listObjetos.Items.Clear();
+
+            foreach (var figura in figuras)
+            {
+                string icono = figura.Visible ? "👁" : "🚫";
+                listObjetos.Items.Add($"{icono} {figura.Nombre}");
+            }
+
+            if (selectedIndex >= 0 && selectedIndex < listObjetos.Items.Count)
+            {
+                listObjetos.SelectedIndex = selectedIndex;
+            }
+        }
+
+        private void ListObjetos_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listObjetos.SelectedIndex >= 0 && listObjetos.SelectedIndex < figuras.Count)
+            {
+                SeleccionarFigura(figuras[listObjetos.SelectedIndex]);
+            }
+        }
+
+        private void SeleccionarFigura(Figura3D figura)
+        {
+            foreach (var f in figuras)
+                f.Seleccionada = false;
+
+            figuraSeleccionada = figura;
+            figura.Seleccionada = true;
+
+            ActualizarPanelPropiedades();
+
+            int index = figuras.IndexOf(figura);
+            if (index >= 0)
+                listObjetos.SelectedIndex = index;
+
+            SolicitarRenderizado();
+        }
+
+        private void ActualizarPanelPropiedades()
+        {
+            if (figuraSeleccionada == null)
+            {
+                panelPropiedades.Enabled = false;
+                return;
+            }
+
+            panelPropiedades.Enabled = true;
+
+            // Deshabilitar eventos temporalmente
+            numPosX.ValueChanged -= ActualizarTransformacion;
+            numPosY.ValueChanged -= ActualizarTransformacion;
+            numPosZ.ValueChanged -= ActualizarTransformacion;
+            numRotX.ValueChanged -= ActualizarTransformacion;
+            numRotY.ValueChanged -= ActualizarTransformacion;
+            numRotZ.ValueChanged -= ActualizarTransformacion;
+            numEscX.ValueChanged -= ActualizarTransformacion;
+            numEscY.ValueChanged -= ActualizarTransformacion;
+            numEscZ.ValueChanged -= ActualizarTransformacion;
+
+            // Actualizar valores
+            numPosX.Value = (decimal)figuraSeleccionada.Posicion.X;
+            numPosY.Value = (decimal)figuraSeleccionada.Posicion.Y;
+            numPosZ.Value = (decimal)figuraSeleccionada.Posicion.Z;
+
+            numRotX.Value = (decimal)figuraSeleccionada.Rotacion.X;
+            numRotY.Value = (decimal)figuraSeleccionada.Rotacion.Y;
+            numRotZ.Value = (decimal)figuraSeleccionada.Rotacion.Z;
+
+            numEscX.Value = (decimal)figuraSeleccionada.Escala.X;
+            numEscY.Value = (decimal)figuraSeleccionada.Escala.Y;
+            numEscZ.Value = (decimal)figuraSeleccionada.Escala.Z;
+
+            chkMostrarRelleno.Checked = figuraSeleccionada.MostrarRelleno;
+            chkVisible.Checked = figuraSeleccionada.Visible;
+
+            btnColorLinea.BackColor = figuraSeleccionada.ColorLinea;
+            btnColorRelleno.BackColor = figuraSeleccionada.ColorRelleno;
+
+            // Actualizar controles de iluminación
+            if (trackBarIntensidadLuz.Minimum != 0 || trackBarIntensidadLuz.Maximum != 100)
+            {
+                trackBarIntensidadLuz.Minimum = 0;
+                trackBarIntensidadLuz.Maximum = 100;
+            }
+
+            int intensidad = (int)(figuraSeleccionada.IntensidadLuz * 100);
+            intensidad = Math.Max(0, Math.Min(100, intensidad)); // Asegurar que esté en rango
+            trackBarIntensidadLuz.Value = intensidad;
+            lblIntensidadLuz.Text = $"Intensidad: {intensidad}%";
+
+            // Actualizar textura
+            if (cmbTextura.Items.Count == 0)
+            {
+                cmbTextura.Items.AddRange(new object[] { "Cristal", "Piedra", "Esponja", "Oro", "Diamante" });
+            }
+            cmbTextura.SelectedIndex = (int)figuraSeleccionada.TipoTextura;
+
+            // Re-habilitar eventos
+            numPosX.ValueChanged += ActualizarTransformacion;
+            numPosY.ValueChanged += ActualizarTransformacion;
+            numPosZ.ValueChanged += ActualizarTransformacion;
+            numRotX.ValueChanged += ActualizarTransformacion;
+            numRotY.ValueChanged += ActualizarTransformacion;
+            numRotZ.ValueChanged += ActualizarTransformacion;
+            numEscX.ValueChanged += ActualizarTransformacion;
+            numEscY.ValueChanged += ActualizarTransformacion;
+            numEscZ.ValueChanged += ActualizarTransformacion;
+        }
+
+        private void ActualizarTransformacion(object sender = null, EventArgs e = null)
+        {
+            if (figuraSeleccionada == null) return;
+
+            figuraSeleccionada.Posicion.X = (double)numPosX.Value;
+            figuraSeleccionada.Posicion.Y = (double)numPosY.Value;
+            figuraSeleccionada.Posicion.Z = (double)numPosZ.Value;
+
+            figuraSeleccionada.Rotacion.X = (double)numRotX.Value;
+            figuraSeleccionada.Rotacion.Y = (double)numRotY.Value;
+            figuraSeleccionada.Rotacion.Z = (double)numRotZ.Value;
+
+            figuraSeleccionada.Escala.X = (double)numEscX.Value;
+            figuraSeleccionada.Escala.Y = (double)numEscY.Value;
+            figuraSeleccionada.Escala.Z = (double)numEscZ.Value;
+        }
+
+        private void CambiarColorLinea()
+        {
+            if (figuraSeleccionada == null) return;
+
+            using (ColorDialog dlg = new ColorDialog())
+            {
+                dlg.Color = figuraSeleccionada.ColorLinea;
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    figuraSeleccionada.ColorLinea = dlg.Color;
+                    btnColorLinea.BackColor = dlg.Color;
+                    SolicitarRenderizado();
+                }
+            }
+        }
+
+        private void CambiarColorRelleno()
+        {
+            if (figuraSeleccionada == null) return;
+
+            using (ColorDialog dlg = new ColorDialog())
+            {
+                dlg.Color = figuraSeleccionada.ColorRelleno;
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    figuraSeleccionada.ColorRelleno = dlg.Color;
+                    btnColorRelleno.BackColor = dlg.Color;
+                    SolicitarRenderizado();
+                }
+            }
+        }
+
+        private void DuplicarFiguraSeleccionada()
+        {
+            if (figuraSeleccionada == null) return;
+
+            var duplicado = figuraSeleccionada.Clonar();
+            duplicado.Posicion.X += 1.5;
+            AgregarFigura(duplicado);
+        }
+
+        private void EliminarFiguraSeleccionada()
+        {
+            if (figuraSeleccionada == null) return;
+
+            figuras.Remove(figuraSeleccionada);
+            figuraSeleccionada = null;
+            ActualizarListaObjetos();
+            panelPropiedades.Enabled = false;
+            SolicitarRenderizado();
+        }
+
+        private void ResetearCamara()
+        {
+            motor.AnguloOrbitaH = 45;
+            motor.AnguloOrbitaV = 30;
+            motor.DistanciaCamara = 5;
+            motor.ObjetivoCamara = new Punto3D(0, 0, 0);
+            motor.CamaraModo = Motor3D.ModoCamara.Orbital;
+            cmbModoCamara.SelectedIndex = 0;
+            motor.ActualizarPosicionCamara();
+            SolicitarRenderizado();
+        }
+
+        #endregion
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            timerRender?.Stop();
+            bufferImagen?.Dispose();
+            base.OnFormClosing(e);
+        }
+    }
+}

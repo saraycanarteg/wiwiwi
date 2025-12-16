@@ -78,6 +78,8 @@
             this.lblPosY = new System.Windows.Forms.Label();
             this.lblPosX = new System.Windows.Forms.Label();
             this.groupBoxVista = new System.Windows.Forms.GroupBox();
+            this.cmbModoCamara = new System.Windows.Forms.ComboBox();
+            this.lblModoCamara = new System.Windows.Forms.Label();
             this.btnResetCamara = new System.Windows.Forms.Button();
             this.chkMostrarGrid = new System.Windows.Forms.CheckBox();
             this.chkMostrarEjes = new System.Windows.Forms.CheckBox();
@@ -305,9 +307,9 @@
             this.panelPropiedades.Controls.Add(this.groupBoxPosicion);
             this.panelPropiedades.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelPropiedades.Enabled = false;
-            this.panelPropiedades.Location = new System.Drawing.Point(9, 104);
+            this.panelPropiedades.Location = new System.Drawing.Point(9, 145);
             this.panelPropiedades.Name = "panelPropiedades";
-            this.panelPropiedades.Size = new System.Drawing.Size(239, 331);
+            this.panelPropiedades.Size = new System.Drawing.Size(239, 290);
             this.panelPropiedades.TabIndex = 1;
             // 
             // groupBoxApariencia
@@ -327,7 +329,7 @@
             this.groupBoxApariencia.Location = new System.Drawing.Point(0, 336);
             this.groupBoxApariencia.Name = "groupBoxApariencia";
             this.groupBoxApariencia.Padding = new System.Windows.Forms.Padding(9, 8, 9, 8);
-            this.groupBoxApariencia.Size = new System.Drawing.Size(222, 298);
+            this.groupBoxApariencia.Size = new System.Drawing.Size(222, 266);
             this.groupBoxApariencia.TabIndex = 3;
             this.groupBoxApariencia.TabStop = false;
             this.groupBoxApariencia.Text = "Apariencia";
@@ -341,8 +343,8 @@
             "Esponja",
             "Oro",
             "Diamante"});
-            this.cmbTextura.Location = new System.Drawing.Point(71, 203);
-            this.cmbTextura.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.cmbTextura.Location = new System.Drawing.Point(69, 232);
+            this.cmbTextura.Margin = new System.Windows.Forms.Padding(2);
             this.cmbTextura.Name = "cmbTextura";
             this.cmbTextura.Size = new System.Drawing.Size(142, 21);
             this.cmbTextura.TabIndex = 9;
@@ -350,7 +352,7 @@
             // lblTextura
             // 
             this.lblTextura.AutoSize = true;
-            this.lblTextura.Location = new System.Drawing.Point(11, 205);
+            this.lblTextura.Location = new System.Drawing.Point(9, 234);
             this.lblTextura.Name = "lblTextura";
             this.lblTextura.Size = new System.Drawing.Size(43, 13);
             this.lblTextura.TabIndex = 8;
@@ -358,8 +360,8 @@
             // 
             // trackBarIntensidadLuz
             // 
-            this.trackBarIntensidadLuz.Location = new System.Drawing.Point(14, 166);
-            this.trackBarIntensidadLuz.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.trackBarIntensidadLuz.Location = new System.Drawing.Point(13, 183);
+            this.trackBarIntensidadLuz.Margin = new System.Windows.Forms.Padding(2);
             this.trackBarIntensidadLuz.Name = "trackBarIntensidadLuz";
             this.trackBarIntensidadLuz.Size = new System.Drawing.Size(198, 45);
             this.trackBarIntensidadLuz.TabIndex = 7;
@@ -367,7 +369,7 @@
             // lblIntensidadLuz
             // 
             this.lblIntensidadLuz.AutoSize = true;
-            this.lblIntensidadLuz.Location = new System.Drawing.Point(11, 151);
+            this.lblIntensidadLuz.Location = new System.Drawing.Point(10, 168);
             this.lblIntensidadLuz.Name = "lblIntensidadLuz";
             this.lblIntensidadLuz.Size = new System.Drawing.Size(60, 13);
             this.lblIntensidadLuz.TabIndex = 6;
@@ -378,7 +380,7 @@
             this.chkVisible.AutoSize = true;
             this.chkVisible.Checked = true;
             this.chkVisible.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkVisible.Location = new System.Drawing.Point(11, 125);
+            this.chkVisible.Location = new System.Drawing.Point(11, 144);
             this.chkVisible.Name = "chkVisible";
             this.chkVisible.Size = new System.Drawing.Size(56, 17);
             this.chkVisible.TabIndex = 5;
@@ -390,7 +392,7 @@
             this.chkMostrarRelleno.AutoSize = true;
             this.chkMostrarRelleno.Checked = true;
             this.chkMostrarRelleno.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkMostrarRelleno.Location = new System.Drawing.Point(11, 104);
+            this.chkMostrarRelleno.Location = new System.Drawing.Point(11, 123);
             this.chkMostrarRelleno.Name = "chkMostrarRelleno";
             this.chkMostrarRelleno.Size = new System.Drawing.Size(100, 17);
             this.chkMostrarRelleno.TabIndex = 4;
@@ -400,7 +402,7 @@
             // btnColorRelleno
             // 
             this.btnColorRelleno.BackColor = System.Drawing.Color.Blue;
-            this.btnColorRelleno.Location = new System.Drawing.Point(11, 70);
+            this.btnColorRelleno.Location = new System.Drawing.Point(10, 92);
             this.btnColorRelleno.Name = "btnColorRelleno";
             this.btnColorRelleno.Size = new System.Drawing.Size(200, 26);
             this.btnColorRelleno.TabIndex = 3;
@@ -409,7 +411,7 @@
             // lblColorRelleno
             // 
             this.lblColorRelleno.AutoSize = true;
-            this.lblColorRelleno.Location = new System.Drawing.Point(11, 54);
+            this.lblColorRelleno.Location = new System.Drawing.Point(10, 76);
             this.lblColorRelleno.Name = "lblColorRelleno";
             this.lblColorRelleno.Size = new System.Drawing.Size(80, 13);
             this.lblColorRelleno.TabIndex = 2;
@@ -418,7 +420,7 @@
             // btnColorLinea
             // 
             this.btnColorLinea.BackColor = System.Drawing.Color.White;
-            this.btnColorLinea.Location = new System.Drawing.Point(11, 34);
+            this.btnColorLinea.Location = new System.Drawing.Point(10, 40);
             this.btnColorLinea.Name = "btnColorLinea";
             this.btnColorLinea.Size = new System.Drawing.Size(200, 26);
             this.btnColorLinea.TabIndex = 1;
@@ -427,7 +429,7 @@
             // lblColorLinea
             // 
             this.lblColorLinea.AutoSize = true;
-            this.lblColorLinea.Location = new System.Drawing.Point(11, 19);
+            this.lblColorLinea.Location = new System.Drawing.Point(10, 25);
             this.lblColorLinea.Name = "lblColorLinea";
             this.lblColorLinea.Size = new System.Drawing.Size(78, 13);
             this.lblColorLinea.TabIndex = 0;
@@ -765,6 +767,8 @@
             // 
             // groupBoxVista
             // 
+            this.groupBoxVista.Controls.Add(this.cmbModoCamara);
+            this.groupBoxVista.Controls.Add(this.lblModoCamara);
             this.groupBoxVista.Controls.Add(this.btnResetCamara);
             this.groupBoxVista.Controls.Add(this.chkMostrarGrid);
             this.groupBoxVista.Controls.Add(this.chkMostrarEjes);
@@ -773,16 +777,37 @@
             this.groupBoxVista.Location = new System.Drawing.Point(9, 8);
             this.groupBoxVista.Name = "groupBoxVista";
             this.groupBoxVista.Padding = new System.Windows.Forms.Padding(9, 8, 9, 8);
-            this.groupBoxVista.Size = new System.Drawing.Size(239, 96);
+            this.groupBoxVista.Size = new System.Drawing.Size(239, 137);
             this.groupBoxVista.TabIndex = 0;
             this.groupBoxVista.TabStop = false;
             this.groupBoxVista.Text = "Vista";
+            // 
+            // cmbModoCamara
+            // 
+            this.cmbModoCamara.FormattingEnabled = true;
+            this.cmbModoCamara.Items.AddRange(new object[] {
+            "Orbital",
+            "Libre",
+            "Fija"});
+            this.cmbModoCamara.Location = new System.Drawing.Point(93, 13);
+            this.cmbModoCamara.Name = "cmbModoCamara";
+            this.cmbModoCamara.Size = new System.Drawing.Size(136, 21);
+            this.cmbModoCamara.TabIndex = 4;
+            // 
+            // lblModoCamara
+            // 
+            this.lblModoCamara.AutoSize = true;
+            this.lblModoCamara.Location = new System.Drawing.Point(11, 16);
+            this.lblModoCamara.Name = "lblModoCamara";
+            this.lblModoCamara.Size = new System.Drawing.Size(73, 13);
+            this.lblModoCamara.TabIndex = 3;
+            this.lblModoCamara.Text = "Modo Cámara";
             // 
             // btnResetCamara
             // 
             this.btnResetCamara.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(70)))), ((int)(((byte)(120)))), ((int)(((byte)(180)))));
             this.btnResetCamara.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnResetCamara.Location = new System.Drawing.Point(11, 60);
+            this.btnResetCamara.Location = new System.Drawing.Point(10, 100);
             this.btnResetCamara.Name = "btnResetCamara";
             this.btnResetCamara.Size = new System.Drawing.Size(218, 26);
             this.btnResetCamara.TabIndex = 2;
@@ -794,7 +819,7 @@
             this.chkMostrarGrid.AutoSize = true;
             this.chkMostrarGrid.Checked = true;
             this.chkMostrarGrid.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkMostrarGrid.Location = new System.Drawing.Point(11, 39);
+            this.chkMostrarGrid.Location = new System.Drawing.Point(10, 70);
             this.chkMostrarGrid.Name = "chkMostrarGrid";
             this.chkMostrarGrid.Size = new System.Drawing.Size(83, 17);
             this.chkMostrarGrid.TabIndex = 1;
@@ -806,7 +831,7 @@
             this.chkMostrarEjes.AutoSize = true;
             this.chkMostrarEjes.Checked = true;
             this.chkMostrarEjes.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkMostrarEjes.Location = new System.Drawing.Point(11, 19);
+            this.chkMostrarEjes.Location = new System.Drawing.Point(11, 47);
             this.chkMostrarEjes.Name = "chkMostrarEjes";
             this.chkMostrarEjes.Size = new System.Drawing.Size(84, 17);
             this.chkMostrarEjes.TabIndex = 0;
@@ -918,11 +943,13 @@
         private System.Windows.Forms.CheckBox chkMostrarEjes;
         private System.Windows.Forms.CheckBox chkMostrarGrid;
         private System.Windows.Forms.Button btnResetCamara;
-        private System.Windows.Forms.Panel panelViewport;
         private System.Windows.Forms.Label lblTextura;
         private System.Windows.Forms.TrackBar trackBarIntensidadLuz;
         private System.Windows.Forms.Label lblIntensidadLuz;
         private System.Windows.Forms.ComboBox cmbTextura;
+        private System.Windows.Forms.Label lblModoCamara;
+        private System.Windows.Forms.ComboBox cmbModoCamara;
+        private System.Windows.Forms.Panel panelViewport;
     }
 }
 

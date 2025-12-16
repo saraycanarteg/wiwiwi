@@ -10,6 +10,13 @@ namespace Proyecto_3D
     /// </summary>
     public class Motor3D
     {
+        public enum ModoCamara
+        {
+            Orbital,
+            Libre,
+            Fija
+        }
+
         public Punto3D PosicionCamara { get; set; }
         public Punto3D ObjetivoCamara { get; set; }
         public Punto3D UpCamara { get; set; }
@@ -28,6 +35,14 @@ namespace Proyecto_3D
 
         public Punto3D DireccionLuz { get; set; }
 
+        // Nuevo: modo de cámara y propiedades para cámara libre
+        public ModoCamara CamaraModo { get; set; } = ModoCamara.Orbital;
+
+        public Punto3D FreeCamPos { get; set; }
+        public double FreeCamYaw { get; set; }
+        public double FreeCamPitch { get; set; }
+        public double FreeCamSpeed { get; set; } = 0.2; // unidades por evento
+
         public Motor3D(int ancho, int alto)
         {
             AnchoVista = ancho;
@@ -41,6 +56,11 @@ namespace Proyecto_3D
 
             ActualizarPosicionCamara();
 
+            // Inicializar cámara libre con la posición orbital actual
+            FreeCamPos = PosicionCamara.Clone();
+            FreeCamYaw = AnguloOrbitaH;
+            FreeCamPitch = AnguloOrbitaV;
+
             CampoVision = 60;
             AspectRatio = (double)ancho / alto;
             PlanosCercano = 0.1;
@@ -51,6 +71,30 @@ namespace Proyecto_3D
 
         public void ActualizarPosicionCamara()
         {
+            if (CamaraModo == ModoCamara.Fija)
+            {
+                // En modo fija, no se recalcula la posición automáticamente
+                return;
+            }
+
+            if (CamaraModo == ModoCamara.Libre)
+            {
+                // Convertir yaw/pitch a vector forward
+                double radYaw = FreeCamYaw * Math.PI / 180.0;
+                double radPitch = FreeCamPitch * Math.PI / 180.0;
+
+                double fx = Math.Cos(radPitch) * Math.Sin(radYaw);
+                double fy = Math.Cos(radPitch) * Math.Cos(radYaw);
+                double fz = Math.Sin(radPitch);
+
+                Punto3D forward = new Punto3D(fx, fy, fz).VectorNormalizado();
+
+                PosicionCamara = FreeCamPos.Clone();
+                ObjetivoCamara = PosicionCamara + forward; // un punto delante
+                return;
+            }
+
+            // Modo orbital (comportamiento existente)
             double radianesH = AnguloOrbitaH * Math.PI / 180.0;
             double radianesV = AnguloOrbitaV * Math.PI / 180.0;
 
@@ -67,6 +111,12 @@ namespace Proyecto_3D
 
         public void RotarCamara(double deltaH, double deltaV)
         {
+            if (CamaraModo == ModoCamara.Libre)
+            {
+                RotarCamaraLibre(deltaH, deltaV);
+                return;
+            }
+
             AnguloOrbitaH += deltaH;
             AnguloOrbitaV += deltaV;
 
@@ -78,6 +128,13 @@ namespace Proyecto_3D
 
         public void ZoomCamara(double delta)
         {
+            if (CamaraModo == ModoCamara.Libre)
+            {
+                // Mover cámara libre hacia adelante/atrás
+                MoverCamaraLibre(delta, 0, 0);
+                return;
+            }
+
             DistanciaCamara += delta;
             if (DistanciaCamara < 1) DistanciaCamara = 1;
             if (DistanciaCamara > 50) DistanciaCamara = 50;
@@ -372,10 +429,6 @@ namespace Proyecto_3D
                 puntosProyectados.Add(ProyectarPunto(vertice));
             }
 
-            // Dibujar caras con iluminación
-            // Reemplaza la sección de dibujo de caras dentro de DibujarFigura por esta versión
-            // (mantén el resto del método DibujarFigura igual)
-
             // Dibujar caras con iluminación y ordenado por profundidad (painter)
             if (figura.MostrarRelleno && figura.Caras.Count > 0)
             {
@@ -406,9 +459,9 @@ namespace Proyecto_3D
                 listaCaras.Sort((a, b) => b.Item2.CompareTo(a.Item2));
 
                 // Dibujar en ese orden
-                foreach (var t in listaCaras)
+                for (int idxLista = 0; idxLista < listaCaras.Count; idxLista++)
                 {
-                    int i = t.Item1;
+                    int i = listaCaras[idxLista].Item1;
                     var cara = figura.Caras[i];
                     if (cara.Count < 3) continue;
 
@@ -431,44 +484,74 @@ namespace Proyecto_3D
                         ? figura.NormalesCaras[i]
                         : new Punto3D(0, 1, 0);
 
-                    // Backface culling (mantener lógica previa)
-                    if (Punto3D.ProductoPunto(normal, dirCamara) < 0)
+                    // Backface culling: solo dibujar caras cuyo normal apunte hacia la cámara
+                    // Calcular vector desde la cara al centro de la cámara
+                    Punto3D centroCara = new Punto3D(0,0,0);
+                    foreach (int vi in cara)
+                    {
+                        if (vi < figura.Vertices.Count) centroCara += figura.Vertices[vi];
+                    }
+                    centroCara = centroCara * (1.0 / cara.Count);
+                    Punto3D toCamera = (PosicionCamara - centroCara).VectorNormalizado();
+
+                    double dot = Punto3D.ProductoPunto(normal, toCamera);
+                    if (dot <= 0) // cara orientada hacia atrás
                         continue;
 
                     try
                     {
                         using (Brush brush = CrearBrushTextura(figura, normal, puntos))
                         {
+                            // Si el brush es sólido con alpha alta, usar FillPolygon directamente
                             g.FillPolygon(brush, puntos);
                         }
                     }
                     catch { }
                 }
-            }
 
-            // Dibujar aristas con color correcto
-            using (Pen penBase = new Pen(figura.ColorLinea, 2))
-            {
-                foreach (var arista in figura.Aristas)
+                // Dibujar contorno de las caras con el color de línea de la figura.
+                // Si está seleccionada, usar grosor 2; en caso contrario, grosor 1.
+                using (Pen penLinea = new Pen(figura.ColorLinea, figura.Seleccionada ? 2 : 1))
                 {
-                    if (arista.Inicio < puntosProyectados.Count &&
-                        arista.Fin < puntosProyectados.Count)
+                    penLinea.Alignment = PenAlignment.Center;
+                    foreach (var cara in figura.Caras)
                     {
-                        try
+                        if (cara.Count < 2) continue;
+                        PointF[] pts = new PointF[cara.Count];
+                        bool ok = true;
+                        for (int k = 0; k < cara.Count; k++)
                         {
-                            g.DrawLine(penBase,
-                                puntosProyectados[arista.Inicio],
-                                puntosProyectados[arista.Fin]);
+                            if (cara[k] >= puntosProyectados.Count) { ok = false; break; }
+                            pts[k] = puntosProyectados[cara[k]];
                         }
-                        catch { }
+                        if (!ok) continue;
+                        try { g.DrawPolygon(penLinea, pts); } catch { }
                     }
                 }
             }
-
-            // Si está seleccionada, dibujar overlay para destacar (no sustituir el color)
-            if (figura.Seleccionada)
+            else
             {
-                using (Pen penSel = new Pen(Color.Yellow, 1))
+                // Modo wireframe: dibujar aristas con color de línea
+                using (Pen penBase = new Pen(figura.ColorLinea, 1))
+                {
+                    foreach (var arista in figura.Aristas)
+                    {
+                        if (arista.Inicio < puntosProyectados.Count &&
+                            arista.Fin < puntosProyectados.Count)
+                        {
+                            try
+                            {
+                                g.DrawLine(penBase,
+                                    puntosProyectados[arista.Inicio],
+                                    puntosProyectados[arista.Fin]);
+                            }
+                            catch { }
+                        }
+                    }
+                }
+
+                // Si está seleccionada, dibujar overlay para destacar con grosor 2, si no seleccionada usar grosor 1.
+                using (Pen penSel = new Pen(figura.ColorLinea, figura.Seleccionada ? 2 : 1))
                 {
                     penSel.Alignment = System.Drawing.Drawing2D.PenAlignment.Center;
                     foreach (var arista in figura.Aristas)
@@ -539,5 +622,25 @@ namespace Proyecto_3D
         }
 
         #endregion
+
+        // Métodos para cámara libre
+        public void MoverCamaraLibre(double forward, double right, double up)
+        {
+            Punto3D forwardVec = (ObjetivoCamara - PosicionCamara).VectorNormalizado();
+            Punto3D rightVec = Punto3D.ProductoCruz(forwardVec, UpCamara).VectorNormalizado();
+            Punto3D upVec = Punto3D.ProductoCruz(rightVec, forwardVec).VectorNormalizado();
+
+            FreeCamPos = FreeCamPos + (forwardVec * forward) + (rightVec * right) + (upVec * up);
+            ActualizarPosicionCamara();
+        }
+
+        public void RotarCamaraLibre(double yawDelta, double pitchDelta)
+        {
+            FreeCamYaw += yawDelta;
+            FreeCamPitch += pitchDelta;
+            if (FreeCamPitch > 89) FreeCamPitch = 89;
+            if (FreeCamPitch < -89) FreeCamPitch = -89;
+            ActualizarPosicionCamara();
+        }
     }
 }

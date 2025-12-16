@@ -17,12 +17,16 @@ namespace Proyecto_3D
 
         private bool mousePresionado = false;
         private bool mousePanear = false;
+        private bool rightMouseRotate = false;
         private Point ultimaPosicionMouse;
         private bool necesitaRenderizar = true;
+
+        private HashSet<Keys> teclasPresionadas = new HashSet<Keys>();
 
         public Form1()
         {
             InitializeComponent();
+            this.KeyPreview = true; // permitir capturar teclas en el form
             InicializarEscena();
             ConfigurarEventos();
         }
@@ -53,10 +57,31 @@ namespace Proyecto_3D
 
             // Agregar un cubo inicial
             AgregarCubo();
+
+            // Inicializar combobox modo camara
+            if (cmbModoCamara != null) cmbModoCamara.SelectedIndex = 0; // Orbital por defecto
         }
 
         private void TimerRender_Tick(object sender, EventArgs e)
         {
+            // Manejar movimiento de cámara libre por teclado
+            if (motor != null && motor.CamaraModo == Motor3D.ModoCamara.Libre && teclasPresionadas.Count > 0)
+            {
+                double speed = motor.FreeCamSpeed;
+                double forward = 0, right = 0, up = 0;
+                if (teclasPresionadas.Contains(Keys.W)) forward += speed;
+                if (teclasPresionadas.Contains(Keys.S)) forward -= speed;
+                if (teclasPresionadas.Contains(Keys.A)) right -= speed;
+                if (teclasPresionadas.Contains(Keys.D)) right += speed;
+                if (teclasPresionadas.Contains(Keys.Q)) up -= speed;
+                if (teclasPresionadas.Contains(Keys.E)) up += speed;
+                if (forward != 0 || right != 0 || up != 0)
+                {
+                    motor.MoverCamaraLibre(forward, right, up);
+                    SolicitarRenderizado();
+                }
+            }
+
             if (necesitaRenderizar)
             {
                 RenderizarEscena();
@@ -88,6 +113,10 @@ namespace Proyecto_3D
                     SolicitarRenderizado();
                 }
             };
+
+            // Capturar teclado para cámara libre
+            this.KeyDown += Form1_KeyDown;
+            this.KeyUp += Form1_KeyUp;
 
             // Eventos de botones de figuras
             btnCubo.Click += (s, e) => AgregarCubo();
@@ -173,6 +202,34 @@ namespace Proyecto_3D
 
             chkMostrarEjes.CheckedChanged += (s, e) => SolicitarRenderizado();
             chkMostrarGrid.CheckedChanged += (s, e) => SolicitarRenderizado();
+
+            // Combo modo camara
+            cmbModoCamara.SelectedIndexChanged += (s, e) => {
+                switch (cmbModoCamara.SelectedIndex)
+                {
+                    case 0: motor.CamaraModo = Motor3D.ModoCamara.Orbital; break;
+                    case 1: motor.CamaraModo = Motor3D.ModoCamara.Libre; break;
+                    case 2: motor.CamaraModo = Motor3D.ModoCamara.Fija; break;
+                }
+                // Si cambiamos a libre, actualizar free cam pos/yaw/pitch desde la orbital actual
+                if (motor.CamaraModo == Motor3D.ModoCamara.Libre)
+                {
+                    motor.FreeCamPos = motor.PosicionCamara.Clone();
+                    motor.FreeCamYaw = motor.AnguloOrbitaH;
+                    motor.FreeCamPitch = motor.AnguloOrbitaV;
+                }
+                SolicitarRenderizado();
+            };
+        }
+
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            teclasPresionadas.Add(e.KeyCode);
+        }
+
+        private void Form1_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (teclasPresionadas.Contains(e.KeyCode)) teclasPresionadas.Remove(e.KeyCode);
         }
 
         #region Agregar Figuras
@@ -243,6 +300,11 @@ namespace Proyecto_3D
                 mousePresionado = true;
             }
 
+            if (e.Button == MouseButtons.Right)
+            {
+                rightMouseRotate = true;
+            }
+
             ultimaPosicionMouse = e.Location;
         }
 
@@ -250,7 +312,14 @@ namespace Proyecto_3D
         {
             bool huboMovimiento = false;
 
-            if (mousePresionado && !mousePanear)
+            if (rightMouseRotate && motor.CamaraModo == Motor3D.ModoCamara.Libre)
+            {
+                double deltaX = e.X - ultimaPosicionMouse.X;
+                double deltaY = e.Y - ultimaPosicionMouse.Y;
+                motor.RotarCamara(deltaX * 0.2, -deltaY * 0.2);
+                huboMovimiento = true;
+            }
+            else if (mousePresionado && !mousePanear)
             {
                 double deltaX = e.X - ultimaPosicionMouse.X;
                 double deltaY = e.Y - ultimaPosicionMouse.Y;
@@ -277,6 +346,7 @@ namespace Proyecto_3D
         {
             mousePresionado = false;
             mousePanear = false;
+            rightMouseRotate = false;
         }
 
         private void PanelViewport_MouseWheel(object sender, MouseEventArgs e)
@@ -518,6 +588,8 @@ namespace Proyecto_3D
             motor.AnguloOrbitaV = 30;
             motor.DistanciaCamara = 5;
             motor.ObjetivoCamara = new Punto3D(0, 0, 0);
+            motor.CamaraModo = Motor3D.ModoCamara.Orbital;
+            cmbModoCamara.SelectedIndex = 0;
             motor.ActualizarPosicionCamara();
             SolicitarRenderizado();
         }
