@@ -30,3 +30,14 @@ C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug
 C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.csproj.CoreCompileInputs.cache
 C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.exe
 C:\Users\Usuario\Desktop\CuartoSemestre\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.pdb
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.csproj.AssemblyReference.cache
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.exe.config
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.Form1.resources
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.Properties.Resources.resources
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.csproj.GenerateResource.cache
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.csproj.CoreCompileInputs.cache
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.exe
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\Proyecto_3D\Proyecto_3D\obj\Debug\Proyecto_3D.pdb
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\Proyecto_3D\Proyecto_3D\bin\Debug\Proyecto_3D.exe.config
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\Proyecto_3D\Proyecto_3D\bin\Debug\Proyecto_3D.exe
+D:\Universidad\5to Semestre\Computación Gráfica\Repositorio\wiwiwi\Proyecto_3D\Proyecto_3D\bin\Debug\Proyecto_3D.pdb

@@ -34,6 +34,8 @@ namespace Proyecto_3D
         public int AltoVista { get; set; }
 
         public Punto3D DireccionLuz { get; set; }
+        public Punto3D PosicionLuz { get; set; } // Posición de la luz puntual
+        public bool UsarLuzPosicional { get; set; } // Si true, usa PosicionLuz; si false, usa DireccionLuz
 
         // Nuevo: modo de cámara y propiedades para cámara libre
         public ModoCamara CamaraModo { get; set; } = ModoCamara.Orbital;
@@ -67,6 +69,8 @@ namespace Proyecto_3D
             PlanosLejano = 100;
 
             DireccionLuz = new Punto3D(1, -1, -1).VectorNormalizado();
+            PosicionLuz = new Punto3D(3, 3, 3);
+            UsarLuzPosicional = false;
         }
 
         public void ActualizarPosicionCamara()
@@ -283,8 +287,30 @@ namespace Proyecto_3D
             // Componente ambiente
             double ambiente = figura.LuzAmbiente;
 
-            // Componente difusa (Lambert)
-            double difusa = Math.Max(0, -Punto3D.ProductoPunto(normal, DireccionLuz));
+            double difusa;
+            
+            if (UsarLuzPosicional && PosicionLuz != null)
+            {
+                // Calcular el centro de la figura para iluminación puntual
+                Punto3D centroFigura = figura.ObtenerCentro();
+                
+                // Vector desde la superficie hacia la luz
+                Punto3D direccionALuz = (PosicionLuz - centroFigura).VectorNormalizado();
+                
+                // Componente difusa usando luz posicional
+                difusa = Math.Max(0, Punto3D.ProductoPunto(normal, direccionALuz));
+                
+                // Atenuar la luz con la distancia
+                double distancia = (PosicionLuz - centroFigura).Magnitud();
+                double atenuacion = 1.0 / (1.0 + 0.1 * distancia + 0.01 * distancia * distancia);
+                difusa *= atenuacion;
+            }
+            else
+            {
+                // Componente difusa (Lambert) con luz direccional
+                difusa = Math.Max(0, -Punto3D.ProductoPunto(normal, DireccionLuz));
+            }
+            
             difusa *= figura.IntensidadLuz;
 
             // Combinar ambiente + difusa

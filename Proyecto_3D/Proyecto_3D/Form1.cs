@@ -11,6 +11,7 @@ namespace Proyecto_3D
         private Motor3D motor;
         private List<Figura3D> figuras;
         private Figura3D figuraSeleccionada;
+        private Figura3D focoLuz; // Light source object
 
         private Bitmap bufferImagen;
         private Timer timerRender;
@@ -54,6 +55,16 @@ namespace Proyecto_3D
             timerRender.Interval = 16; // ~60 FPS
             timerRender.Tick += TimerRender_Tick;
             timerRender.Start();
+
+            // Crear el foco de luz (pequeña esfera amarilla)
+            focoLuz = Figura3D.CrearEsfera(0.3, 12, 8);
+            focoLuz.Nombre = "Foco_Luz";
+            focoLuz.ColorRelleno = Color.FromArgb(255, 255, 255, 100); // Amarillo brillante
+            focoLuz.ColorLinea = Color.Yellow;
+            focoLuz.MostrarRelleno = true;
+            focoLuz.Visible = false; // Inicialmente oculto
+            focoLuz.Posicion = new Punto3D(3, 3, 3); // Posición inicial
+            focoLuz.GuardarEstadoOriginal();
 
             // Agregar un cubo inicial
             AgregarCubo();
@@ -202,6 +213,32 @@ namespace Proyecto_3D
 
             chkMostrarEjes.CheckedChanged += (s, e) => SolicitarRenderizado();
             chkMostrarGrid.CheckedChanged += (s, e) => SolicitarRenderizado();
+
+            // Checkbox para mostrar/ocultar el foco de luz
+            chkMostrarFoco.CheckedChanged += (s, e) => {
+                if (focoLuz != null)
+                {
+                    focoLuz.Visible = chkMostrarFoco.Checked;
+                    
+                    // Si se activa el foco, seleccionarlo automáticamente para poder moverlo
+                    if (chkMostrarFoco.Checked)
+                    {
+                        SeleccionarFoco();
+                    }
+                    else
+                    {
+                        // Si se desactiva y estaba seleccionado, deseleccionarlo
+                        if (figuraSeleccionada == focoLuz)
+                        {
+                            figuraSeleccionada = null;
+                            panelPropiedades.Enabled = false;
+                            listObjetos.SelectedIndex = -1;
+                        }
+                    }
+                    
+                    SolicitarRenderizado();
+                }
+            };
 
             // Combo modo camara
             cmbModoCamara.SelectedIndexChanged += (s, e) => {
@@ -378,10 +415,28 @@ namespace Proyecto_3D
                     motor.DibujarEjes(g, 2);
                 }
 
+                // Actualizar la dirección de luz basada en la posición del foco
+                if (focoLuz != null && focoLuz.Visible)
+                {
+                    motor.PosicionLuz = focoLuz.Posicion.Clone();
+                    motor.UsarLuzPosicional = true;
+                }
+                else
+                {
+                    motor.UsarLuzPosicional = false;
+                }
+
                 foreach (var figura in figuras)
                 {
                     motor.AplicarTransformaciones(figura);
                     motor.DibujarFigura(g, figura);
+                }
+
+                // Dibujar el foco de luz si está visible
+                if (focoLuz != null && focoLuz.Visible)
+                {
+                    motor.AplicarTransformaciones(focoLuz);
+                    motor.DibujarFigura(g, focoLuz);
                 }
             }
 
@@ -591,6 +646,24 @@ namespace Proyecto_3D
             motor.CamaraModo = Motor3D.ModoCamara.Orbital;
             cmbModoCamara.SelectedIndex = 0;
             motor.ActualizarPosicionCamara();
+            SolicitarRenderizado();
+        }
+
+        private void SeleccionarFoco()
+        {
+            if (focoLuz == null) return;
+
+            // Deseleccionar todas las figuras normales
+            foreach (var f in figuras)
+                f.Seleccionada = false;
+
+            figuraSeleccionada = focoLuz;
+            focoLuz.Seleccionada = true;
+
+            // Deseleccionar en la lista de objetos
+            listObjetos.SelectedIndex = -1;
+
+            ActualizarPanelPropiedades();
             SolicitarRenderizado();
         }
 

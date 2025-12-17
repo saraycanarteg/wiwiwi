@@ -70,6 +70,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="FOCO_LUZ_README.md" />
     <None Include="GUIA_USO.md" />
     <None Include="INFORME_TECNICO.md" />
     <None Include="INSTRUCCIONES.md" />
