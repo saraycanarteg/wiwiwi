@@ -1,0 +1,789 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+
+namespace Proyecto_3D
+{
+    /// <summary>
+    /// Motor de renderizado y transformaciones 3D con iluminación
+    /// </summary>
+    public class Motor3D
+    {
+        public enum ModoCamara
+        {
+            Orbital,
+            Libre,
+            Fija
+        }
+
+        public Punto3D PosicionCamara { get; set; }
+        public Punto3D ObjetivoCamara { get; set; }
+        public Punto3D UpCamara { get; set; }
+
+        public double DistanciaCamara { get; set; }
+        public double AnguloOrbitaH { get; set; }
+        public double AnguloOrbitaV { get; set; }
+
+        public double CampoVision { get; set; }
+        public double AspectRatio { get; set; }
+        public double PlanosCercano { get; set; }
+        public double PlanosLejano { get; set; }
+
+        public int AnchoVista { get; set; }
+        public int AltoVista { get; set; }
+
+        public Punto3D DireccionLuz { get; set; }
+        public Punto3D PosicionLuz { get; set; } // Posición de la luz puntual
+        public bool UsarLuzPosicional { get; set; } // Si true, usa PosicionLuz; si false, usa DireccionLuz
+
+        // Intensidad global de la fuente de luz (0..1)
+        public double IntensidadGlobal { get; set; } = 1.0;
+
+        // Cache de texturas procedurales
+        private static Dictionary<string, Bitmap> cacheTexturas = new Dictionary<string, Bitmap>();
+
+        // Nuevo: modo de cámara y propiedades para cámara libre
+        public ModoCamara CamaraModo { get; set; } = ModoCamara.Orbital;
+
+        public Punto3D FreeCamPos { get; set; }
+        public double FreeCamYaw { get; set; }
+        public double FreeCamPitch { get; set; }
+        public double FreeCamSpeed { get; set; } = 0.2; // unidades por evento
+
+        public Motor3D(int ancho, int alto)
+        {
+            AnchoVista = ancho;
+            AltoVista = alto;
+
+            DistanciaCamara = 5;
+            AnguloOrbitaH = 45;
+            AnguloOrbitaV = 30;
+            ObjetivoCamara = new Punto3D(0, 0, 0);
+            UpCamara = new Punto3D(0, 1, 0);
+
+            ActualizarPosicionCamara();
+
+            // Inicializar cámara libre con la posición orbital actual
+            FreeCamPos = PosicionCamara.Clone();
+            FreeCamYaw = AnguloOrbitaH;
+            FreeCamPitch = AnguloOrbitaV;
+
+            CampoVision = 60;
+            AspectRatio = (double)ancho / alto;
+            PlanosCercano = 0.1;
+            PlanosLejano = 100;
+
+            DireccionLuz = new Punto3D(1, -1, -1).VectorNormalizado();
+            PosicionLuz = new Punto3D(3, 3, 3);
+            UsarLuzPosicional = false;
+        }
+
+        public void ActualizarPosicionCamara()
+        {
+            if (CamaraModo == ModoCamara.Fija)
+            {
+                // En modo fija, no se recalcula la posición automáticamente
+                return;
+            }
+
+            if (CamaraModo == ModoCamara.Libre)
+            {
+                // Convertir yaw/pitch a vector forward
+                double radYaw = FreeCamYaw * Math.PI / 180.0;
+                double radPitch = FreeCamPitch * Math.PI / 180.0;
+
+                double fx = Math.Cos(radPitch) * Math.Sin(radYaw);
+                double fy = Math.Cos(radPitch) * Math.Cos(radYaw);
+                double fz = Math.Sin(radPitch);
+
+                Punto3D forward = new Punto3D(fx, fy, fz).VectorNormalizado();
+
+                PosicionCamara = FreeCamPos.Clone();
+                ObjetivoCamara = PosicionCamara + forward; // un punto delante
+                return;
+            }
+
+            // Modo orbital (comportamiento existente)
+            double radianesH = AnguloOrbitaH * Math.PI / 180.0;
+            double radianesV = AnguloOrbitaV * Math.PI / 180.0;
+
+            double x = DistanciaCamara * Math.Cos(radianesV) * Math.Sin(radianesH);
+            double y = DistanciaCamara * Math.Sin(radianesV);
+            double z = DistanciaCamara * Math.Cos(radianesV) * Math.Cos(radianesH);
+
+            PosicionCamara = new Punto3D(
+                ObjetivoCamara.X + x,
+                ObjetivoCamara.Y + y,
+                ObjetivoCamara.Z + z
+            );
+        }
+
+        public void RotarCamara(double deltaH, double deltaV)
+        {
+            if (CamaraModo == ModoCamara.Libre)
+            {
+                RotarCamaraLibre(deltaH, deltaV);
+                return;
+            }
+
+            AnguloOrbitaH += deltaH;
+            AnguloOrbitaV += deltaV;
+
+            if (AnguloOrbitaV > 89) AnguloOrbitaV = 89;
+            if (AnguloOrbitaV < -89) AnguloOrbitaV = -89;
+
+            ActualizarPosicionCamara();
+        }
+
+        public void ZoomCamara(double delta)
+        {
+            if (CamaraModo == ModoCamara.Libre)
+            {
+                // Mover cámara libre hacia adelante/atrás
+                MoverCamaraLibre(delta, 0, 0);
+                return;
+            }
+
+            DistanciaCamara += delta;
+            if (DistanciaCamara < 1) DistanciaCamara = 1;
+            if (DistanciaCamara > 50) DistanciaCamara = 50;
+
+            ActualizarPosicionCamara();
+        }
+
+        public void PanearCamara(double deltaX, double deltaY)
+        {
+            Punto3D adelante = (ObjetivoCamara - PosicionCamara).VectorNormalizado();
+            Punto3D derecha = Punto3D.ProductoCruz(adelante, UpCamara).VectorNormalizado();
+            Punto3D arriba = Punto3D.ProductoCruz(derecha, adelante).VectorNormalizado();
+
+            double factor = DistanciaCamara * 0.001;
+            ObjetivoCamara = ObjetivoCamara + (derecha * deltaX * factor) + (arriba * deltaY * factor);
+
+            ActualizarPosicionCamara();
+        }
+
+        #region Transformaciones
+
+        public Punto3D Trasladar(Punto3D punto, double tx, double ty, double tz)
+        {
+            return new Punto3D(punto.X + tx, punto.Y + ty, punto.Z + tz);
+        }
+
+        public Punto3D Escalar(Punto3D punto, Punto3D centro, double sx, double sy, double sz)
+        {
+            double x = centro.X + (punto.X - centro.X) * sx;
+            double y = centro.Y + (punto.Y - centro.Y) * sy;
+            double z = centro.Z + (punto.Z - centro.Z) * sz;
+            return new Punto3D(x, y, z);
+        }
+
+        public Punto3D RotarX(Punto3D punto, Punto3D centro, double angulo)
+        {
+            double rad = angulo * Math.PI / 180.0;
+            double cos = Math.Cos(rad);
+            double sin = Math.Sin(rad);
+
+            double y = punto.Y - centro.Y;
+            double z = punto.Z - centro.Z;
+
+            return new Punto3D(
+                punto.X,
+                centro.Y + y * cos - z * sin,
+                centro.Z + y * sin + z * cos
+            );
+        }
+
+        public Punto3D RotarY(Punto3D punto, Punto3D centro, double angulo)
+        {
+            double rad = angulo * Math.PI / 180.0;
+            double cos = Math.Cos(rad);
+            double sin = Math.Sin(rad);
+
+            double x = punto.X - centro.X;
+            double z = punto.Z - centro.Z;
+
+            return new Punto3D(
+                centro.X + x * cos + z * sin,
+                punto.Y,
+                centro.Z - x * sin + z * cos
+            );
+        }
+
+        public Punto3D RotarZ(Punto3D punto, Punto3D centro, double angulo)
+        {
+            double rad = angulo * Math.PI / 180.0;
+            double cos = Math.Cos(rad);
+            double sin = Math.Sin(rad);
+
+            double x = punto.X - centro.X;
+            double y = punto.Y - centro.Y;
+
+            return new Punto3D(
+                centro.X + x * cos - y * sin,
+                centro.Y + x * sin + y * cos,
+                punto.Z
+            );
+        }
+
+        public void AplicarTransformaciones(Figura3D figura)
+        {
+            if (figura.VerticesOriginales.Count == 0)
+                return;
+
+            // Usar el centro de la figura para transformaciones locales
+            Punto3D centro = figura.ObtenerCentro();
+
+            for (int i = 0; i < figura.Vertices.Count; i++)
+            {
+                Punto3D p = figura.VerticesOriginales[i].Clone();
+
+                p = Escalar(p, centro, figura.Escala.X, figura.Escala.Y, figura.Escala.Z);
+                p = RotarX(p, centro, figura.Rotacion.X);
+                p = RotarY(p, centro, figura.Rotacion.Y);
+                p = RotarZ(p, centro, figura.Rotacion.Z);
+                p = Trasladar(p, figura.Posicion.X, figura.Posicion.Y, figura.Posicion.Z);
+
+                figura.Vertices[i] = p;
+            }
+
+            // Calcular normales después de transformar
+            figura.CalcularNormalesCaras();
+        }
+
+        #endregion
+
+        #region Proyección y Renderizado
+
+        public PointF ProyectarPunto(Punto3D punto)
+        {
+            // Vector forward (dirección mirada), right y up correctos
+            Punto3D forward = (ObjetivoCamara - PosicionCamara).VectorNormalizado();
+            Punto3D right = Punto3D.ProductoCruz(forward, UpCamara).VectorNormalizado();
+            Punto3D up = Punto3D.ProductoCruz(right, forward).VectorNormalizado();
+
+            Punto3D puntoRelativo = punto - PosicionCamara;
+
+            double xe = Punto3D.ProductoPunto(puntoRelativo, right);
+            double ye = Punto3D.ProductoPunto(puntoRelativo, up);
+            double ze = Punto3D.ProductoPunto(puntoRelativo, forward);
+
+            // Evitar planos demasiado cercanos o puntos detrás de la cámara
+            if (ze <= PlanosCercano)
+            {
+                ze = PlanosCercano + 0.01;
+            }
+
+            double fov = CampoVision * Math.PI / 180.0;
+            double d = 1.0 / Math.Tan(fov / 2.0);
+
+            // Aplicar aspect ratio en X (correcto) y mapear a NDC
+            double xp = (xe * d) / (ze * AspectRatio);
+            double yp = (ye * d) / ze;
+
+            float screenX = (float)((xp + 1) * AnchoVista / 2);
+            float screenY = (float)((1 - yp) * AltoVista / 2);
+
+            return new PointF(screenX, screenY);
+        }
+
+        private Color CalcularColorConIluminacion(Figura3D figura, Punto3D normal)
+        {
+            // Componente ambiente
+            double ambiente = figura.LuzAmbiente;
+
+            double difusa = 0.0;
+            double especular = 0.0;
+
+            Punto3D direccionLuz;
+            double distancia = 0.0;
+
+            if (UsarLuzPosicional && PosicionLuz != null)
+            {
+                // Calcular el centro de la figura para iluminación puntual
+                Punto3D centroFigura = figura.ObtenerCentro();
+
+                // Vector desde la superficie hacia la luz
+                direccionLuz = (PosicionLuz - centroFigura).VectorNormalizado();
+
+                distancia = (PosicionLuz - centroFigura).Magnitud();
+
+                // Componente difusa usando luz posicional
+                difusa = Math.Max(0, Punto3D.ProductoPunto(normal, direccionLuz));
+
+                // Atenuación más marcada para mayor efecto visual
+                double atenuacion = 1.0 / (0.5 + 0.2 * distancia + 0.05 * distancia * distancia);
+                difusa *= atenuacion;
+
+                // Cálculo especular (Blinn-Phong aproximado)
+                Punto3D viewDir = (PosicionCamara - centroFigura).VectorNormalizado();
+                Punto3D half = (direccionLuz + viewDir).VectorNormalizado();
+                double specFactor = Math.Max(0, Punto3D.ProductoPunto(normal, half));
+                especular = figura.SpecularStrength * Math.Pow(specFactor, figura.Shininess) * atenuacion;
+            }
+            else
+            {
+                direccionLuz = DireccionLuz.VectorNormalizado();
+                difusa = Math.Max(0, -Punto3D.ProductoPunto(normal, direccionLuz));
+
+                // Especular para luz direccional: usar punto medio respecto a cámara
+                Punto3D centroFigura = figura.ObtenerCentro();
+                Punto3D viewDir = (PosicionCamara - centroFigura).VectorNormalizado();
+                Punto3D half = (direccionLuz + viewDir).VectorNormalizado();
+                double specFactor = Math.Max(0, Punto3D.ProductoPunto(normal, half));
+                especular = figura.SpecularStrength * Math.Pow(specFactor, figura.Shininess);
+            }
+
+            difusa *= figura.IntensidadLuz * IntensidadGlobal;
+            especular *= IntensidadGlobal;
+
+            // Combinar componentes con mayor contraste para mayor solidez visual
+            double factor = figura.LuzAmbiente + difusa + especular;
+            factor = Math.Min(1.0, factor);
+
+            // Obtener color base según textura
+            Color colorBase = figura.ObtenerColorTextura();
+
+            // Aplicar propiedades especiales por textura (ajustar gamma para contraste)
+            switch (figura.TipoTextura)
+            {
+                case TipoTextura.Cristal:
+                    factor = Math.Min(1.0, factor * 1.1 + 0.05);
+                    break;
+                case TipoTextura.Diamante:
+                    factor = Math.Min(1.0, factor * 1.3 + 0.15);
+                    break;
+                case TipoTextura.Oro:
+                    factor = Math.Min(1.0, factor * 1.15 + 0.08);
+                    break;
+                case TipoTextura.Piedra:
+                    factor = Math.Max(0.2, factor * 0.9);
+                    break;
+                case TipoTextura.Esponja:
+                    factor = Math.Max(0.3, factor);
+                    break;
+            }
+
+            // Aplicar iluminación al color
+            int r = (int)(colorBase.R * factor + 255 * especular * 0.3);
+            int g = (int)(colorBase.G * factor + 255 * especular * 0.25);
+            int b = (int)(colorBase.B * factor + 255 * especular * 0.2);
+
+            r = Math.Max(0, Math.Min(255, r));
+            g = Math.Max(0, Math.Min(255, g));
+            b = Math.Max(0, Math.Min(255, b));
+
+            return Color.FromArgb(colorBase.A, r, g, b);
+        }
+
+        private Bitmap GenerarPiedraBitmap(Color baseColor)
+        {
+            string key = "piedra_" + baseColor.ToArgb();
+            if (cacheTexturas.ContainsKey(key)) return cacheTexturas[key];
+
+            int size = 64;
+            Bitmap bmp = new Bitmap(size, size);
+            Random rnd = new Random(baseColor.ToArgb());
+
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.Clear(baseColor);
+                for (int i = 0; i < 1200; i++)
+                {
+                    int x = rnd.Next(size);
+                    int y = rnd.Next(size);
+                    int radius = rnd.Next(1, 3);
+                    int darkness = rnd.Next(20, 80);
+                    Color c = Color.FromArgb(Math.Max(0, baseColor.R - darkness), Math.Max(0, baseColor.G - darkness), Math.Max(0, baseColor.B - darkness));
+                    using (Brush br = new SolidBrush(c))
+                    {
+                        g.FillEllipse(br, x, y, radius, radius);
+                    }
+                }
+            }
+
+            cacheTexturas[key] = bmp;
+            return bmp;
+        }
+
+        private Bitmap GenerarEsponjaBitmap(Color baseColor)
+        {
+            string key = "esponja_" + baseColor.ToArgb();
+            if (cacheTexturas.ContainsKey(key)) return cacheTexturas[key];
+
+            int size = 64;
+            Bitmap bmp = new Bitmap(size, size);
+            Random rnd = new Random(baseColor.ToArgb() ^ 0x12345);
+
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.Clear(baseColor);
+                for (int i = 0; i < 300; i++)
+                {
+                    int x = rnd.Next(size);
+                    int y = rnd.Next(size);
+                    int radius = rnd.Next(2, 8);
+                    int light = rnd.Next(10, 80);
+                    Color c = Color.FromArgb(Math.Min(255, baseColor.R + light), Math.Min(255, baseColor.G + light), Math.Min(255, baseColor.B + (light/2)));
+                    using (Brush br = new SolidBrush(Color.FromArgb(180, c)))
+                    {
+                        g.FillEllipse(br, x - radius/2, y - radius/2, radius, radius);
+                    }
+                }
+            }
+
+            cacheTexturas[key] = bmp;
+            return bmp;
+        }
+
+        private Bitmap GenerarOroBitmap(Color baseColor)
+        {
+            string key = "oro_" + baseColor.ToArgb();
+            if (cacheTexturas.ContainsKey(key)) return cacheTexturas[key];
+
+            int width = 64, height = 64;
+            Bitmap bmp = new Bitmap(width, height);
+
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                Rectangle r = new Rectangle(0, 0, width, height);
+                using (LinearGradientBrush lg = new LinearGradientBrush(r, ControlPaint.Dark(baseColor), ControlPaint.LightLight(baseColor), LinearGradientMode.Vertical))
+                {
+                    g.FillRectangle(lg, r);
+                }
+
+                // Add subtle horizontal bands
+                using (Pen p = new Pen(Color.FromArgb(30, Color.Black)))
+                {
+                    for (int y = 0; y < height; y += 6)
+                    {
+                        g.DrawLine(p, 0, y, width, y);
+                    }
+                }
+            }
+
+            cacheTexturas[key] = bmp;
+            return bmp;
+        }
+
+        private Brush CrearBrushTextura(Figura3D figura, Punto3D normal, PointF[] puntos)
+        {
+            Color colorIluminado = CalcularColorConIluminacion(figura, normal);
+
+            switch (figura.TipoTextura)
+            {
+                case TipoTextura.Cristal:
+                    // Degradado con efecto vidrio
+                    if (puntos.Length >= 2)
+                    {
+                        Color c1 = Color.FromArgb(colorIluminado.A,
+                            Math.Min(255, colorIluminado.R + 40),
+                            Math.Min(255, colorIluminado.G + 40),
+                            Math.Min(255, colorIluminado.B + 40));
+
+                        try
+                        {
+                            return new LinearGradientBrush(
+                                puntos[0],
+                                puntos[puntos.Length / 2],
+                                c1, colorIluminado);
+                        }
+                        catch
+                        {
+                            return new SolidBrush(colorIluminado);
+                        }
+                    }
+                    return new SolidBrush(colorIluminado);
+
+                case TipoTextura.Diamante:
+                    // Efecto brillante con degradado
+                    if (puntos.Length >= 2)
+                    {
+                        Color c1 = Color.FromArgb(colorIluminado.A, 255, 255, 255);
+                        try
+                        {
+                            return new LinearGradientBrush(
+                                puntos[0],
+                                puntos[puntos.Length - 1],
+                                c1, colorIluminado);
+                        }
+                        catch
+                        {
+                            return new SolidBrush(colorIluminado);
+                        }
+                    }
+                    return new SolidBrush(colorIluminado);
+
+                case TipoTextura.Oro:
+                    // Degradado dorado con textura
+                    try
+                    {
+                        Bitmap oroBmp = GenerarOroBitmap(colorIluminado);
+                        TextureBrush tb = new TextureBrush(oroBmp, WrapMode.Tile);
+                        return tb;
+                    }
+                    catch { return new SolidBrush(colorIluminado); }
+
+                case TipoTextura.Piedra:
+                    try
+                    {
+                        Bitmap piedra = GenerarPiedraBitmap(colorIluminado);
+                        return new TextureBrush(piedra, WrapMode.Tile);
+                    }
+                    catch { return new SolidBrush(colorIluminado); }
+
+                case TipoTextura.Esponja:
+                    try
+                    {
+                        Bitmap esponja = GenerarEsponjaBitmap(colorIluminado);
+                        return new TextureBrush(esponja, WrapMode.Tile);
+                    }
+                    catch { return new SolidBrush(colorIluminado); }
+
+                default:
+                    return new SolidBrush(colorIluminado);
+            }
+        }
+
+        public void DibujarFigura(Graphics g, Figura3D figura)
+        {
+            if (!figura.Visible || figura.Vertices.Count == 0)
+                return;
+
+            List<PointF> puntosProyectados = new List<PointF>();
+            foreach (var vertice in figura.Vertices)
+            {
+                puntosProyectados.Add(ProyectarPunto(vertice));
+            }
+
+            // Dibujar caras con iluminación y ordenado por profundidad (painter)
+            if (figura.MostrarRelleno && figura.Caras.Count > 0)
+            {
+                // Calcular profundidad media de cada cara
+                var listaCaras = new List<Tuple<int, double>>(); // (index, depth)
+                Punto3D dirCamara = (PosicionCamara - figura.ObtenerCentro()).VectorNormalizado();
+
+                for (int i = 0; i < figura.Caras.Count; i++)
+                {
+                    var cara = figura.Caras[i];
+                    double suma = 0;
+                    int cnt = 0;
+                    foreach (int idx in cara)
+                    {
+                        if (idx < figura.Vertices.Count)
+                        {
+                            Punto3D v = figura.Vertices[idx];
+                            Punto3D rel = v - PosicionCamara;
+                            suma += Punto3D.ProductoPunto(rel, dirCamara);
+                            cnt++;
+                        }
+                    }
+                    double media = (cnt > 0) ? (suma / cnt) : 0;
+                    listaCaras.Add(Tuple.Create(i, media));
+                }
+
+                // Ordenar de más lejano a más cercano
+                listaCaras.Sort((a, b) => b.Item2.CompareTo(a.Item2));
+
+                // Dibujar en ese orden
+                for (int idxLista = 0; idxLista < listaCaras.Count; idxLista++)
+                {
+                    int i = listaCaras[idxLista].Item1;
+                    var cara = figura.Caras[i];
+                    if (cara.Count < 3) continue;
+
+                    PointF[] puntos = new PointF[cara.Count];
+                    bool todosValidos = true;
+
+                    for (int j = 0; j < cara.Count; j++)
+                    {
+                        if (cara[j] >= puntosProyectados.Count)
+                        {
+                            todosValidos = false;
+                            break;
+                        }
+                        puntos[j] = puntosProyectados[cara[j]];
+                    }
+
+                    if (!todosValidos) continue;
+
+                    // Normal: preferir normal por vértice promedio si está disponible
+                    Punto3D normal;
+                    if (figura.NormalesVertices != null && figura.NormalesVertices.Count > 0)
+                    {
+                        Punto3D sumaNorm = new Punto3D(0, 0, 0);
+                        foreach (int vi in cara)
+                        {
+                            if (vi >= 0 && vi < figura.NormalesVertices.Count)
+                                sumaNorm += figura.NormalesVertices[vi];
+                        }
+                        normal = sumaNorm.VectorNormalizado();
+                    }
+                    else
+                    {
+                        normal = i < figura.NormalesCaras.Count
+                            ? figura.NormalesCaras[i]
+                            : new Punto3D(0, 1, 0);
+                    }
+
+                    // Backface culling: solo dibujar caras cuyo normal apunte hacia la cámara
+                    // Calcular vector desde la cara al centro de la cámara
+                    Punto3D centroCara = new Punto3D(0,0,0);
+                    foreach (int vi in cara)
+                    {
+                        if (vi < figura.Vertices.Count) centroCara += figura.Vertices[vi];
+                    }
+                    centroCara = centroCara * (1.0 / cara.Count);
+                    Punto3D toCamera = (PosicionCamara - centroCara).VectorNormalizado();
+
+                    double dot = Punto3D.ProductoPunto(normal, toCamera);
+                    if (dot <= 0) // cara orientada hacia atrás
+                        continue;
+
+                    try
+                    {
+                        using (Brush brush = CrearBrushTextura(figura, normal, puntos))
+                        {
+                            // Si el brush es sólido con alpha alta, usar FillPolygon directamente
+                            g.FillPolygon(brush, puntos);
+                        }
+                    }
+                    catch { }
+                }
+
+                // Dibujar contorno de las caras con el color de línea de la figura.
+                // Si está seleccionada, usar grosor 2; en caso contrario, grosor 1.
+                using (Pen penLinea = new Pen(figura.ColorLinea, figura.Seleccionada ? 2 : 1))
+                {
+                    penLinea.Alignment = PenAlignment.Center;
+                    foreach (var cara in figura.Caras)
+                    {
+                        if (cara.Count < 2) continue;
+                        PointF[] pts = new PointF[cara.Count];
+                        bool ok = true;
+                        for (int k = 0; k < cara.Count; k++)
+                        {
+                            if (cara[k] >= puntosProyectados.Count) { ok = false; break; }
+                            pts[k] = puntosProyectados[cara[k]];
+                        }
+                        if (!ok) continue;
+                        try { g.DrawPolygon(penLinea, pts); } catch { }
+                    }
+                }
+            }
+            else
+            {
+                // Modo wireframe: dibujar aristas con color de línea
+                using (Pen penBase = new Pen(figura.ColorLinea, 1))
+                {
+                    foreach (var arista in figura.Aristas)
+                    {
+                        if (arista.Inicio < puntosProyectados.Count &&
+                            arista.Fin < puntosProyectados.Count)
+                        {
+                            try
+                            {
+                                g.DrawLine(penBase,
+                                    puntosProyectados[arista.Inicio],
+                                    puntosProyectados[arista.Fin]);
+                            }
+                            catch { }
+                        }
+                    }
+                }
+
+                // Si está seleccionada, dibujar overlay para destacar con grosor 2, si no seleccionada usar grosor 1.
+                using (Pen penSel = new Pen(figura.ColorLinea, figura.Seleccionada ? 2 : 1))
+                {
+                    penSel.Alignment = System.Drawing.Drawing2D.PenAlignment.Center;
+                    foreach (var arista in figura.Aristas)
+                    {
+                        if (arista.Inicio < puntosProyectados.Count &&
+                            arista.Fin < puntosProyectados.Count)
+                        {
+                            try
+                            {
+                                g.DrawLine(penSel,
+                                    puntosProyectados[arista.Inicio],
+                                    puntosProyectados[arista.Fin]);
+                            }
+                            catch { }
+                        }
+                    }
+                }
+            }
+        }
+
+        public void DibujarEjes(Graphics g, double longitud = 2)
+        {
+            Punto3D origen = new Punto3D(0, 0, 0);
+            Punto3D ejeX = new Punto3D(longitud, 0, 0);
+            Punto3D ejeY = new Punto3D(0, 0, longitud);
+            Punto3D ejeZ = new Punto3D(0, longitud, 0);
+
+            PointF pOrigen = ProyectarPunto(origen);
+            PointF pX = ProyectarPunto(ejeX);
+            PointF pY = ProyectarPunto(ejeY);
+            PointF pZ = ProyectarPunto(ejeZ);
+
+            using (Pen penX = new Pen(Color.Red, 2))
+            using (Pen penY = new Pen(Color.Lime, 2))
+            using (Pen penZ = new Pen(Color.Blue, 2))
+            using (Brush labelBrush = new SolidBrush(Color.White))
+            using (Font f = new Font("Segoe UI", 9))
+            {
+                try { g.DrawLine(penX, pOrigen, pX); } catch { }
+                try { g.DrawLine(penY, pOrigen, pY); } catch { }
+                try { g.DrawLine(penZ, pOrigen, pZ); } catch { }
+
+                // Dibujar etiquetas para evitar confusiones
+                float off = 4f;
+                try { g.DrawString("X", f, labelBrush, pX.X + off, pX.Y + off); } catch { }
+                try { g.DrawString("Y", f, labelBrush, pY.X + off, pY.Y + off); } catch { }
+                try { g.DrawString("Z", f, labelBrush, pZ.X + off, pZ.Y + off); } catch { }
+            }
+        }
+
+        public void DibujarGrid(Graphics g, int tamaño = 10, double espaciado = 1)
+        {
+            using (Pen penGrid = new Pen(Color.FromArgb(50, 255, 255, 255), 1))
+            {
+                for (int i = -tamaño; i <= tamaño; i++)
+                {
+                    double pos = i * espaciado;
+
+                    PointF p1 = ProyectarPunto(new Punto3D(-tamaño * espaciado, 0, pos));
+                    PointF p2 = ProyectarPunto(new Punto3D(tamaño * espaciado, 0, pos));
+                    try { g.DrawLine(penGrid, p1, p2); } catch { }
+
+                    p1 = ProyectarPunto(new Punto3D(pos, 0, -tamaño * espaciado));
+                    p2 = ProyectarPunto(new Punto3D(pos, 0, tamaño * espaciado));
+                    try { g.DrawLine(penGrid, p1, p2); } catch { }
+                }
+            }
+        }
+
+        #endregion
+
+        // Métodos para cámara libre
+        public void MoverCamaraLibre(double forward, double right, double up)
+        {
+            Punto3D forwardVec = (ObjetivoCamara - PosicionCamara).VectorNormalizado();
+            Punto3D rightVec = Punto3D.ProductoCruz(forwardVec, UpCamara).VectorNormalizado();
+            Punto3D upVec = Punto3D.ProductoCruz(rightVec, forwardVec).VectorNormalizado();
+
+            FreeCamPos = FreeCamPos + (forwardVec * forward) + (rightVec * right) + (upVec * up);
+            ActualizarPosicionCamara();
+        }
+
+        public void RotarCamaraLibre(double yawDelta, double pitchDelta)
+        {
+            FreeCamYaw += yawDelta;
+            FreeCamPitch += pitchDelta;
+            if (FreeCamPitch > 89) FreeCamPitch = 89;
+            if (FreeCamPitch < -89) FreeCamPitch = -89;
+            ActualizarPosicionCamara();
+        }
+    }
+}

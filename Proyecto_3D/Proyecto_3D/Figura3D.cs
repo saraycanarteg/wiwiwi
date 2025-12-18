@@ -24,6 +24,7 @@ namespace Proyecto_3D
         public List<Arista> Aristas { get; set; }
         public List<List<int>> Caras { get; set; }
         public List<Punto3D> NormalesCaras { get; set; } // Normales para iluminación
+        public List<Punto3D> NormalesVertices { get; set; } // Normales por vértice para suavizado
 
         public string Nombre { get; set; }
         public Color ColorLinea { get; set; }
@@ -37,6 +38,10 @@ namespace Proyecto_3D
         public double LuzAmbiente { get; set; } = 0.3;
         public TipoTextura TipoTextura { get; set; } = TipoTextura.Cristal;
 
+        // Propiedades especulares para mayor solidez visual
+        public double SpecularStrength { get; set; } = 0.6; // intensidad del brillo especular
+        public int Shininess { get; set; } = 20; // exponente de brillo
+
         // Transformaciones acumuladas
         public Punto3D Posicion { get; set; }
         public Punto3D Rotacion { get; set; }
@@ -49,6 +54,7 @@ namespace Proyecto_3D
             Aristas = new List<Arista>();
             Caras = new List<List<int>>();
             NormalesCaras = new List<Punto3D>();
+            NormalesVertices = new List<Punto3D>();
 
             Nombre = nombre;
             ColorLinea = Color.White;
@@ -94,6 +100,36 @@ namespace Proyecto_3D
 
                 Punto3D normal = Punto3D.ProductoCruz(edge1, edge2).VectorNormalizado();
                 NormalesCaras.Add(normal);
+            }
+
+            // Calcular normales por vértice promediando normales de caras adyacentes
+            NormalesVertices.Clear();
+            for (int i = 0; i < Vertices.Count; i++)
+            {
+                NormalesVertices.Add(new Punto3D(0, 0, 0));
+            }
+
+            int caraIndex = 0;
+            foreach (var cara in Caras)
+            {
+                Punto3D normalCara = (caraIndex < NormalesCaras.Count) ? NormalesCaras[caraIndex] : new Punto3D(0, 1, 0);
+                foreach (int vi in cara)
+                {
+                    if (vi >= 0 && vi < NormalesVertices.Count)
+                    {
+                        NormalesVertices[vi] = NormalesVertices[vi] + normalCara;
+                    }
+                }
+                caraIndex++;
+            }
+
+            // Normalizar
+            for (int i = 0; i < NormalesVertices.Count; i++)
+            {
+                if (NormalesVertices[i].Magnitud() == 0)
+                    NormalesVertices[i] = new Punto3D(0, 1, 0);
+                else
+                    NormalesVertices[i] = NormalesVertices[i].VectorNormalizado();
             }
         }
 
@@ -418,7 +454,9 @@ namespace Proyecto_3D
                 TipoTextura = TipoTextura,
                 Posicion = Posicion.Clone(),
                 Rotacion = Rotacion.Clone(),
-                Escala = Escala.Clone()
+                Escala = Escala.Clone(),
+                SpecularStrength = SpecularStrength,
+                Shininess = Shininess
             };
 
             foreach (var v in Vertices)

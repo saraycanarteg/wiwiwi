@@ -22,6 +22,11 @@ namespace Proyecto_3D
         private Point ultimaPosicionMouse;
         private bool necesitaRenderizar = true;
 
+        // Nuevo: arrastre del foco
+        private bool arrastrandoFoco = false;
+        private Point inicioArrastreFoco;
+        private Punto3D focoPosInicio;
+
         private HashSet<Keys> teclasPresionadas = new HashSet<Keys>();
 
         public Form1()
@@ -57,13 +62,17 @@ namespace Proyecto_3D
             timerRender.Start();
 
             // Crear el foco de luz (pequeña esfera amarilla)
-            focoLuz = Figura3D.CrearEsfera(0.3, 12, 8);
+            focoLuz = Figura3D.CrearEsfera(0.35, 20, 12);
             focoLuz.Nombre = "Foco_Luz";
-            focoLuz.ColorRelleno = Color.FromArgb(255, 255, 255, 100); // Amarillo brillante
+            focoLuz.ColorRelleno = Color.FromArgb(255, 255, 245, 120); // Amarillo brillante
             focoLuz.ColorLinea = Color.Yellow;
             focoLuz.MostrarRelleno = true;
             focoLuz.Visible = false; // Inicialmente oculto
             focoLuz.Posicion = new Punto3D(3, 3, 3); // Posición inicial
+            focoLuz.IntensidadLuz = 2.0; // Hacer el foco intrínsecamente muy fuerte
+            focoLuz.LuzAmbiente = 0.0;
+            focoLuz.SpecularStrength = 1.0;
+            focoLuz.Shininess = 30;
             focoLuz.GuardarEstadoOriginal();
 
             // Agregar un cubo inicial
@@ -71,6 +80,9 @@ namespace Proyecto_3D
 
             // Inicializar combobox modo camara
             if (cmbModoCamara != null) cmbModoCamara.SelectedIndex = 0; // Orbital por defecto
+
+            // Aumentar intensidad global por defecto para ver mejor el efecto
+            motor.IntensidadGlobal = 1.0;
         }
 
         private void TimerRender_Tick(object sender, EventArgs e)
@@ -185,12 +197,24 @@ namespace Proyecto_3D
             trackBarIntensidadLuz.TickFrequency = 10;
 
             trackBarIntensidadLuz.ValueChanged += (s, e) => {
-                if (figuraSeleccionada != null)
+                // Si el foco está seleccionado, ajustar intensidad de ese objeto; si no, ajustar intensidad global
+                if (figuraSeleccionada != null && figuraSeleccionada == focoLuz)
+                {
+                    focoLuz.IntensidadLuz = trackBarIntensidadLuz.Value / 50.0; // rango mayor para foco
+                    lblIntensidadLuz.Text = $"Intensidad: {trackBarIntensidadLuz.Value}% (foco)";
+                }
+                else if (figuraSeleccionada != null)
                 {
                     figuraSeleccionada.IntensidadLuz = trackBarIntensidadLuz.Value / 100.0;
                     lblIntensidadLuz.Text = $"Intensidad: {trackBarIntensidadLuz.Value}%";
-                    SolicitarRenderizado();
                 }
+                else
+                {
+                    motor.IntensidadGlobal = trackBarIntensidadLuz.Value / 100.0;
+                    lblIntensidadLuz.Text = $"Intensidad Global: {trackBarIntensidadLuz.Value}%";
+                }
+
+                SolicitarRenderizado();
             };
 
             // Eventos de textura
@@ -219,7 +243,7 @@ namespace Proyecto_3D
                 if (focoLuz != null)
                 {
                     focoLuz.Visible = chkMostrarFoco.Checked;
-                    
+
                     // Si se activa el foco, seleccionarlo automáticamente para poder moverlo
                     if (chkMostrarFoco.Checked)
                     {
@@ -235,7 +259,7 @@ namespace Proyecto_3D
                             listObjetos.SelectedIndex = -1;
                         }
                     }
-                    
+
                     SolicitarRenderizado();
                 }
             };
@@ -275,27 +299,35 @@ namespace Proyecto_3D
         {
             var cubo = Figura3D.CrearCubo(1.0);
             cubo.Nombre = $"Cubo_{figuras.Count + 1}";
+            cubo.ColorRelleno = Color.FromArgb(255, 180, 80, 120);
+            cubo.TipoTextura = TipoTextura.Piedra;
             AgregarFigura(cubo);
         }
 
         private void AgregarEsfera()
         {
-            var esfera = Figura3D.CrearEsfera(1.0, 16, 12);
+            var esfera = Figura3D.CrearEsfera(1.0, 32, 24);
             esfera.Nombre = $"Esfera_{figuras.Count + 1}";
+            esfera.ColorRelleno = Color.FromArgb(255, 160, 200, 255);
+            esfera.TipoTextura = TipoTextura.Cristal;
             AgregarFigura(esfera);
         }
 
         private void AgregarCilindro()
         {
-            var cilindro = Figura3D.CrearCilindro(0.5, 2.0, 16);
+            var cilindro = Figura3D.CrearCilindro(0.5, 2.0, 32);
             cilindro.Nombre = $"Cilindro_{figuras.Count + 1}";
+            cilindro.ColorRelleno = Color.FromArgb(255, 200, 160, 100);
+            cilindro.TipoTextura = TipoTextura.Oro;
             AgregarFigura(cilindro);
         }
 
         private void AgregarCono()
         {
-            var cono = Figura3D.CrearCono(1.0, 2.0, 16);
+            var cono = Figura3D.CrearCono(1.0, 2.0, 32);
             cono.Nombre = $"Cono_{figuras.Count + 1}";
+            cono.ColorRelleno = Color.FromArgb(255, 200, 200, 180);
+            cono.TipoTextura = TipoTextura.Piedra;
             AgregarFigura(cono);
         }
 
@@ -303,13 +335,17 @@ namespace Proyecto_3D
         {
             var piramide = Figura3D.CrearPiramide(1.0);
             piramide.Nombre = $"Pirámide_{figuras.Count + 1}";
+            piramide.ColorRelleno = Color.FromArgb(255, 180, 180, 220);
+            piramide.TipoTextura = TipoTextura.Esponja;
             AgregarFigura(piramide);
         }
 
         private void AgregarToroide()
         {
-            var toroide = Figura3D.CrearToroide(1.5, 0.5, 24, 16);
+            var toroide = Figura3D.CrearToroide(1.5, 0.5, 48, 24);
             toroide.Nombre = $"Toroide_{figuras.Count + 1}";
+            toroide.ColorRelleno = Color.FromArgb(255, 200, 200, 200);
+            toroide.TipoTextura = TipoTextura.Diamante;
             AgregarFigura(toroide);
         }
 
@@ -327,6 +363,32 @@ namespace Proyecto_3D
 
         private void PanelViewport_MouseDown(object sender, MouseEventArgs e)
         {
+            // Si el foco está visible y el clic cayó sobre él, iniciar arrastre del foco
+            if (e.Button == MouseButtons.Left && focoLuz != null && focoLuz.Visible && EstaClicEnFoco(e.Location))
+            {
+                arrastrandoFoco = true;
+                inicioArrastreFoco = e.Location;
+                focoPosInicio = focoLuz.Posicion.Clone();
+                SeleccionarFoco();
+                Cursor = Cursors.SizeAll;
+                // No iniciar rotación
+                mousePresionado = false;
+                return;
+            }
+
+            // Selección por clic: comprobar si se hizo clic sobre una figura proyectada
+            if (e.Button == MouseButtons.Left && !Control.ModifierKeys.HasFlag(Keys.Shift))
+            {
+                var figuraClick = ObtenerFiguraEnPantalla(e.Location);
+                if (figuraClick != null)
+                {
+                    SeleccionarFigura(figuraClick);
+                    // No empezar rotación cuando clic fue para selección
+                    mousePresionado = false;
+                    return;
+                }
+            }
+
             if (e.Button == MouseButtons.Middle ||
                 (e.Button == MouseButtons.Left && ModifierKeys == Keys.Shift))
             {
@@ -345,9 +407,41 @@ namespace Proyecto_3D
             ultimaPosicionMouse = e.Location;
         }
 
+        private bool EstaClicEnFoco(Point p)
+        {
+            if (focoLuz == null) return false;
+            PointF proj = motor.ProyectarPunto(focoLuz.Posicion);
+            float dx = p.X - proj.X;
+            float dy = p.Y - proj.Y;
+            double dist = Math.Sqrt(dx * dx + dy * dy);
+            return dist <= 14; // umbral en píxeles
+        }
+
         private void PanelViewport_MouseMove(object sender, MouseEventArgs e)
         {
             bool huboMovimiento = false;
+
+            if (arrastrandoFoco)
+            {
+                // Mapear delta de pantalla a movimiento en el plano de la cámara (right/up)
+                int dx = e.X - inicioArrastreFoco.X;
+                int dy = e.Y - inicioArrastreFoco.Y;
+
+                Punto3D forward = (motor.ObjetivoCamara - motor.PosicionCamara).VectorNormalizado();
+                Punto3D right = Punto3D.ProductoCruz(forward, motor.UpCamara).VectorNormalizado();
+                Punto3D up = Punto3D.ProductoCruz(right, forward).VectorNormalizado();
+
+                double factor = motor.DistanciaCamara * 0.005; // ajuste de sensibilidad
+
+                // Invertir Y para que arrastrar hacia arriba suba en coordenadas del mundo
+                Punto3D deltaWorld = (right * dx * factor) + (up * (-dy) * factor);
+
+                focoLuz.Posicion = focoPosInicio + deltaWorld;
+                SolicitarRenderizado();
+                huboMovimiento = true;
+                ultimaPosicionMouse = e.Location;
+                return;
+            }
 
             if (rightMouseRotate && motor.CamaraModo == Motor3D.ModoCamara.Libre)
             {
@@ -381,6 +475,14 @@ namespace Proyecto_3D
 
         private void PanelViewport_MouseUp(object sender, MouseEventArgs e)
         {
+            if (arrastrandoFoco)
+            {
+                arrastrandoFoco = false;
+                Cursor = Cursors.Default;
+                SolicitarRenderizado();
+                return;
+            }
+
             mousePresionado = false;
             mousePanear = false;
             rightMouseRotate = false;
@@ -674,6 +776,57 @@ namespace Proyecto_3D
             timerRender?.Stop();
             bufferImagen?.Dispose();
             base.OnFormClosing(e);
+        }
+
+        private Figura3D ObtenerFiguraEnPantalla(Point p)
+        {
+            // Revisar figuras desde la más cercana en la lista (asumir último agregado encima)
+            for (int f = figuras.Count - 1; f >= 0; f--)
+            {
+                var figura = figuras[f];
+                if (!figura.Visible || !figura.MostrarRelleno) continue;
+
+                List<PointF> proyectados = new List<PointF>();
+                foreach (var v in figura.Vertices)
+                    proyectados.Add(motor.ProyectarPunto(v));
+
+                // Revisar caras
+                for (int i = figura.Caras.Count - 1; i >= 0; i--)
+                {
+                    var cara = figura.Caras[i];
+                    if (cara.Count < 3) continue;
+
+                    PointF[] pts = cara.Select(idx => idx < proyectados.Count ? proyectados[idx] : new PointF(-10000, -10000)).ToArray();
+
+                    // Backface test usando normal de cara
+                    Punto3D normal = i < figura.NormalesCaras.Count ? figura.NormalesCaras[i] : new Punto3D(0,1,0);
+                    Punto3D centroCara = new Punto3D(0,0,0);
+                    foreach (int vi in cara) if (vi < figura.Vertices.Count) centroCara += figura.Vertices[vi];
+                    centroCara = centroCara * (1.0 / cara.Count);
+                    Punto3D toCamera = (motor.PosicionCamara - centroCara).VectorNormalizado();
+                    double dot = Punto3D.ProductoPunto(normal, toCamera);
+                    if (dot <= 0) continue; // cara mirando hacia atrás
+
+                    if (PointInPolygon(p, pts))
+                        return figura;
+                }
+            }
+
+            return null;
+        }
+
+        private bool PointInPolygon(Point p, PointF[] polygon)
+        {
+            bool inside = false;
+            for (int i = 0, j = polygon.Length - 1; i < polygon.Length; j = i++)
+            {
+                var pi = polygon[i];
+                var pj = polygon[j];
+                if (((pi.Y > p.Y) != (pj.Y > p.Y)) &&
+                    (p.X < (pj.X - pi.X) * (p.Y - pi.Y) / (pj.Y - pi.Y + 0.00001f) + pi.X))
+                    inside = !inside;
+            }
+            return inside;
         }
     }
 }

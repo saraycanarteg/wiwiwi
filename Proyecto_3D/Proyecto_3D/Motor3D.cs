@@ -37,6 +37,12 @@ namespace Proyecto_3D
         public Punto3D PosicionLuz { get; set; } // Posición de la luz puntual
         public bool UsarLuzPosicional { get; set; } // Si true, usa PosicionLuz; si false, usa DireccionLuz
 
+        // Intensidad global de la fuente de luz (0..1)
+        public double IntensidadGlobal { get; set; } = 1.0;
+
+        // Cache de texturas procedurales
+        private static Dictionary<string, Bitmap> cacheTexturas = new Dictionary<string, Bitmap>();
+
         // Nuevo: modo de cámara y propiedades para cámara libre
         public ModoCamara CamaraModo { get; set; } = ModoCamara.Orbital;
 
@@ -287,77 +293,196 @@ namespace Proyecto_3D
             // Componente ambiente
             double ambiente = figura.LuzAmbiente;
 
-            double difusa;
-            
+            double difusa = 0.0;
+            double especular = 0.0;
+
+            Punto3D direccionLuz;
+            double distancia = 0.0;
+
             if (UsarLuzPosicional && PosicionLuz != null)
             {
                 // Calcular el centro de la figura para iluminación puntual
                 Punto3D centroFigura = figura.ObtenerCentro();
-                
+
                 // Vector desde la superficie hacia la luz
-                Punto3D direccionALuz = (PosicionLuz - centroFigura).VectorNormalizado();
-                
+                direccionLuz = (PosicionLuz - centroFigura).VectorNormalizado();
+
+                distancia = (PosicionLuz - centroFigura).Magnitud();
+
                 // Componente difusa usando luz posicional
-                difusa = Math.Max(0, Punto3D.ProductoPunto(normal, direccionALuz));
-                
-                // Atenuar la luz con la distancia
-                double distancia = (PosicionLuz - centroFigura).Magnitud();
-                double atenuacion = 1.0 / (1.0 + 0.1 * distancia + 0.01 * distancia * distancia);
+                difusa = Math.Max(0, Punto3D.ProductoPunto(normal, direccionLuz));
+
+                // Atenuación más marcada para mayor efecto visual
+                double atenuacion = 1.0 / (0.5 + 0.2 * distancia + 0.05 * distancia * distancia);
                 difusa *= atenuacion;
+
+                // Cálculo especular (Blinn-Phong aproximado)
+                Punto3D viewDir = (PosicionCamara - centroFigura).VectorNormalizado();
+                Punto3D half = (direccionLuz + viewDir).VectorNormalizado();
+                double specFactor = Math.Max(0, Punto3D.ProductoPunto(normal, half));
+                especular = figura.SpecularStrength * Math.Pow(specFactor, figura.Shininess) * atenuacion;
             }
             else
             {
-                // Componente difusa (Lambert) con luz direccional
-                difusa = Math.Max(0, -Punto3D.ProductoPunto(normal, DireccionLuz));
-            }
-            
-            difusa *= figura.IntensidadLuz;
+                direccionLuz = DireccionLuz.VectorNormalizado();
+                difusa = Math.Max(0, -Punto3D.ProductoPunto(normal, direccionLuz));
 
-            // Combinar ambiente + difusa
-            double factorLuz = Math.Min(1.0, ambiente + difusa);
+                // Especular para luz direccional: usar punto medio respecto a cámara
+                Punto3D centroFigura = figura.ObtenerCentro();
+                Punto3D viewDir = (PosicionCamara - centroFigura).VectorNormalizado();
+                Punto3D half = (direccionLuz + viewDir).VectorNormalizado();
+                double specFactor = Math.Max(0, Punto3D.ProductoPunto(normal, half));
+                especular = figura.SpecularStrength * Math.Pow(specFactor, figura.Shininess);
+            }
+
+            difusa *= figura.IntensidadLuz * IntensidadGlobal;
+            especular *= IntensidadGlobal;
+
+            // Combinar componentes con mayor contraste para mayor solidez visual
+            double factor = figura.LuzAmbiente + difusa + especular;
+            factor = Math.Min(1.0, factor);
 
             // Obtener color base según textura
             Color colorBase = figura.ObtenerColorTextura();
 
-            // Aplicar propiedades especiales por textura
+            // Aplicar propiedades especiales por textura (ajustar gamma para contraste)
             switch (figura.TipoTextura)
             {
                 case TipoTextura.Cristal:
-                    // Cristal: más transparente y con brillo
-                    factorLuz = Math.Min(1.0, factorLuz * 1.3);
+                    factor = Math.Min(1.0, factor * 1.1 + 0.05);
                     break;
-
                 case TipoTextura.Diamante:
-                    // Diamante: muy brillante
-                    factorLuz = Math.Min(1.0, factorLuz * 1.5 + 0.2);
+                    factor = Math.Min(1.0, factor * 1.3 + 0.15);
                     break;
-
                 case TipoTextura.Oro:
-                    // Oro: reflejo metálico
-                    factorLuz = Math.Min(1.0, factorLuz * 1.2 + 0.1);
+                    factor = Math.Min(1.0, factor * 1.15 + 0.08);
                     break;
-
                 case TipoTextura.Piedra:
-                    // Piedra: más opaco
-                    factorLuz = Math.Max(0.3, factorLuz * 0.9);
+                    factor = Math.Max(0.2, factor * 0.9);
                     break;
-
                 case TipoTextura.Esponja:
-                    // Esponja: difuso y suave
-                    factorLuz = Math.Max(0.4, factorLuz);
+                    factor = Math.Max(0.3, factor);
                     break;
             }
 
             // Aplicar iluminación al color
-            int r = (int)(colorBase.R * factorLuz);
-            int g = (int)(colorBase.G * factorLuz);
-            int b = (int)(colorBase.B * factorLuz);
+            int r = (int)(colorBase.R * factor + 255 * especular * 0.3);
+            int g = (int)(colorBase.G * factor + 255 * especular * 0.25);
+            int b = (int)(colorBase.B * factor + 255 * especular * 0.2);
 
             r = Math.Max(0, Math.Min(255, r));
             g = Math.Max(0, Math.Min(255, g));
             b = Math.Max(0, Math.Min(255, b));
 
             return Color.FromArgb(colorBase.A, r, g, b);
+        }
+
+        private Bitmap GenerarPiedraBitmap(Color baseColor)
+        {
+            string key = "piedra_" + baseColor.ToArgb();
+            if (cacheTexturas.ContainsKey(key)) return cacheTexturas[key];
+
+            int size = 64;
+            Bitmap bmp = new Bitmap(size, size);
+            Random rnd = new Random(baseColor.ToArgb());
+
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.Clear(baseColor);
+                for (int i = 0; i < 1200; i++)
+                {
+                    int x = rnd.Next(size);
+                    int y = rnd.Next(size);
+                    int radius = rnd.Next(1, 3);
+                    int darkness = rnd.Next(20, 80);
+                    Color c = Color.FromArgb(Math.Max(0, baseColor.R - darkness), Math.Max(0, baseColor.G - darkness), Math.Max(0, baseColor.B - darkness));
+                    using (Brush br = new SolidBrush(c))
+                    {
+                        g.FillEllipse(br, x, y, radius, radius);
+                    }
+                }
+            }
+
+            cacheTexturas[key] = bmp;
+            return bmp;
+        }
+
+        private Bitmap GenerarEsponjaBitmap(Color baseColor)
+        {
+            string key = "esponja_" + baseColor.ToArgb();
+            if (cacheTexturas.ContainsKey(key)) return cacheTexturas[key];
+
+            int size = 64;
+            Bitmap bmp = new Bitmap(size, size);
+            Random rnd = new Random(baseColor.ToArgb() ^ 0x12345);
+
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.Clear(baseColor);
+                for (int i = 0; i < 300; i++)
+                {
+                    int x = rnd.Next(size);
+                    int y = rnd.Next(size);
+                    int radius = rnd.Next(2, 8);
+                    int light = rnd.Next(10, 80);
+                    Color c = Color.FromArgb(Math.Min(255, baseColor.R + light), Math.Min(255, baseColor.G + light), Math.Min(255, baseColor.B + (light/2)));
+                    using (Brush br = new SolidBrush(Color.FromArgb(180, c)))
+                    {
+                        g.FillEllipse(br, x - radius/2, y - radius/2, radius, radius);
+                    }
+                }
+            }
+
+            cacheTexturas[key] = bmp;
+            return bmp;
+        }
+
+        private Color DarkenColor(Color c, double factor)
+        {
+            int r = (int)(c.R * factor);
+            int g = (int)(c.G * factor);
+            int b = (int)(c.B * factor);
+            return Color.FromArgb(c.A, Math.Max(0, Math.Min(255, r)), Math.Max(0, Math.Min(255, g)), Math.Max(0, Math.Min(255, b)));
+        }
+
+        private Color LightenColor(Color c, double factor)
+        {
+            int r = (int)(c.R + (255 - c.R) * factor);
+            int g = (int)(c.G + (255 - c.G) * factor);
+            int b = (int)(c.B + (255 - c.B) * factor);
+            return Color.FromArgb(c.A, Math.Max(0, Math.Min(255, r)), Math.Max(0, Math.Min(255, g)), Math.Max(0, Math.Min(255, b)));
+        }
+
+        private Bitmap GenerarOroBitmap(Color baseColor)
+        {
+            string key = "oro_" + baseColor.ToArgb();
+            if (cacheTexturas.ContainsKey(key)) return cacheTexturas[key];
+
+            int width = 64, height = 64;
+            Bitmap bmp = new Bitmap(width, height);
+
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                Rectangle r = new Rectangle(0, 0, width, height);
+                Color dark = DarkenColor(baseColor, 0.7);
+                Color light = LightenColor(baseColor, 0.6);
+                using (LinearGradientBrush lg = new LinearGradientBrush(r, dark, light, LinearGradientMode.Vertical))
+                {
+                    g.FillRectangle(lg, r);
+                }
+
+                // Add subtle horizontal bands
+                using (Pen p = new Pen(Color.FromArgb(30, Color.Black)))
+                {
+                    for (int y = 0; y < height; y += 6)
+                    {
+                        g.DrawLine(p, 0, y, width, y);
+                    }
+                }
+            }
+
+            cacheTexturas[key] = bmp;
+            return bmp;
         }
 
         private Brush CrearBrushTextura(Figura3D figura, Punto3D normal, PointF[] puntos)
@@ -409,35 +534,30 @@ namespace Proyecto_3D
                     return new SolidBrush(colorIluminado);
 
                 case TipoTextura.Oro:
-                    // Degradado dorado
-                    if (puntos.Length >= 2)
+                    // Degradado dorado con textura
+                    try
                     {
-                        Color c1 = Color.FromArgb(colorIluminado.A,
-                            Math.Min(255, colorIluminado.R + 30),
-                            Math.Min(255, colorIluminado.G + 20),
-                            colorIluminado.B);
-
-                        try
-                        {
-                            return new LinearGradientBrush(
-                                puntos[0],
-                                puntos[puntos.Length / 2],
-                                colorIluminado, c1);
-                        }
-                        catch
-                        {
-                            return new SolidBrush(colorIluminado);
-                        }
+                        Bitmap oroBmp = GenerarOroBitmap(colorIluminado);
+                        TextureBrush tb = new TextureBrush(oroBmp, WrapMode.Tile);
+                        return tb;
                     }
-                    return new SolidBrush(colorIluminado);
+                    catch { return new SolidBrush(colorIluminado); }
 
                 case TipoTextura.Piedra:
-                    // Color sólido mate
-                    return new SolidBrush(colorIluminado);
+                    try
+                    {
+                        Bitmap piedra = GenerarPiedraBitmap(colorIluminado);
+                        return new TextureBrush(piedra, WrapMode.Tile);
+                    }
+                    catch { return new SolidBrush(colorIluminado); }
 
                 case TipoTextura.Esponja:
-                    // Color sólido más suave
-                    return new SolidBrush(colorIluminado);
+                    try
+                    {
+                        Bitmap esponja = GenerarEsponjaBitmap(colorIluminado);
+                        return new TextureBrush(esponja, WrapMode.Tile);
+                    }
+                    catch { return new SolidBrush(colorIluminado); }
 
                 default:
                     return new SolidBrush(colorIluminado);
@@ -506,9 +626,24 @@ namespace Proyecto_3D
 
                     if (!todosValidos) continue;
 
-                    Punto3D normal = i < figura.NormalesCaras.Count
-                        ? figura.NormalesCaras[i]
-                        : new Punto3D(0, 1, 0);
+                    // Normal: preferir normal por vértice promedio si está disponible
+                    Punto3D normal;
+                    if (figura.NormalesVertices != null && figura.NormalesVertices.Count > 0)
+                    {
+                        Punto3D sumaNorm = new Punto3D(0, 0, 0);
+                        foreach (int vi in cara)
+                        {
+                            if (vi >= 0 && vi < figura.NormalesVertices.Count)
+                                sumaNorm += figura.NormalesVertices[vi];
+                        }
+                        normal = sumaNorm.VectorNormalizado();
+                    }
+                    else
+                    {
+                        normal = i < figura.NormalesCaras.Count
+                            ? figura.NormalesCaras[i]
+                            : new Punto3D(0, 1, 0);
+                    }
 
                     // Backface culling: solo dibujar caras cuyo normal apunte hacia la cámara
                     // Calcular vector desde la cara al centro de la cámara
@@ -521,14 +656,16 @@ namespace Proyecto_3D
                     Punto3D toCamera = (PosicionCamara - centroCara).VectorNormalizado();
 
                     double dot = Punto3D.ProductoPunto(normal, toCamera);
-                    if (dot <= 0) // cara orientada hacia atrás
-                        continue;
+                    // En lugar de descartar caras con dot <= 0, soportar renderizado de doble cara
+                    bool caraOrientada = dot > 0;
+
+                    // Si la cara está orientada hacia atrás, usar la normal invertida para el cálculo de iluminación
+                    Punto3D normalParaIluminacion = caraOrientada ? normal : (normal * -1);
 
                     try
                     {
-                        using (Brush brush = CrearBrushTextura(figura, normal, puntos))
+                        using (Brush brush = CrearBrushTextura(figura, normalParaIluminacion, puntos))
                         {
-                            // Si el brush es sólido con alpha alta, usar FillPolygon directamente
                             g.FillPolygon(brush, puntos);
                         }
                     }
@@ -536,8 +673,14 @@ namespace Proyecto_3D
                 }
 
                 // Dibujar contorno de las caras con el color de línea de la figura.
-                // Si está seleccionada, usar grosor 2; en caso contrario, grosor 1.
-                using (Pen penLinea = new Pen(figura.ColorLinea, figura.Seleccionada ? 2 : 1))
+                // Si está seleccionada, usar grosor 2; en caso contrario, grosor 1 y menos prominente.
+                Color colorLinea = figura.ColorLinea;
+                if (!figura.Seleccionada)
+                {
+                    // Hacer las líneas menos marcadas
+                    colorLinea = Color.FromArgb(120, colorLinea);
+                }
+                using (Pen penLinea = new Pen(colorLinea, figura.Seleccionada ? 2 : 1))
                 {
                     penLinea.Alignment = PenAlignment.Center;
                     foreach (var cara in figura.Caras)
