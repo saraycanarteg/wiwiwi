@@ -828,5 +828,10 @@ namespace Proyecto_3D
             }
             return inside;
         }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

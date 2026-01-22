@@ -58,7 +58,6 @@ namespace Proyecto_3D
 
             Nombre = nombre;
             ColorLinea = Color.White;
-            // Hacer el relleno más opaco por defecto para que las figuras se vean sólidas
             ColorRelleno = Color.FromArgb(230, 100, 150, 200);
             MostrarRelleno = true;
             Visible = true;

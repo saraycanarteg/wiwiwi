@@ -753,7 +753,7 @@ namespace Proyecto_3D
             PointF pY = ProyectarPunto(ejeY);
             PointF pZ = ProyectarPunto(ejeZ);
 
-            using (Pen penX = new Pen(Color.Red, 2))
+            using (Pen penX = new Pen(Color.Pink, 2))
             using (Pen penY = new Pen(Color.Lime, 2))
             using (Pen penZ = new Pen(Color.Blue, 2))
             using (Brush labelBrush = new SolidBrush(Color.White))
@@ -763,7 +763,7 @@ namespace Proyecto_3D
                 try { g.DrawLine(penY, pOrigen, pY); } catch { }
                 try { g.DrawLine(penZ, pOrigen, pZ); } catch { }
 
-                // Dibujar etiquetas para evitar confusiones
+                // Dibujar etiquetas
                 float off = 4f;
                 try { g.DrawString("X", f, labelBrush, pX.X + off, pX.Y + off); } catch { }
                 try { g.DrawString("Y", f, labelBrush, pY.X + off, pY.Y + off); } catch { }
